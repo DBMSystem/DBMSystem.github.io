@@ -73,7 +73,7 @@ Todos en `src/data/i18n/es.js`; marcados `draft: true` en `src/data/dialogues.js
 
 | Tipo | Personaje (mega pack) | Poses usadas |
 |---|---|---|
-| Cliente tranquilo | Abuela con rebeca beige | esperar: con bastón · contento: tejiendo |
+| Cliente tranquilo | Abuela con rebeca beige | esperar: tejiendo · contento: con bastón |
 | Estudiante | Niño con sudadera azul y mochila | llegar: saludando · esperar: con piruleta · contento: brazos arriba |
 | Oficinista | Chica de pelo verde con delantal | esperar: con zumo · contento: signo de la paz |
 | Turista | Chico con gafas de sol y camisa de notas | esperar: con vinilo · contento: brazos arriba |
