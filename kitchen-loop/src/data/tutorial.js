@@ -8,7 +8,8 @@ export const tutorial = {
     { id: 'dragEgg', key: 'tutorial.dragEgg', expression: 'happy', hint: { slot: 0, cell: 5 }, allowedSlots: [0], allowedCells: [5], until: 'place' },
     { id: 'dragBacon', key: 'tutorial.dragBacon', expression: 'happy', hint: { slot: 1, cell: 6 }, allowedSlots: [1], allowedCells: [6], until: 'place' },
     { id: 'cook', key: 'tutorial.cook', expression: 'surprised', hint: { glowing: true }, allowedSlots: [], allowedCells: [], until: 'cook' },
-    { id: 'order', key: 'tutorial.order', expression: 'thinking', hint: { customer: true }, spawnsOrder: true, until: 'serve' },
+    { id: 'order', key: 'tutorial.order', expression: 'thinking', hint: { customer: true }, spawnsOrder: true, until: 'toPan' },
+    { id: 'pan', key: 'tutorial.pan', expression: 'happy', allowedSlots: [], allowedCells: [], until: 'serve' },
     { id: 'free', key: 'tutorial.free', expression: 'thumbs_up', startsTimer: true },
   ],
 };

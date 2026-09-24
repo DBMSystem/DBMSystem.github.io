@@ -131,3 +131,10 @@ Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challe
 - **Pack de Inicio** (draft): Bacon Normal, Tomate Triste, Queso Perezoso, Cebolla Llorona y Pip Dormido.
 - **Nombres de sartenes:** Sartén de Pip (la inicial), Sartén Oxidada, Sartén Rosa de Pip, Sartén Negra y Sartén Dorada.
 - **Textos de tienda** (`shop.*`, `warehouse.*`, `pass.*`): "Pago pendiente: recibirás el contenido cuando se complete.", "La compra ha fallado. No se te ha cobrado nada."
+
+## Sartén de cada cliente
+
+- **Frases de Pip al quemarse un plato** (`pip.burnt.1`–`3`, draft): "¡Huele a carbón! Ese plato ya es arte moderno.", "Se quemó… Lo llamaremos «estilo ahumado».", "Uy, demasiado tarde. ¡La sartén no espera!"
+- **Tutorial** (`tutorial.pan`, draft): "¡A la sartén! Se cocina en su sartén y se sirve sola. ¡Que no se acabe su paciencia!"
+- **Textos flotantes:** "¡A la sartén!" y "¡Se quemó!".
+

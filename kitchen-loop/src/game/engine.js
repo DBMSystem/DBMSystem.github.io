@@ -54,7 +54,7 @@ export function createEngine({
   const events = [];
 
   const state = {
-    status: 'playing', // playing | overflow | ended
+    status: 'playing', // playing | overflow | closing (time is up, pans finishing) | ended
     rules,
     specialty,
     timerRunning,
@@ -78,6 +78,7 @@ export function createEngine({
     servedRecipes: [],
     recipesCooked: 0,
     customersLost: 0,
+    burntCount: 0,
     goldenCooked: 0,
     legendaryArrived: false,
     cookedCounts: {},
@@ -94,7 +95,9 @@ export function createEngine({
     glowing: new Set(), // cells of known recipes (undiscovered secrets never glow)
   };
 
-  const orderRecipes = () => state.customers.map((c) => recipeById[c.recipeId]);
+  // Customers whose dish is not in a pan yet (spec 2.6): only they can still be cooked for.
+  const waiting = () => state.customers.filter((c) => !c.cooking);
+  const orderRecipes = () => waiting().map((c) => recipeById[c.recipeId]);
   const weightOf = (i) => i.weight * (mod?.ingredient === i.id ? mod.weight : 1);
 
   // A special ingredient still under its per-loop cap, or null.
@@ -184,7 +187,8 @@ export function createEngine({
   }
 
   function spawnCustomer() {
-    if (orderable.length === 0) return;
+    // No free place at the counter: nobody arrives (and a pending critic keeps waiting).
+    if (orderable.length === 0 || freeSlot(state.customers, rules.maxCustomers) === -1) return;
     const type = pickType();
     if (type) addCustomer(type, orderFor(type));
   }
@@ -212,7 +216,7 @@ export function createEngine({
 
   function cookAt(cellIndex) {
     if (state.status !== 'playing' || !state.grid.cells[cellIndex]?.ingredient) return false;
-    const ordered = new Set(state.customers.map((c) => c.recipeId));
+    const ordered = new Set(waiting().map((c) => c.recipeId));
     const match = pickMatchAt(state.matches, cellIndex, ordered);
     if (!match) {
       events.push({ type: 'noRecipe', cell: cellIndex });
@@ -227,26 +231,24 @@ export function createEngine({
 
     const golden = cells.some((i) => state.grid.cells[i].golden);
     const combo = registerCook(state.combo, state.time, balance);
-    const customer = customerFor(state.customers, recipe.id);
+    const customer = customerFor(waiting(), recipe.id);
     const scored = recipePoints({ base: recipe.points, chain: combo.chain, feverActive: state.combo.fever.active, served: Boolean(customer) }, balance);
     const bonus = (golden ? balance.goldenPointsMultiplier : 1) * (mod?.pointsBonus && recipe.ingredients.includes(mod.ingredient) ? 1 + mod.pointsBonus : 1);
     const points = Math.round(scored.points * bonus);
-    state.score += points;
     state.recipesCooked += 1;
     if (golden) state.goldenCooked += 1;
     state.cookedCounts[recipe.id] = (state.cookedCounts[recipe.id] ?? 0) + 1;
-    let fragments = 0;
-    if (customer) {
-      const type = customerById[customer.typeId];
-      state.customers = state.customers.filter((c) => c !== customer);
-      state.ordersServed += 1;
-      state.orderCoins += balance.coinsPerOrder * type.pay;
-      fragments = (type.fragments ?? 0) + (mod?.fragmentsPerOrder ?? 0);
-      state.fragments += fragments;
-      state.servedTypes.push(customer.typeId);
-      state.servedRecipes.push(recipe.id);
-      state.timeLeft += balance.timeBonusPerOrder;
-    }
+    // An order goes into that customer's pan and is served when it is done (spec 2.6); a counter sale scores now.
+    if (customer)
+      customer.cooking = {
+        recipeId: recipe.id,
+        startedAt: state.time,
+        readyAt: state.time + balance.panCookTime,
+        points,
+        multiplier: scored.multiplier,
+        golden,
+      };
+    else state.score += points;
 
     const ingredients = cells.map((i) => state.grid.cells[i].ingredient);
     for (const i of cells) {
@@ -265,7 +267,6 @@ export function createEngine({
       multiplier: scored.multiplier,
       chain: combo.chain,
       golden,
-      fragments,
       customerSlot: customer ? customer.slot : null,
       customerTypeId: customer ? customer.typeId : null,
       patienceLeft: customer ? customer.patience / customer.maxPatience : null,
@@ -274,6 +275,27 @@ export function createEngine({
     if (combo.perfect) events.push({ type: 'perfect' });
     if (combo.feverStarted) events.push({ type: 'fever' });
     return true;
+  }
+
+  // The dish is ready: the customer is served and pays (spec 2.6).
+  function serve(customer) {
+    const { recipeId, points, multiplier, golden } = customer.cooking;
+    const type = customerById[customer.typeId];
+    const fragments = (type.fragments ?? 0) + (mod?.fragmentsPerOrder ?? 0);
+    state.customers = state.customers.filter((c) => c !== customer);
+    state.score += points;
+    state.ordersServed += 1;
+    state.orderCoins += balance.coinsPerOrder * type.pay;
+    state.fragments += fragments;
+    state.servedTypes.push(customer.typeId);
+    state.servedRecipes.push(recipeId);
+    if (state.status === 'playing') state.timeLeft += balance.timeBonusPerOrder;
+    events.push({ type: 'served', recipeId, slot: customer.slot, customerTypeId: customer.typeId, points, multiplier, golden, fragments });
+  }
+
+  const cookingCustomers = () => state.customers.filter((c) => c.cooking);
+  function servePans() {
+    for (const customer of cookingCustomers()) if (state.time >= customer.cooking.readyAt) serve(customer);
   }
 
   // Utensil abilities (spec 5.4). Each returns true when used.
@@ -344,20 +366,34 @@ export function createEngine({
   }
 
   function step(dt) {
+    // Time is up: the pans already cooking still finish and serve before the results (spec 2.6).
+    if (state.status === 'closing') {
+      state.time += dt;
+      servePans();
+      if (cookingCustomers().length === 0) end('time');
+      return;
+    }
     if (state.status !== 'playing') return;
     state.time += dt;
     const combo = updateCombo(state.combo, state.time, balance);
     if (combo.feverEnded) events.push({ type: 'feverEnd' });
     if (combo.chainBroken) events.push({ type: 'comboBreak' });
+    servePans();
     if (!state.timerRunning) return;
     state.timeLeft -= dt;
 
+    // Patience keeps running while the dish cooks: if it runs out first, the dish burns (spec 2.6).
     if (state.time >= state.frozenUntil) for (const customer of state.customers) customer.patience -= dt;
     const leaving = state.customers.filter((c) => c.patience <= 0);
     if (leaving.length > 0) {
       state.customers = state.customers.filter((c) => c.patience > 0);
       state.customersLost += leaving.length;
-      for (const customer of leaving) events.push({ type: 'customerLeft', customer });
+      for (const customer of leaving) {
+        if (customer.cooking) {
+          state.burntCount += 1;
+          events.push({ type: 'burnt', customer, recipeId: customer.cooking.recipeId });
+        } else events.push({ type: 'customerLeft', customer });
+      }
     }
 
     if (state.time >= state.nextCustomerAt) {
@@ -368,7 +404,8 @@ export function createEngine({
 
     if (state.timeLeft <= 0) {
       state.timeLeft = 0;
-      end('time');
+      if (cookingCustomers().length > 0) state.status = 'closing';
+      else end('time');
     }
   }
 
@@ -400,8 +437,11 @@ export function createEngine({
     state.nextCustomerAt = state.time + balance.firstCustomerAt;
   }
 
+  // Ending on an overflowing kitchen: the dishes already in pans are still served.
   function finishOverflow() {
-    if (state.status === 'overflow') end('overflow');
+    if (state.status !== 'overflow') return;
+    for (const customer of cookingCustomers()) serve(customer);
+    end('overflow');
   }
 
   function getResult() {
@@ -417,6 +457,7 @@ export function createEngine({
       feverCount: state.combo.fever.count,
       perfectCount: state.combo.perfectCount,
       customersLost: state.customersLost,
+      burntCount: state.burntCount,
       cookedCounts: { ...state.cookedCounts },
       discovered: [...state.newlyDiscovered],
       specialty,

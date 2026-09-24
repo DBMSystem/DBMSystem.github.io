@@ -18,7 +18,11 @@ export function feedbackFor(event) {
     case 'cook':
       if (event.secretFound) return ['secret', 'medium'];
       if (event.golden) return ['coin', 'medium'];
-      return [event.customerSlot !== null ? 'serve' : 'cook', 'light'];
+      return [event.customerSlot !== null ? 'sizzle' : 'cook', 'light'];
+    case 'served':
+      return ['serve', 'light'];
+    case 'burnt':
+      return ['burn', 'medium'];
     case 'noRecipe':
       return ['noRecipe', null];
     case 'perfect':

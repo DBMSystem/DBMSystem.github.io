@@ -64,6 +64,12 @@ describe('tutorial', () => {
     engine.placeIngredient(tomato, 1);
     engine.cookAt(0);
     pump();
+    expect(runner.step.id).toBe('pan');
+    wait(balance.panCookTime - 0.1);
+    pump();
+    expect(runner.step.id).toBe('pan'); // still sizzling, the clock still stopped
+    wait(0.2);
+    pump();
     expect(runner.step.id).toBe('free');
     expect(engine.state.timerRunning).toBe(true);
     expect(engine.state.timeLeft).toBe(balance.tutorialLoopDuration);

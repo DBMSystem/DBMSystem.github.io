@@ -11,6 +11,7 @@ export const pipTriggers = {
   perfect: { expression: 'crying', priority: true, lines: lines('pip.perfect', 2) },
   fever: { expression: 'celebrating', priority: true, lines: lines('pip.fever', 2, 2) },
   customerLeft: { expression: 'worried', lines: lines('pip.customerLeft', 3, 3) },
+  burnt: { expression: 'embarrassed', priority: true, lines: lines('pip.burnt', 3, 1) },
   gridNearlyFull: { expression: 'worried', lines: lines('pip.gridNearlyFull', 2) },
   noRecipe: { expression: 'confused', lines: lines('pip.noRecipe', 3, 2) },
   overflow: { expression: 'scared', priority: true, lines: lines('pip.overflow', 2) },

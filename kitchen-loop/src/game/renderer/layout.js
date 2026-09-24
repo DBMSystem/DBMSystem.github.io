@@ -7,7 +7,8 @@ const TRAY_SLOT = 72;
 const PREVIEW = 48;
 const HUD_HEIGHT = 44;
 const CUSTOMER_HEIGHT = 152; // speech bubble + character behind the counter
-const STOVE_HEIGHT = 58; // the stove with the equipped pan, between the customers and the board (spec 2.1, 7.5)
+const STOVE_HEIGHT = 58; // the stove with a pan per customer, between the customers and the board (spec 2.1, 7.5)
+const PAN_WIDTH = 84;
 const MIN_GAP = 4;
 const ABILITY_ROW = 34; // utensil abilities row, only when the player has abilities (spec 5.4)
 const PIP_HEIGHT = 74;
@@ -40,8 +41,9 @@ export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, trayS
   }));
   y += CUSTOMER_HEIGHT + gap;
 
+  // One pan per customer, right under them (spec 2.1, 2.6): x, y = centre of the bowl, w = drawn width.
   const stove = { x: ox, y, w: LOGICAL_WIDTH, h: STOVE_HEIGHT };
-  const pan = { x: ox + LOGICAL_WIDTH / 2 + 10, y: y + STOVE_HEIGHT * 0.42 }; // centre of the equipped pan (its handle points right)
+  const pans = customers.map((c) => ({ x: c.x + c.w / 2 - 6, y: y + STOVE_HEIGHT * 0.42, w: Math.min(PAN_WIDTH, c.w - 6) }));
   y += STOVE_HEIGHT + gap;
 
   const board = { x: ox + (LOGICAL_WIDTH - boardSize) / 2, y, w: boardSize, h: boardSize };
@@ -66,7 +68,7 @@ export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, trayS
 
   const pip = { x: ox + 6, y, w: LOGICAL_WIDTH - 12, h: PIP_HEIGHT };
 
-  return { scale, width, height, ox, hud, pause, quick, customers, stove, pan, board, grid, abilities, tray, preview, pip };
+  return { scale, width, height, ox, hud, pause, quick, customers, stove, pans, board, grid, abilities, tray, preview, pip };
 }
 
 export const inside = (r, x, y) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;

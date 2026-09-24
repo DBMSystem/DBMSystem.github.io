@@ -37,6 +37,7 @@ export function createPip({ engine, balance, rng, tips = new Set(), onTipSeen = 
       case 'perfect':
       case 'fever':
       case 'customerLeft':
+      case 'burnt':
       case 'noRecipe':
       case 'overflow':
         return event.type;

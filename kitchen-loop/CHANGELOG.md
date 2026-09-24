@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.0 — Una sartén por cliente
+
+- Cada cliente tiene su sartén en el fogón. El pedido chisporrotea 2,5 s con sonido, vapor y un anillo de progreso, y sale al cliente con un "ding".
+- Si la paciencia del cliente se acaba antes, el plato se quema: humo negro, comentario de Pip y cliente perdido. El anillo avisa en rojo.
+- Combo y fiebre cuentan al tocar; puntos y monedas, al servir. Paciencia base 22 s.
+- Al acabar el tiempo, las sartenes terminan y sirven antes de los resultados.
+- Tutorial con el paso "¡A la sartén!".
+- Arreglo: el crítico de "Crítico en Sala" ya no se pierde si el mostrador está lleno.
+- 156 tests.
+
 ## 0.6.1 — El fogón (especificación v3.2)
 
 - Fogón con la sartén equipada siempre visible: vapor en reposo, recorrido encimera → sartén → cliente, salto y brillo en ¡En su punto!, llama y partículas en la fiebre.
