@@ -1,4 +1,5 @@
-// Screen layout in logical pixels (spec 2.1, 9.1): 360 wide, at least 640 tall.
+// Screen layout in logical pixels (spec 2.1, 9.1): 360 wide, at least 640 tall (more if the rows need it:
+// then the whole layout is scaled down a little, so nothing ever leaves the screen).
 export const LOGICAL_WIDTH = 360;
 export const LOGICAL_MIN_HEIGHT = 640;
 const CELL_SIZE = { 4: 64, 5: 48 };
@@ -6,21 +7,23 @@ const TRAY_SLOT = 72;
 const PREVIEW = 48;
 const HUD_HEIGHT = 44;
 const CUSTOMER_HEIGHT = 152; // speech bubble + character behind the counter
+const STOVE_HEIGHT = 58; // the stove with the equipped pan, between the customers and the board (spec 2.1, 7.5)
+const MIN_GAP = 4;
 const ABILITY_ROW = 34; // utensil abilities row, only when the player has abilities (spec 5.4)
 const PIP_HEIGHT = 74;
 
 export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, traySlots, abilityCount = 0) {
   const abilityRow = abilityCount > 0 ? ABILITY_ROW : 0;
-  const scale = Math.min(cssWidth / LOGICAL_WIDTH, cssHeight / LOGICAL_MIN_HEIGHT);
-  const width = cssWidth / scale;
-  const height = cssHeight / scale;
-  const ox = (width - LOGICAL_WIDTH) / 2;
-
   const cell = CELL_SIZE[gridSize];
   const boardPad = 8;
   const boardSize = cell * gridSize + boardPad * 2;
-  const fixed = HUD_HEIGHT + CUSTOMER_HEIGHT + boardSize + abilityRow + TRAY_SLOT + PIP_HEIGHT;
-  const gap = Math.max(4, (height - fixed) / 6);
+  const fixed = HUD_HEIGHT + CUSTOMER_HEIGHT + STOVE_HEIGHT + boardSize + abilityRow + TRAY_SLOT + PIP_HEIGHT;
+  const minHeight = Math.max(LOGICAL_MIN_HEIGHT, fixed + 7 * MIN_GAP);
+  const scale = Math.min(cssWidth / LOGICAL_WIDTH, cssHeight / minHeight);
+  const width = cssWidth / scale;
+  const height = cssHeight / scale;
+  const ox = (width - LOGICAL_WIDTH) / 2;
+  const gap = Math.max(MIN_GAP, (height - fixed) / 7);
 
   let y = 0;
   const hud = { x: ox, y, w: LOGICAL_WIDTH, h: HUD_HEIGHT };
@@ -36,6 +39,10 @@ export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, trayS
     h: CUSTOMER_HEIGHT,
   }));
   y += CUSTOMER_HEIGHT + gap;
+
+  const stove = { x: ox, y, w: LOGICAL_WIDTH, h: STOVE_HEIGHT };
+  const pan = { x: ox + LOGICAL_WIDTH / 2 + 10, y: y + STOVE_HEIGHT * 0.42 }; // centre of the equipped pan (its handle points right)
+  y += STOVE_HEIGHT + gap;
 
   const board = { x: ox + (LOGICAL_WIDTH - boardSize) / 2, y, w: boardSize, h: boardSize };
   const grid = { x: board.x + boardPad, y: board.y + boardPad, cell, size: gridSize };
@@ -59,7 +66,7 @@ export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, trayS
 
   const pip = { x: ox + 6, y, w: LOGICAL_WIDTH - 12, h: PIP_HEIGHT };
 
-  return { scale, width, height, ox, hud, pause, quick, customers, board, grid, abilities, tray, preview, pip };
+  return { scale, width, height, ox, hud, pause, quick, customers, stove, pan, board, grid, abilities, tray, preview, pip };
 }
 
 export const inside = (r, x, y) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;

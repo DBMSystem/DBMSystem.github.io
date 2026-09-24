@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.1 — El fogón (especificación v3.2)
+
+- Fogón con la sartén equipada siempre visible: vapor en reposo, recorrido encimera → sartén → cliente, salto y brillo en ¡En su punto!, llama y partículas en la fiebre.
+- La sartén equipada aparece en la cocina del menú.
+
 ## 0.6.0 — Fase 5: monetización simulada
 
 - Tienda (`shop.js`) con tienda simulada: comprar, pendiente, cancelar y error; restaurar compras y reembolsos.

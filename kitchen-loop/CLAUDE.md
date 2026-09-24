@@ -5,7 +5,7 @@ React + Vite + JavaScript, Canvas 2D para el gameplay, Capacitor para Android.
 
 ## Documento de referencia
 
-La especificación completa está en `docs/KITCHEN_LOOP_SPEC.md` (v3.1).
+La especificación completa está en `docs/KITCHEN_LOOP_SPEC.md` (v3.2).
 
 - Al empezar la Fase 0, léela entera.
 - En cada sesión posterior, relee como mínimo la sección 0 y las secciones de la fase en curso antes de programar.

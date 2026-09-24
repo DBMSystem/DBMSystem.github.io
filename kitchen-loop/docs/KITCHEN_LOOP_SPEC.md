@@ -1,6 +1,7 @@
-# KITCHEN LOOP — Especificación v3.1 para Claude Code
+# KITCHEN LOOP — Especificación v3.2 para Claude Code
 
 > **COCINA. COLECCIONA. HAZ LOOP.**
+> Versión 3.2 — la v3.1 más el fogón con la sartén equipada siempre visible en la partida (secciones 2.1, 7.5 y 8.3).
 > Versión 3.1 — revisión de la v3.0 con contradicciones resueltas, núcleo jugable definido y valores de balance por defecto.
 > Autor de la visión: Daniel. Todo lo marcado como **[DECISIÓN D-x]** está pendiente de su aprobación (ver sección 16).
 
@@ -64,10 +65,11 @@ Todo sistema secundario existe para reforzar este núcleo. Si no lo refuerza, no
 
 1. **HUD**: tiempo restante, puntuación, contador de combo.
 2. **Zona de clientes**: hasta 3 huecos (4 con la Encimera Rúnica). Cada cliente muestra su pedido (icono del plato) y una barra de paciencia.
-3. **Encimera (grid)**: 4x4 casillas.
-4. **Habilidades de utensilios**: fila de botones pequeños, solo visible si hay utensilios desbloqueados.
-5. **Bandeja**: 3 ingredientes disponibles + vista previa del siguiente (más pequeña y atenuada).
-6. **Pip**: esquina inferior, con bocadillo de texto corto. Nunca tapa el grid ni la bandeja.
+3. **Fogón**: entre los clientes y la encimera, con la sartén equipada siempre visible y centrada (sección 7.5). Cada receta hace el recorrido **encimera → sartén → cliente**. Nunca tapa la encimera ni los pedidos.
+4. **Encimera (grid)**: 4x4 casillas.
+5. **Habilidades de utensilios**: fila de botones pequeños, solo visible si hay utensilios desbloqueados.
+6. **Bandeja**: 3 ingredientes disponibles + vista previa del siguiente (más pequeña y atenuada).
+7. **Pip**: esquina inferior, con bocadillo de texto corto. Nunca tapa el grid ni la bandeja.
 
 ### 2.2 Ingredientes y bandeja
 
@@ -620,7 +622,12 @@ Mientras Daniel no apruebe esta sección, todo el lore se escribe como `draft`.
 
 ### 7.5 Sartenes (solo cosméticas)
 
-- La sartén equipada se ve en cada cocción: al tocar una receta, los ingredientes saltan a la sartén, chisporrotean y el plato sale hacia el cliente.
+- La sartén equipada está **siempre visible en el fogón** durante la partida (sección 2.1): es el objeto que más se mira después de la encimera.
+  - **En reposo**: echa un poco de vapor y se balancea levemente.
+  - **Al cocinar**: los ingredientes saltan de la encimera a la sartén, chisporrotean con las partículas propias de esa sartén y el plato sale de la sartén hacia el cliente.
+  - **En ¡en su punto! y en la fiebre**: animación propia (la dorada resplandece, la oxidada suelta más chispas…), sin tapar nunca la encimera ni los pedidos.
+  - **Fuera de la partida**: la sartén equipada aparece en la cocina del menú y todas se exponen en la vitrina del Almacén.
+- "PROBAR — VER ANUNCIO" presta una sartén durante un loop entero, para decidir si gusta antes de comprarla.
 - Valores de `equippedPan`: `default`, `rusty`, `pink`, `black`, `golden`.
 - Cada sartén puede cambiar **únicamente**: apariencia, partículas cosméticas y animación cosmética (por ejemplo, chispas naranjas en la oxidada, destellos rosas en la de Pip, humo fino en la negra, destellos dorados en la dorada).
 - **Nunca** cambia: velocidad, puntuación, probabilidad de cartas, tiempo, dificultad ni estadísticas.
@@ -669,7 +676,7 @@ No se puede saltar la primera vez (es corto). Se puede repetir desde Ajustes.
 
 ### 8.3 Menú principal
 
-- Escena de la cocina en pixel art (con la decoración comprada), logo y Pip animado en reposo.
+- Escena de la cocina en pixel art (con la decoración comprada y la sartén equipada), logo y Pip animado en reposo.
 - Botón grande: **JUGAR**.
 - Botones secundarios: **ÁLBUM**, **ALMACÉN** (con candado y la puerta cerrada hasta el capítulo 3), **AJUSTES**.
 - Indicadores discretos (un punto) si hay un sobre gratis listo o el calendario disponible. Sin contadores de urgencia.

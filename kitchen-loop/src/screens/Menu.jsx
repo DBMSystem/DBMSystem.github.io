@@ -12,6 +12,7 @@ import { DEV_TOOLS } from '../utils/platform.js';
 import { spriteUrl } from '../assets/manifest.js';
 import { contentFor } from '../systems/unlocks.js';
 import { decorById } from '../data/decor.js';
+import { panById } from '../data/products.js';
 
 // Main menu (spec 8.3): kitchen scene, PLAY, album, warehouse (locked until chapter 3) and settings.
 export function Menu({ services, onPlay, onAlbum, onWarehouse, onSettings, onDevLevelUp, onDevCoins }) {
@@ -41,6 +42,10 @@ export function Menu({ services, onPlay, onAlbum, onWarehouse, onSettings, onDev
       </div>
       <div className="menu-scene-wrap">
         <img className="menu-scene" src={spriteUrl('ui/menu_scene')} alt={t('game.title')} />
+        {save.equippedPan !== 'default' && (
+          // The equipped pan takes the place of the pan drawn on the window sill (spec 7.5).
+          <img className="decor-placed menu-pan" src={spriteUrl(panById[save.equippedPan].sprite)} alt={t(`pan.${save.equippedPan}`)} />
+        )}
         {Object.values(save.decor).map((id) => {
           const d = decorById[id];
           return (

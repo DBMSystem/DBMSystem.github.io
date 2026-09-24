@@ -377,3 +377,14 @@ Tomo el "continúa a fase 5" como validación de la Fase 4. La línea "Fase actu
   - 15 frases de Pip en borrador, que sustituyen al 30 % de las frases de inicio y de cocinar.
 - **Probar con anuncio (TRIAL):** en el Almacén, cada utensilio y sartén que no tienes ofrece "PROBAR — VER ANUNCIO", 2 veces al día. Tras el anuncio empieza un servicio con lo prestado y un aviso "De prueba durante este servicio". Lo prestado nunca se guarda; en el guardado solo cuenta el uso diario.
 - **Ajustes:** "Restaurar compras" y el tema nocturno (o "Incluido en el Pase del Maestro"). No aparece nada de pago antes de 3 loops.
+
+## 18. Especificación v3.2: el fogón con la sartén
+
+Daniel señaló que las sartenes apenas se veían y mandó el cambio de diseño (el archivo nuevo no llegó adjunto, así que apliqué el cambio descrito a la especificación, secciones 2.1, 7.5 y 8.3, y a `CLAUDE.md`):
+- **Fogón** entre los clientes y la encimera, con la sartén equipada centrada sobre un quemador.
+  - En reposo echa vapor, se balancea y tiene una llama pequeña.
+  - Al cocinar, los ingredientes vuelan encimera → sartén, la sartén salta y chisporrotea con sus partículas, y el plato sale sartén → cliente (0,2 s + 0,2 s, lo mismo que antes en total).
+  - En ¡En su punto! la sartén da un salto y resplandece con su color. En la fiebre, la llama crece, la sartén brilla y suelta sus partículas sin parar. Cada sartén tiene su color de brillo y sus partículas (la oxidada, chispas de fuego; la dorada, destellos dorados).
+- **Sitio en pantalla:** el fogón ocupa 58 px lógicos. Si en un móvil bajo (16:9) no caben todas las filas, el diseño entero se reduce un poco en lugar de salirse de la pantalla. En móviles alargados (20:9) no cambia nada.
+- **Menú:** la sartén equipada sustituye a la que hay dibujada en el alféizar de la cocina (la de Pip es la del dibujo).
+- Sigue siendo solo cosmética: nada del juego cambia con la sartén.
