@@ -53,6 +53,7 @@ body {
 .menu-scene-wrap {
   --scene-ratio: 1.1028; /* height / width of ui/menu_scene.jpg: decoration `y` is in % of the image height */
   position: relative;
+  flex: none;
   width: calc(100% + 32px);
   max-width: 480px;
   max-height: 44dvh;
@@ -1671,8 +1672,10 @@ body {
 }
 
 .item .btn {
-  min-height: 40px;
-  padding: 6px 10px;
+  min-width: 0;
+  min-height: 44px;
+  margin-top: auto;
+  padding: 6px 8px;
   font-size: 14px;
 }
 

@@ -6,6 +6,7 @@ import { products, starterPack } from '../data/products.js';
 import { warehouseLines } from '../data/dialogues.js';
 import { utensilCost, utensilState, treeComplete, utensilsOwned } from '../systems/utensils.js';
 import { buyUtensil, buyDecor } from '../inventory/inventory.js';
+import { advanceStory } from '../systems/story.js';
 import { createRng } from '../utils/rng.js';
 import { spriteUrl } from '../assets/manifest.js';
 import { t, formatNumber } from '../utils/i18n.js';
@@ -43,6 +44,7 @@ export function Warehouse({ services, onClose }) {
     let ok = false;
     await saveManager.update((s) => {
       ok = kind === 'utensil' ? buyUtensil(s, id) : buyDecor(s, id);
+      if (ok) advanceStory(s); // the Runic Counter opens chapter 4, and so on (scenes play when leaving)
     });
     if (!ok) return;
     audio.play('levelUp');

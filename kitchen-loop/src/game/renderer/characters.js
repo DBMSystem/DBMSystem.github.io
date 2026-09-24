@@ -75,8 +75,11 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
     ctx.translate(-tailX, -tailY);
     const stroke = ratio > 0.6 ? COLORS.ink : ratio > 0.3 ? '#c98a00' : COLORS.bad;
     kit.bubble(x, y, w, BUBBLE_HEIGHT, tailX, tailY, { stroke, lineWidth: urgent ? 3 : 2 });
-    const lines = kit.wrap(t(`recipe.${recipe.id}`), w - 12, 10, 800).slice(0, 2);
-    lines.forEach((line, k) => kit.text(line, x + w / 2, y + 9 + k * 11, { size: 10, weight: 800, color: COLORS.ink }));
+    // Narrow bubbles (4 customers on the Runic Counter) use a smaller font before cutting the name.
+    const name = t(`recipe.${recipe.id}`);
+    const size = kit.wrap(name, w - 12, 10, 800).length > 2 ? 8 : 10;
+    const lines = kit.wrap(name, w - 12, size, 800).slice(0, 2);
+    lines.forEach((line, k) => kit.text(line, x + w / 2, y + 9 + k * (size + 1), { size, weight: 800, color: COLORS.ink }));
     drawOrderIcons(recipe, x + w / 2, y + 37, w - 14);
     kit.roundRect(x + 8, y + BUBBLE_HEIGHT - 8, w - 16, 4, 2, '#eadbc4');
     kit.roundRect(x + 8, y + BUBBLE_HEIGHT - 8, (w - 16) * ratio, 4, 2, ratio > 0.6 ? COLORS.ok : ratio > 0.3 ? COLORS.warn : COLORS.bad);
