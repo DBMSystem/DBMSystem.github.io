@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.0 — Fase 5: monetización simulada
+
+- Tienda (`shop.js`) con tienda simulada: comprar, pendiente, cancelar y error; restaurar compras y reembolsos.
+- Vitrina del Almacén: sartenes (equipar o comprar), Pase del Maestro y Pack de Inicio con su contenido visible antes de pagar.
+- Sartenes cosméticas visibles al cocinar, cada una con sus partículas.
+- Pase del Maestro: Álbum Dorado, sobre diario, tema Cocina Nocturna, Sartén Dorada y 15 frases de Pip.
+- Probar utensilios y sartenes con anuncio (2 al día; nunca se guarda).
+- Ajustes: restaurar compras y tema nocturno.
+- 150 tests.
+
 ## 0.5.3 — Platos coherentes
 
 - Tomate rallado y queso fundido pintados sobre el pan; desayuno completo, huevos rotos, crema de champiñones y recetas secretas repintados en su pixel art.

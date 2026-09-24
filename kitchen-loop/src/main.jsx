@@ -4,6 +4,7 @@ import { createSaveManager } from './save/saveManager.js';
 import { localStorageAdapter } from './save/storageAdapter.js';
 import { createAdManager } from './monetization/adManager.js';
 import { createAdMobProvider } from './monetization/admobProvider.js';
+import { createShop } from './monetization/shop.js';
 import { adUnitsReady } from './data/ads.js';
 import { DEV_TOOLS, isNative } from './utils/platform.js';
 import { loadSprites } from './assets/manifest.js';
@@ -22,14 +23,17 @@ if (isNative()) {
 }
 const audio = createAudioManager({ getVolume: () => saveManager.get()?.settings.sfx ?? 0 });
 const haptics = createHaptics({ isEnabled: () => Boolean(saveManager.get()?.settings.vibration) });
-const services = { saveManager, adManager, audio, haptics };
+const shop = createShop({ saveManager });
+const services = { saveManager, adManager, audio, haptics, shop };
 
 // Save right away when the app goes to the background (spec 10.6).
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && saveManager.get()) saveManager.persist();
+  else if (!document.hidden && saveManager.get()) shop.refreshEntitlements(); // spec 7.6: on returning to the game
 });
 
 Promise.all([saveManager.load(), loadSprites()]).then(() => {
+  shop.refreshEntitlements(); // spec 7.6: the store confirms purchases on start; offline, the cache stays
   document.body.classList.toggle('reduced-motion', saveManager.get().settings.reducedMotion);
   createRoot(document.getElementById('root')).render(<App services={services} />);
 });

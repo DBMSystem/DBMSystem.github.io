@@ -14,12 +14,16 @@ import { Challenges } from '../components/Challenges.jsx';
 import { calendarToday } from '../components/Calendar.jsx';
 import { todayChallenges, progressWith } from '../systems/challenges.js';
 import { unlockContext } from '../systems/unlocks.js';
+import { hasMaestroPass } from '../inventory/inventory.js';
 import { useAds } from '../monetization/useAds.js';
 
 const TIP_PREFIX = 'tip.';
 
+// A utensil lent by a "try" ad joins the owned ones for this service only (never saved, spec 11.4).
+const withTrial = (unlocks, trial) => (trial?.kind === 'utensil' ? { ...unlocks, utensils: [...unlocks.utensils, trial.id] } : unlocks);
+
 // Mounts the canvas and the engine. React only hears onOverflow / onLoopEnd / pause (spec 10.3).
-export function Game({ tutorial = false, specialty = null, services, onEnd, onQuit }) {
+export function Game({ tutorial = false, specialty = null, trial = null, services, onEnd, onQuit }) {
   const { saveManager, adManager, audio, haptics } = services;
   const level = saveManager.get().player.level;
   const canvasRef = useRef(null);
@@ -44,7 +48,7 @@ export function Game({ tutorial = false, specialty = null, services, onEnd, onQu
     const engine = createEngine({
       balance,
       level: loopLevel,
-      unlocks: tutorial ? {} : unlockContext(save),
+      unlocks: tutorial ? {} : withTrial(unlockContext(save), trial),
       specialty: tutorial ? null : specialty,
       discoveredSecrets: discoveredSecrets(save),
       seed: Date.now(),
@@ -63,12 +67,16 @@ export function Game({ tutorial = false, specialty = null, services, onEnd, onQu
       pipOptions: {
         tips,
         playerName: save.player.name,
+        pass: hasMaestroPass(save),
         onTipSeen: (tip) =>
           saveManager.update((s) => {
             s.story.seenScenes.push(TIP_PREFIX + tip);
           }),
       },
       challenges,
+      // Cosmetics only (spec 7.5): the pan seen when cooking and the Pass's night kitchen.
+      cosmetics: { pan: trial?.kind === 'pan' ? trial.id : save.equippedPan, night: hasMaestroPass(save) && save.settings.nightTheme },
+      trialName: trial ? t(trial.kind === 'pan' ? `pan.${trial.id}` : `utensil.${trial.id}.name`) : null,
       onPauseRequest: () => setPaused(true),
       onQuickRequest: () => {
         setPaused(true);
@@ -101,7 +109,7 @@ export function Game({ tutorial = false, specialty = null, services, onEnd, onQu
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('keydown', onKey);
     };
-  }, [attempt, loopLevel, tutorial, specialty, saveManager, audio, haptics, challenges]);
+  }, [attempt, loopLevel, tutorial, specialty, trial, saveManager, audio, haptics, challenges]);
 
   useEffect(() => {
     controllerRef.current?.setPaused(paused);
@@ -149,7 +157,13 @@ export function Game({ tutorial = false, specialty = null, services, onEnd, onQu
             {panel === 'challenges' ? (
               <Challenges list={challenges} live={(c) => (engineRef.current ? progressWith(c, engineRef.current.getResult()) : c.progress)} />
             ) : (
-              <RecipeBook level={loopLevel} unlocks={tutorial ? {} : unlockContext(saveManager.get())} discovered={discoveredSecrets(saveManager.get())} saved={saveManager.get().recipes} embedded />
+              <RecipeBook
+                level={loopLevel}
+                unlocks={tutorial ? {} : unlockContext(saveManager.get())}
+                discovered={discoveredSecrets(saveManager.get())}
+                saved={saveManager.get().recipes}
+                embedded
+              />
             )}
             <Button
               onClick={() => {

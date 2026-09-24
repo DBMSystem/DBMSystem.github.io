@@ -35,7 +35,7 @@ export function createDefaultSave(now = Date.now()) {
     entitlements: { maestroPass: false, skins: [], starterPack: false, starterPackGranted: false, verifiedAt: 0 },
     equippedPan: 'default',
     grantedRewards: [],
-    settings: { music: 0.7, sfx: 0.8, vibration: true, reducedMotion: false, tapToPlace: false, notifications: false },
+    settings: { music: 0.7, sfx: 0.8, vibration: true, reducedMotion: false, tapToPlace: false, notifications: false, nightTheme: false },
   };
 }
 
@@ -122,11 +122,23 @@ export function validateSave(raw) {
   clean.grantedRewards = Array.isArray(clean.grantedRewards)
     ? clean.grantedRewards.filter((id) => typeof id === 'string').slice(-balance.grantedRewardsKept)
     : [];
-  clean.equippedPan = PANS.includes(clean.equippedPan) ? clean.equippedPan : 'default';
+  const e = isPlainObject(clean.entitlements) ? clean.entitlements : {};
+  clean.entitlements = {
+    maestroPass: Boolean(e.maestroPass),
+    skins: Array.isArray(e.skins) ? [...new Set(e.skins.filter((pan) => ['rusty', 'pink', 'black'].includes(pan)))] : [],
+    starterPack: Boolean(e.starterPack),
+    starterPackGranted: Boolean(e.starterPackGranted),
+    verifiedAt: isCount(e.verifiedAt) ? e.verifiedAt : 0,
+  };
+  // The golden pan needs the Pass; the others, their skin (spec 7.5).
+  const pan = PANS.includes(clean.equippedPan) ? clean.equippedPan : 'default';
+  const owned = pan === 'default' || (pan === 'golden' ? clean.entitlements.maestroPass : clean.entitlements.skins.includes(pan));
+  clean.equippedPan = owned ? pan : 'default';
 
   const { settings } = clean;
   settings.music = volume(settings.music, defaults.settings.music);
   settings.sfx = volume(settings.sfx, defaults.settings.sfx);
-  for (const key of ['vibration', 'reducedMotion', 'tapToPlace', 'notifications']) settings[key] = Boolean(settings[key]);
+  for (const key of ['vibration', 'reducedMotion', 'tapToPlace', 'notifications', 'nightTheme']) settings[key] = Boolean(settings[key]);
+  settings.nightTheme = settings.nightTheme && clean.entitlements.maestroPass;
   return clean;
 }

@@ -350,3 +350,30 @@ Revisé todos los platos e ingredientes. Los que no casaban con su receta se pin
 - **Crema de Champiñones:** el bol con crema clara y trozos de champiñón (antes, fideos con tomate).
 - **Recetas secretas:** en lugar del destello grande pegado, destellos pequeños de pixel art. La Tortilla Imposible es dorada y sin huevos sueltos; la Sopa del Maestro, un caldo dorado; el Tomate Explosivo, un tomate en llamas en su plato; la Receta Perdida, tostada con queso, huevo y trufa rallada.
 - **Patata:** el icono de la referencia parecía una salchicha (y las Bravas se leían "salchicha + tomate"). La he rediseñado en el estilo de los ingredientes: óvalo con bultos, contorno oscuro, luz, sombra y ojos.
+
+## 17. Fase 5 — Monetización simulada (Daniel: "continúa a fase 5")
+
+Tomo el "continúa a fase 5" como validación de la Fase 4. La línea "Fase actual" de `CLAUDE.md` la actualiza Daniel.
+
+- **`shop.js`** (sección 12.2): `buy`, `buyMaestroPass`, `buySkin`, `buyStarterPack`, `restorePurchases`, `refreshEntitlements`, `getOwnedProducts` y `hasMaestroPass`.
+  - La tienda es la fuente de verdad: solo se entrega lo que confirma.
+  - Un pago pendiente no entrega nada hasta completarse.
+  - Restaurar o actualizar compras concede lo que falta y retira lo reembolsado, desequipando lo que dependía de ello.
+  - Se consulta al arrancar y al volver del segundo plano. Sin conexión se mantiene la caché.
+- **Tienda simulada** (solo en desarrollo y playtest): para cada compra se elige Comprar / Pago pendiente / Cancelar / Error. Un pendiente se completa al restaurar compras. En Ajustes de la versión de pruebas hay un botón "Simular reembolso de todo". En producción web la tienda está "no disponible". Google Play Billing llega en la Fase 7 (D-7).
+- **Inventario:** `grantProduct`, `revokeProduct`, `equipPan` y `claimPassPack`. El guardado valida los derechos: la Sartén Dorada sin Pase vuelve a la de Pip, las sartenes desconocidas se eliminan y el tema nocturno se apaga sin Pase.
+- **Vitrina del Almacén:**
+  - Sartenes con equipar o comprar. La Dorada muestra "Incluida en el Pase del Maestro".
+  - El Pase, con su contenido a la vista.
+  - El baúl con el Pack de Inicio: sus 5 cartas visibles antes de pagar y aviso de cuántas se convertirán en fragmentos. Desaparece al comprarlo.
+  - Los precios en € van en botones verde azulado; los de monedas, en naranja con la moneda; los anuncios, en morado.
+- **Pack de Inicio:** Bacon Normal, Tomate Triste, Queso Perezoso, Cebolla Llorona (comunes) y Pip Dormido (rara). Todas se consiguen gratis; se entrega una sola vez (`starterPackGranted`).
+- **Sartenes (sección 7.5):** al cocinar, la sartén equipada aparece un instante bajo la receta y chisporrotea con sus partículas: chispas naranjas la oxidada, destellos rosas la de Pip, humo fino la negra, destellos dorados la dorada y vapor la de Pip por defecto. Nunca cambian nada del juego.
+- **Pase del Maestro:**
+  - Álbum Dorado: fondo dorado y borde animado, que se queda quieto con "Reducir animaciones".
+  - Sobre diario gratis en el álbum.
+  - Tema Cocina Nocturna, que se activa en Ajustes: cocina de noche, lluvia en la ventana, luz cálida e ingredientes con un brillo suave. Sin música, porque aún no la hay (D-3).
+  - Sartén Dorada.
+  - 15 frases de Pip en borrador, que sustituyen al 30 % de las frases de inicio y de cocinar.
+- **Probar con anuncio (TRIAL):** en el Almacén, cada utensilio y sartén que no tienes ofrece "PROBAR — VER ANUNCIO", 2 veces al día. Tras el anuncio empieza un servicio con lo prestado y un aviso "De prueba durante este servicio". Lo prestado nunca se guarda; en el guardado solo cuenta el uso diario.
+- **Ajustes:** "Restaurar compras" y el tema nocturno (o "Incluido en el Pase del Maestro"). No aparece nada de pago antes de 3 loops.

@@ -4,6 +4,7 @@ import { track } from '../analytics/analytics.js';
 import { utensilById } from '../data/utensils.js';
 import { decorById } from '../data/decor.js';
 import { utensilState, utensilCost } from '../systems/utensils.js';
+import { PASS, STARTER_PACK, starterPack, productById, panById } from '../data/products.js';
 
 // The only place that changes coins, fragments, cards, unopened packs and bought items (spec 11.3).
 // Every function validates, changes `save` in place and reports what happened.
@@ -98,5 +99,60 @@ export function buyDecor(save, id) {
   save.unlockedItems.push(id);
   save.decor[item.slot] = id;
   track('decor_bought', { id });
+  return true;
+}
+
+// ---------- Purchases (spec 7.4–7.6, 11.3) ----------
+// The store confirms ownership; these functions only mirror it in the save (the entitlements cache).
+
+export const hasMaestroPass = (save) => save.entitlements.maestroPass;
+export const ownsPan = (save, panId) => {
+  const pan = panById[panId];
+  if (!pan) return false;
+  if (!pan.product) return true;
+  return pan.product === PASS ? hasMaestroPass(save) : save.entitlements.skins.includes(panId);
+};
+
+// Grants a confirmed purchase. The Pack de Inicio delivers its fixed cards only once (repeated ones → fragments).
+export function grantProduct(save, productId, now) {
+  const delivered = [];
+  if (productId === PASS) save.entitlements.maestroPass = true;
+  else if (productId === STARTER_PACK) {
+    save.entitlements.starterPack = true;
+    if (!save.entitlements.starterPackGranted) {
+      save.entitlements.starterPackGranted = true;
+      for (const cardId of starterPack.cards) delivered.push(addCard(save, cardId, now, 'starter_pack'));
+    }
+  } else {
+    const pan = productById[productId]?.pan;
+    if (!pan) return null;
+    if (!save.entitlements.skins.includes(pan)) save.entitlements.skins.push(pan);
+  }
+  track('purchase_granted', { productId });
+  return delivered;
+}
+
+// A refund or revocation (spec 7.6): the right goes and whatever depended on it is unequipped.
+export function revokeProduct(save, productId) {
+  if (productId === PASS) save.entitlements.maestroPass = false;
+  else if (productId === STARTER_PACK) save.entitlements.starterPack = false;
+  else save.entitlements.skins = save.entitlements.skins.filter((pan) => pan !== productById[productId]?.pan);
+  if (!ownsPan(save, save.equippedPan)) save.equippedPan = 'default';
+  if (!hasMaestroPass(save)) save.settings.nightTheme = false;
+  track('purchase_revoked', { productId });
+}
+
+export function equipPan(save, panId) {
+  if (!ownsPan(save, panId)) return false;
+  save.equippedPan = panId;
+  track('pan_equipped', { panId });
+  return true;
+}
+
+// The Pass's daily pack without an ad (spec 7.4, D-5): once per calendar day.
+export function claimPassPack(save, today) {
+  if (!hasMaestroPass(save) || save.cooldowns.lastPassPackDate === today) return false;
+  save.cooldowns.lastPassPackDate = today;
+  addPack(save, 'standard');
   return true;
 }

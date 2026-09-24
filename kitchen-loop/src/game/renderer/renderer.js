@@ -7,6 +7,7 @@ import { drawIngredient, drawSmooth, clearPlaceholderCache } from './placeholder
 import { createCanvasKit, COLORS, font, ease, clamp01 } from './canvasKit.js';
 import { createCharacters } from './characters.js';
 import { getSprite, spriteScale } from '../../assets/manifest.js';
+import { panById } from '../../data/products.js';
 
 // View layer of a loop: draws the engine state on a canvas and turns engine events into feedback.
 // Presentation timings (s), all under the limits of spec 9.3.
@@ -27,9 +28,15 @@ const FLYER_POOL = 32;
 const VFX_POOL = 12;
 const CELL_SPRITE = 64;
 const DISH_FLYER = 72;
+const PAN_SIZE = 56;
+const PAN_TIME = 0.35;
+const RAIN_DROPS = 36;
 export const ABILITIES = ['move', 'discard', 'freeze'];
 
-export function createRenderer(canvas, engine, { balance, reducedMotion = false, showFps = false }) {
+// `cosmetics`: { pan, night } — the equipped pan seen when cooking and the Maestro Pass's night kitchen (spec 7.4, 7.5).
+export function createRenderer(canvas, engine, { balance, reducedMotion = false, showFps = false, cosmetics = {} }) {
+  const pan = panById[cosmetics.pan] ?? panById.default;
+  const night = Boolean(cosmetics.night);
   const ctx = canvas.getContext('2d');
   const kit = createCanvasKit(ctx);
   const particles = createParticles(reducedMotion ? balance.maxParticlesReduced : balance.maxParticles);
@@ -59,6 +66,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     secretRecipe: null,
     comboPopAt: -10,
     toast: null, // { title, text, color, at }
+    pans: [], // { x, y, at } — the pan that receives a cooked recipe
     holdProgress: 0, // 0–1 while holding an ingredient to discard it
     fps: 60,
   };
@@ -113,7 +121,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     g.fillRect(0, 0, layout.width, layout.height);
 
     // Kitchen behind the customers, bottom-aligned with the counter; darker at the top for the HUD.
-    const kitchen = getSprite('ui/kitchen_day');
+    const kitchen = getSprite(night ? 'ui/kitchen_night' : 'ui/kitchen_day');
     if (kitchen) {
       const first = layout.customers[0];
       const bottom = first.y + first.h;
@@ -190,6 +198,9 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
           else e.cells.forEach((cell, k) => addFlyer(e.ingredients[k], center(rects[k]), to));
           particles.burst('spark', mid.x, mid.y, 14);
           particles.burst('steam', mid.x, mid.y, 4);
+          // The ingredients jump into the equipped pan, which sizzles with its own cosmetic particles.
+          view.pans.push({ x: mid.x, y: mid.y, at: view.time });
+          particles.burst(pan.particle, mid.x, mid.y, 8);
           const label = e.multiplier > 1 ? `+${formatNumber(e.points)}  x${formatDecimal(e.multiplier)}` : `+${formatNumber(e.points)}`;
           addText(label, mid.x, mid.y - 8, { color: e.golden ? COLORS.glow : COLORS.cream, size: e.golden ? 24 : 20 });
           if (e.golden) addVfx('coins', mid.x, mid.y, 110, 0.7, { rise: 20 });
@@ -483,6 +494,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       }
       if (view.drag?.active && view.drag.fromCell === i) continue;
       if (cell.golden) drawGoldenGlow(r.x, r.y, r.w);
+      if (night) kit.roundRect(r.x + 6, r.y + 6, r.w - 12, r.h - 12, 10, 'rgba(255, 200, 120, 0.16)'); // glowing ingredients
       drawIngredientAt(cell.ingredient, r.x + dx, r.y, r.w, sx, sy);
       if (view.drag && !view.drag.active && view.drag.fromCell === i && view.holdProgress > 0) {
         const c = center(r);
@@ -547,6 +559,42 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       ctx.restore();
     }
     ctx.globalAlpha = 1;
+  }
+
+  function drawPans() {
+    const sprite = getSprite(pan.sprite);
+    view.pans = view.pans.filter((p) => view.time - p.at < PAN_TIME);
+    if (!sprite) return;
+    for (const p of view.pans) {
+      const k = (view.time - p.at) / PAN_TIME;
+      const size = PAN_SIZE * (0.7 + 0.3 * ease(k / 0.3));
+      const shake = Math.sin(view.time * 60) * 1.5 * motion;
+      ctx.globalAlpha = 1 - clamp01((k - 0.6) / 0.4);
+      drawSmooth(ctx, sprite, p.x - size / 2 + shake, p.y - size / 2, size, size);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Night kitchen: warm lights over the counter and rain running down behind the customers.
+  function drawNight() {
+    const first = layout.customers[0];
+    const bottom = first.y + first.h;
+    const glow = ctx.createRadialGradient(layout.width / 2, 0, 10, layout.width / 2, 0, layout.width * 0.8);
+    glow.addColorStop(0, 'rgba(255, 196, 120, 0.22)');
+    glow.addColorStop(1, 'rgba(255, 196, 120, 0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, layout.width, bottom);
+    if (reducedMotion) return;
+    ctx.strokeStyle = 'rgba(170, 200, 255, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i < RAIN_DROPS; i++) {
+      const x = ((i * 53.7 + view.time * 40) % (layout.width + 20)) - 10;
+      const y = (i * 97.3 + view.time * 260) % bottom;
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - 3, y + 9);
+    }
+    ctx.stroke();
   }
 
   function drawVfx() {
@@ -721,6 +769,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       const amp = 3 * (1 - sinceShake / SHAKE_TIME);
       ctx.translate(Math.sin(view.time * 90) * amp, Math.cos(view.time * 70) * amp);
     }
+    if (night) drawNight();
     drawHud();
     characters.drawCustomers();
     drawGrid(paused);
@@ -728,6 +777,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     if (!paused) drawAbilities();
     characters.drawPip(view.pipLine, { persistent: view.pipLine?.persistent });
     if (!paused) {
+      drawPans();
       drawVfx();
       drawFlyers();
       particles.draw(ctx);
