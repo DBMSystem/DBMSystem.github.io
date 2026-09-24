@@ -48,6 +48,12 @@ export const balance = {
   adsMinLoops: 3,
   interstitialEnabled: false,
 
+  // Loop rewards (spec 2.14)
+  coinsPerOrder: 5,
+  pointsPerCoin: 200,
+  pointsPerXp: 20,
+  xpPerOrder: 5,
+
   // Cards (phase 2)
   loopCardBase: 0.15,
   loopCardPerOrder: 0.03,
@@ -56,7 +62,9 @@ export const balance = {
   packRates: {
     standard: { common: 0.75, rare: 0.195, epic: 0.05, legendary: 0.005 },
     last: { common: 0, rare: 0.8, epic: 0.18, legendary: 0.02 },
+    special: { common: 0, rare: 0, epic: 0.9, legendary: 0.1 },
   },
+  packSize: 3,
   epicPity: 10,
   legendaryPity: 40,
   legendaryMinPacks: 5,
@@ -76,6 +84,10 @@ export const balance = {
   runicGrid: { gridSize: 5, maxCustomers: 4, customerInterval: 6 },
   loopModifiersEnabled: true,
   loopModifiersFromLevel: 4,
+
+  // Save protections (spec 11.4)
+  clockRollbackTolerance: 5 * 60,
+  grantedRewardsKept: 50,
 
   // Tutorial and Pip (spec 8.2, 3.6)
   tutorialLoopDuration: 30,
