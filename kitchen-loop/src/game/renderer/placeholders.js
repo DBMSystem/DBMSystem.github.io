@@ -1,5 +1,6 @@
 import { ingredientById } from '../../data/ingredients.js';
 import { t } from '../../utils/i18n.js';
+import { getSprite } from '../../assets/manifest.js';
 
 // Procedural placeholder art (D-2): a distinctive shape and colour per ingredient plus its initial.
 // Each sprite is drawn once per pixel size into an offscreen canvas and reused.
@@ -163,8 +164,14 @@ function render(id, px) {
 // Sprites are cached in 16 px steps so animated sizes reuse a few entries instead of one per frame.
 const CACHE_STEP = 16;
 
-// Draws ingredient `id` in a logical box (x, y, size). `pixelScale` = device pixels per logical pixel.
+// Draws ingredient `id` in a logical box (x, y, size): its sprite if loaded, else the placeholder.
+// `pixelScale` = device pixels per logical pixel.
 export function drawIngredient(ctx, id, x, y, size, pixelScale) {
+  const sprite = getSprite(`ingredients/${id}`);
+  if (sprite) {
+    drawSmooth(ctx, sprite, x, y, size, size);
+    return;
+  }
   const px = Math.max(CACHE_STEP, Math.ceil((size * pixelScale) / CACHE_STEP) * CACHE_STEP);
   const key = `${id}:${px}`;
   if (!cache.has(key)) cache.set(key, render(id, px));
@@ -173,4 +180,12 @@ export function drawIngredient(ctx, id, x, y, size, pixelScale) {
 
 export function clearPlaceholderCache() {
   cache.clear();
+}
+
+// Sprites come from high-resolution art and are scaled down, so they are drawn with smoothing.
+export function drawSmooth(ctx, image, x, y, w, h) {
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(image, x, y, w, h);
+  ctx.imageSmoothingEnabled = false;
 }

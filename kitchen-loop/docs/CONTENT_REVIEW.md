@@ -20,3 +20,19 @@ No se ha inventado contenido narrativo (ni frases de Pip, ni cartas, ni clientes
 | `mock.*` | Textos del anuncio simulado (solo desarrollo) |
 
 Colores y formas de los placeholders de ingredientes y clientes: `src/data/ingredients.js` y `src/data/customers.js`.
+
+## Arte de clientes (asignación provisional)
+
+Retratos de `assets/ref/customers_ref.jpg` asignados a los tipos de la sección 3.3. `draft`: Daniel lo confirma o lo cambia (basta con editar `CUSTOMER_CELLS` en `scripts/extract_sprites.py`).
+
+| Tipo | Retrato | Por qué |
+|---|---|---|
+| Cliente tranquilo | Abuela con cesta | Sonriente, sin prisa |
+| Estudiante | Chaval con cascos y gorra | Joven |
+| Oficinista (paciencia ×0,8) | Chica enfadada de brazos cruzados | Impaciente |
+| Turista | Alien brócoli | Viene de muy lejos |
+| Crítico gastronómico | Señor con chistera, monóculo y libreta | Apunta todo |
+| Chef rival | Cocinero de sushi | Otro chef |
+| Cliente misterioso | Guindilla demoníaca | Sorpresa |
+| Maestro antiguo | Gallo rey con capa | Legendario |
+| Coleccionista, Crítico legendario, Visitante de la Cocina Nocturna | Sin retrato (placeholder) | Falta arte |

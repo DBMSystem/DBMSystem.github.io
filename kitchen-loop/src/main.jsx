@@ -3,6 +3,7 @@ import { App } from './App.jsx';
 import { createSaveManager } from './save/saveManager.js';
 import { localStorageAdapter } from './save/storageAdapter.js';
 import { createAdManager } from './monetization/adManager.js';
+import { loadSprites } from './assets/manifest.js';
 import './styles.css';
 
 const saveManager = createSaveManager(localStorageAdapter, { onEvent: (name) => console.info(`[analytics] ${name}`) });
@@ -13,6 +14,6 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden && saveManager.get()) saveManager.persist();
 });
 
-saveManager.load().then(() => {
+Promise.all([saveManager.load(), loadSprites()]).then(() => {
   createRoot(document.getElementById('root')).render(<App saveManager={saveManager} adManager={adManager} />);
 });

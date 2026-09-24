@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1 — Arte de referencia
+
+- Imágenes de referencia de Daniel guardadas en `assets/ref/` (originales y recortes).
+- `scripts/extract_sprites.py`: recorta los sprites y les quita el fondo.
+- `src/assets/manifest.js`: los sprites se cargan al arrancar; si falta alguno, se usa el placeholder.
+- Ingredientes y clientes con sprites en la partida; menú con la ilustración de la cocina, el logo y Pip; favicon e iconos.
+- Sartenes (`assets/pan_*.png`) extraídas para las fases 3 y 5.
+
 ## 0.1.0 — Fase 1: núcleo en cajas grises
 
 - Proyecto Vite + React con motor de juego en JavaScript puro (`src/game/`), paso fijo 1/60 s y render en Canvas 2D.

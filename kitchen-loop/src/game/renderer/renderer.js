@@ -5,7 +5,8 @@ import { createParticles } from '../../systems/particles.js';
 import { currentComboWindow } from '../combo.js';
 import { TRAY_SLOTS } from '../engine.js';
 import { computeLayout, cellRect, center } from './layout.js';
-import { drawIngredient, clearPlaceholderCache } from './placeholders.js';
+import { drawIngredient, drawSmooth, clearPlaceholderCache } from './placeholders.js';
+import { getSprite } from '../../assets/manifest.js';
 
 // View layer of a loop: draws the engine state on a canvas and turns engine events into feedback.
 const COLORS = {
@@ -41,6 +42,7 @@ const SHAKE_TIME = 0.15;
 const FLASH_TIME = 0.15;
 const GLOW_JITTER_TIME = 0.2;
 const LOW_TIME = 10;
+const PORTRAIT = 44;
 const TEXT_POOL = 24;
 const FLYER_POOL = 32;
 
@@ -342,26 +344,30 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       roundRect(x, y, w, h, 10, COLORS.cream, urgent ? COLORS.bad : COLORS.peach, urgent ? 3 : 2);
 
       const lines = wrap(t(`recipe.${recipe.id}`), w - 10, 11, 700).slice(0, 2);
-      lines.forEach((line, k) => text(line, x + w / 2, y + 14 + k * 13, { size: 11, weight: 700, color: COLORS.ink }));
+      lines.forEach((line, k) => text(line, x + w / 2, y + 13 + k * 13, { size: 11, weight: 700, color: COLORS.ink }));
 
       const n = recipe.ingredients.length;
       const size = Math.min(26, (w - 12) / n - 2);
       const rowWidth = n * (size + 2) - 2;
-      recipe.ingredients.forEach((id, k) => drawIngredient(ctx, id, x + (w - rowWidth) / 2 + k * (size + 2), y + 40, size, pixelScale));
-      if (recipe.pattern !== 'group') text(t(`pattern.${recipe.pattern}`), x + w / 2, y + 78, { size: 10, weight: 600, color: COLORS.muted });
+      recipe.ingredients.forEach((id, k) => drawIngredient(ctx, id, x + (w - rowWidth) / 2 + k * (size + 2), y + 36, size, pixelScale));
 
-      const avatarY = y + h - 16;
-      ctx.fillStyle = type.color;
-      ctx.beginPath();
-      ctx.arc(x + 17, avatarY, 11, 0, Math.PI * 2);
-      ctx.fill();
-      text(t(`customer.${type.id}`).charAt(0), x + 17, avatarY + 1, { size: 12, weight: 800 });
+      const portrait = { x: x + 3 + (urgent ? Math.sin(view.time * 30) * 1.5 : 0), y: y + h - PORTRAIT - 3 };
+      const sprite = getSprite(`customers/${type.id}`);
+      if (sprite) drawSmooth(ctx, sprite, portrait.x, portrait.y, PORTRAIT, PORTRAIT);
+      else {
+        ctx.fillStyle = type.color;
+        ctx.beginPath();
+        ctx.arc(portrait.x + PORTRAIT / 2, portrait.y + PORTRAIT / 2, PORTRAIT / 2 - 4, 0, Math.PI * 2);
+        ctx.fill();
+        text(t(`customer.${type.id}`).charAt(0), portrait.x + PORTRAIT / 2, portrait.y + PORTRAIT / 2 + 1, { size: 16, weight: 800 });
+      }
 
-      const barX = x + 33;
-      const barW = w - 41;
-      roundRect(barX, avatarY - 4, barW, 8, 4, '#eadbc4');
+      const barX = portrait.x + PORTRAIT + 2;
+      const barW = x + w - 8 - barX;
+      if (recipe.pattern !== 'group') text(t(`pattern.${recipe.pattern}`), barX + barW / 2, y + h - 30, { size: 10, weight: 600, color: COLORS.muted });
+      roundRect(barX, y + h - 18, barW, 8, 4, '#eadbc4');
       const barColor = ratio > 0.6 ? COLORS.ok : ratio > 0.3 ? COLORS.warn : COLORS.bad;
-      roundRect(barX, avatarY - 4, Math.max(0, barW * ratio), 8, 4, barColor);
+      roundRect(barX, y + h - 18, Math.max(0, barW * ratio), 8, 4, barColor);
       ctx.globalAlpha = 1;
     }
   }

@@ -12,7 +12,7 @@
 | Id | Decisión | Valor aplicado |
 |---|---|---|
 | D-1 | Secreto de la historia | Propuesta de la sección 6.5. Todo lore se escribirá como `draft` (no afecta a la Fase 1). |
-| D-2 | Origen del arte | Placeholders procedurales dibujados por código (forma + color + inicial). En la Fase 1 se dibujan directamente en el renderer; `src/assets/manifest.js` llegará cuando haya arte o cartas (Fase 2–3). |
+| D-2 | Origen del arte | **Actualizado**: Daniel ha aportado imágenes de referencia (ver sección 7). Los sprites se recortan de ellas y pasan por `src/assets/manifest.js`; lo que no tiene arte sigue usando placeholders procedurales. |
 | D-3 | Música | Sin música. Los efectos sintetizados son de la Fase 3: **la Fase 1 no tiene sonido**. |
 | D-4 | Público objetivo | 13+, no dirigido a niños. |
 | D-5 | Sobre diario del Pase | Se mantiene (Fase 5). |
@@ -75,7 +75,7 @@
 | Rendimiento del matcher (enumerar recetas en cada cambio). | Se enumeran subconjuntos conexos de ≤ 4 casillas (pocos cientos en 4x4/5x5) solo cuando cambia el grid, no por fotograma. |
 | React y 60 FPS. | El motor es JS puro con paso fijo 1/60; React solo monta el canvas y recibe `onLoopEnd`, `onOverflow`, `onPause`. |
 | Mock de anuncios en la versión de prueba del móvil. | La regla dice "solo en desarrollo". Se define un modo de compilación **`playtest`** (compilación de pruebas, no producción) que también activa el mock. La compilación `production` (la de Android) nunca lo incluye. |
-| Assets existentes (`assets/ref/*`, `assets/pan_*.png`) **no están en el repositorio**. | No se necesitan en la Fase 1. **Pendiente de Daniel**: subirlos a `kitchen-loop/assets/` antes de la Fase 3/5. |
+| Assets de referencia recibidos como **capturas de pantalla JPEG** del móvil (con la barra de Meta AI). | Guardados tal cual en `assets/ref/originals/` y recortados en `assets/ref/`. Los sprites derivados tienen menos calidad que los PNG originales: si Daniel tiene los archivos originales, sustituyen a las capturas y se vuelve a ejecutar el script (sección 7). |
 | Guardado en navegador (`localStorage`) puede borrarse al limpiar datos. | Aceptable en desarrollo; en Android se usará `@capacitor/preferences` (Fase 6) mediante el mismo adaptador. |
 | Repositorio = web de GitHub Pages (`dbmsystem.github.io`), con `app-ads.txt` en la raíz. | El proyecto vive en `kitchen-loop/` y no toca la raíz salvo un `.nojekyll` (para que Pages sirva los archivos tal cual) y un `CLAUDE.md` que apunta al del proyecto. La compilación de pruebas se publica en `kitchen-loop/play/`. |
 
@@ -97,6 +97,7 @@
 | `react`, `react-dom` | Pantallas | 1 |
 | `vite`, `@vitejs/plugin-react` | Build y servidor de desarrollo | 1 |
 | `vitest` | Tests | 1 |
+| Python + Pillow + numpy (fuera de `package.json`) | Solo `scripts/extract_sprites.py`, para regenerar los sprites a partir de las referencias | Herramienta de desarrollo |
 | `@capacitor/core`, `@capacitor/cli`, `@capacitor/android` | Empaquetado Android | 6 |
 | `@capacitor/preferences`, `@capacitor/app`, `@capacitor/haptics` | Guardado, ciclo de vida, vibración | 6 (Haptics puede adelantarse a la 3 con fallback web) |
 | `@capacitor-community/admob` (o equivalente) + UMP | Anuncios recompensados y consentimiento | 7 |
@@ -112,3 +113,28 @@ No se añade nada más. En particular: sin librerías de estado, de UI, de anima
 2. ¿Subes los assets existentes (`assets/ref/` y sartenes) al repositorio?
 3. ¿Confirmas la decisión 23 (segunda oportunidad solo tras 3 loops completados)?
 4. ¿Publicamos la versión de pruebas en `dbmsystem.github.io/kitchen-loop/play/` (requiere fusionar la rama en `main`) o prefieres probar solo con el servidor local?
+
+---
+
+## 7. Imágenes de referencia de Daniel (arte)
+
+Recibidas 16 capturas. Originales sin tocar en `assets/ref/originals/`; recortes sin la interfaz del móvil en `assets/ref/`. `scripts/extract_sprites.py` (Python + Pillow, herramienta de desarrollo, no forma parte del juego) recorta los sprites, quita el fondo y los deja en:
+
+| Salida | De dónde sale | Se usa |
+|---|---|---|
+| `src/assets/sprites/ingredients/` egg, bacon, cheese, tomato, mushroom, onion, potato, truffle | `ingredients_ref.jpg` | Fase 1: encimera, bandeja y pedidos |
+| `src/assets/sprites/ingredients/` bread, fish, herbs | Iconos pequeños del `ui_kit_ref.jpg` (ampliados) | Fase 1. **Calidad menor**: conviene un sprite grande de pan, pescado y hierbas |
+| `src/assets/sprites/customers/` 8 retratos | `customers_ref.jpg` (asignación en `CONTENT_REVIEW.md`) | Fase 1: tarjetas de cliente (solo aparecen los comunes) |
+| `src/assets/sprites/ui/menu_scene.jpg` | Ilustración de carga sin el texto en inglés ni la barra | Menú principal (cocina + logo + Pip) |
+| `assets/pan_rusty.png`, `pan_pink.png`, `pan_golden.png`, `pan_black.png` | Capturas 1–4 (numeración de Daniel: 1 oxidada, 2 rosa, 3 dorada, 4 negra) | Fases 3 y 5 (sartenes) |
+| `assets/ref/icon_final.png` → `public/favicon.png`, `apple-touch-icon.png`, `icon-512.png` | Icono huevo + bacon con fondo lila | Icono de la web; icono de Android en la Fase 6 |
+| `assets/ref/album_ref.png`, `premium_pans.png` | Collage de cartas con sartén; fila de 4 sartenes | Nombres de la sección 9.1 |
+
+Solo como **referencia visual** para fases posteriores (no se usan todavía): `pip_expressions_ref.jpg` (8 de las 15 expresiones de Pip, Fase 3), `brulee_ref.jpg` (Fase 4), `skill_tree_ref.jpg` (Almacén, Fase 4), `cards_ref.jpg` (marcos de carta, Fase 2), `icon_kitchen_ref.jpg` (icono alternativo), `ui_kit_ref.jpg` (estilo de botones y baldosas).
+
+**Diferencias entre las referencias y la especificación** (manda la especificación; se toma solo el estilo visual):
+- El árbol de habilidades muestra bonus de estadísticas (+10 % velocidad, +25 % crítico, "puntos de habilidad"). La sección 5.4 prohíbe estadísticas: los utensilios desbloquean contenido y se pagan con monedas.
+- Las cartas tienen HP, habilidades y textos en inglés. Las cartas del juego no tienen estadísticas (4.2) y sus textos van en español.
+- Hay ingredientes que no están en el juego (aguacate, guindilla, gamba, brócoli, zanahoria, ajo). No se añaden.
+- La ilustración de carga y el logo dicen "Kitchen Loop" / "Loading..."; en el menú se usa solo la parte superior (el logo en inglés es el nombre del juego).
+- Solo hay 8 expresiones de Pip; la sección 3.4 pide 15.

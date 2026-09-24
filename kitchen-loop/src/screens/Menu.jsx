@@ -4,6 +4,7 @@ import { Toggle } from '../components/Toggle.jsx';
 import { t, formatNumber } from '../utils/i18n.js';
 import { DEV_TOOLS } from '../utils/platform.js';
 import { maxContentLevel } from '../data/unlocks.js';
+import { spriteUrl } from '../assets/manifest.js';
 
 export function Menu({ saveManager, level, onLevelChange, onPlay }) {
   const save = saveManager.get();
@@ -18,10 +19,8 @@ export function Menu({ saveManager, level, onLevelChange, onPlay }) {
 
   return (
     <div className="screen menu">
-      <div className="logo">
-        <h1>{t('game.title')}</h1>
-        <p className="slogan">{t('game.slogan')}</p>
-      </div>
+      <img className="menu-scene" src={spriteUrl('ui/menu_scene')} alt={t('game.title')} />
+      <p className="slogan">{t('game.slogan')}</p>
       <Button onClick={onPlay}>{t('menu.play')}</Button>
       <div className="stats">
         <span>{t('menu.bestScore', { score: formatNumber(save.stats.bestScore) })}</span>

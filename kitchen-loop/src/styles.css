@@ -45,18 +45,26 @@ body {
   overflow-y: auto;
 }
 
-.logo h1 {
-  margin: 0;
-  font-size: 44px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  color: var(--peach);
-  text-shadow: 0 4px 0 var(--orange), 0 8px 0 rgba(0, 0, 0, 0.3);
+.menu {
+  justify-content: flex-start;
+  padding-top: 0;
+}
+
+.menu-scene {
+  display: block;
+  width: calc(100% + 32px);
+  max-width: 480px;
+  max-height: 44dvh;
+  margin: 0 -16px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 0 0 18px 18px;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
 }
 
 .slogan {
-  margin: 8px 0 18px;
-  font-weight: 700;
+  margin: 4px 0;
+  font-weight: 800;
   letter-spacing: 1px;
   color: var(--cream);
   opacity: 0.85;
