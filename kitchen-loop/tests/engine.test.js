@@ -247,4 +247,25 @@ describe('engine — cooking in the pan (spec 2.6)', () => {
     engine.finishOverflow();
     expect(calls.end[0]).toMatchObject({ ordersServed: 1, endReason: 'overflow' });
   });
+
+  it('a dish served in the last moments is just in time', () => {
+    const { engine } = setup({ level: 1 });
+    order(engine, balance.panCookTime + 0.5);
+    fill(engine, ['egg', 'bacon']);
+    engine.cookAt(0);
+    wait(engine, balance.panCookTime + DT);
+    expect(engine.drainEvents().find((e) => e.type === 'served')).toMatchObject({ justInTime: true });
+  });
+
+  it('every pan busy at once is announced', () => {
+    const { engine } = setup({ level: 1 });
+    engine.state.nextCustomerAt = Infinity;
+    engine.state.customers = [0, 1, 2].map((slot) => ({ uid: slot + 1, typeId: 'calm', recipeId: 'bacon_egg', slot, patience: 20, maxPatience: 20 }));
+    fill(engine, ['egg', 'bacon', '.', '.', 'egg', 'bacon', '.', '.', 'egg', 'bacon']);
+    engine.cookAt(0);
+    engine.cookAt(4);
+    expect(engine.drainEvents().some((e) => e.type === 'fullStove')).toBe(false);
+    engine.cookAt(8);
+    expect(engine.drainEvents().some((e) => e.type === 'fullStove')).toBe(true);
+  });
 });

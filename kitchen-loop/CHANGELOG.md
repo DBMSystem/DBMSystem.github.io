@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.1 — Más vida en la cocina
+
+- Los clientes reaccionan a su sartén: contentos y dando saltitos mientras su plato llega a tiempo, enfadados si se va a quemar, y con una frase propia al servirles.
+- ¡Justo a tiempo!: celebración al servir en los últimos segundos de paciencia.
+- ¡Cocina a tope!: aviso, fogón brillante y sonido cuando todas las sartenes cocinan a la vez.
+- 158 tests.
+
 ## 0.7.0 — Una sartén por cliente
 
 - Cada cliente tiene su sartén en el fogón. El pedido chisporrotea 2,5 s con sonido, vapor y un anillo de progreso, y sale al cliente con un "ding".

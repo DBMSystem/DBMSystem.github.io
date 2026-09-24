@@ -37,6 +37,8 @@ const BOWL_RADIUS = 0.31; // of the pan's width
 const STEAM_EVERY = 0.55;
 const FEVER_SPARK_EVERY = 0.18;
 const RAIN_DROPS = 36;
+const REACTION_LINES = 2; // react.<customer>.1–2 in es.js
+const FULL_STOVE_TIME = 1.4;
 export const ABILITIES = ['move', 'discard', 'freeze'];
 
 // `cosmetics`: { pan, night } — the equipped pan seen when cooking and the Maestro Pass's night kitchen (spec 7.4, 7.5).
@@ -73,6 +75,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     comboPopAt: -10,
     toast: null, // { title, text, color, at }
     pans: [], // per customer slot: { landAt, burntAt, burntRecipe }
+    fullStoveAt: -10,
     nextSteamAt: 0,
     nextFeverSparkAt: 0,
     holdProgress: 0, // 0–1 while holding an ingredient to discard it
@@ -261,12 +264,30 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
           particles.burst(pan.particle, from.x, from.y - 6, 10);
           const label = e.multiplier > 1 ? `+${formatNumber(e.points)}  x${formatDecimal(e.multiplier)}` : `+${formatNumber(e.points)}`;
           addText(label, c.x, c.y - 40, { color: e.golden ? COLORS.glow : COLORS.cream, size: e.golden ? 22 : 18 });
-          addText(t('fx.served'), c.x, c.y - 20, { color: COLORS.ok, size: 15 });
+          // Served in the last moments: "¡Justo a tiempo!" instead of "¡Servido!", with stars, so a near miss feels like a win.
+          const tx = Math.min(layout.ox + 300, Math.max(layout.ox + 60, c.x));
+          if (e.justInTime) addText(t('fx.justInTime'), tx, c.y - 20, { color: COLORS.glow, size: 12, duration: BIG_TEXT_TIME });
+          else addText(t('fx.served'), c.x, c.y - 20, { color: COLORS.ok, size: 15 });
           if (e.fragments > 0) addText(t('fx.fragments', { n: e.fragments }), c.x, c.y, { color: COLORS.purple, size: 14 });
           addVfx('hearts', c.x, c.y - 10, 80, 0.6, { rise: 30 });
-          view.departures.push({ slot: e.slot, typeId: e.customerTypeId, happy: true, at: view.time });
+          view.departures.push({
+            slot: e.slot,
+            typeId: e.customerTypeId,
+            happy: true,
+            at: view.time,
+            line: `react.${e.customerTypeId}.${1 + Math.floor(Math.random() * REACTION_LINES)}`,
+          });
+          if (e.justInTime) {
+            addVfx('star', c.x, c.y - 44, 60, 0.7, { spin: 0.3 });
+            particles.burst('star', c.x, c.y - 10, 24);
+            view.flashAt = reducedMotion ? view.flashAt : view.time;
+          }
           break;
         }
+        case 'fullStove':
+          view.fullStoveAt = view.time;
+          for (const p of layout.pans) particles.burst('fire', p.x, p.y + 8, reducedMotion ? 2 : 6);
+          break;
         case 'burnt': {
           // Patience ran out before the dish was ready: it burns in the pan and the customer leaves.
           const p = layout.pans[e.customer.slot];
@@ -655,7 +676,16 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     const topY = stove.y + stove.h - 18;
     const left = stove.x + 8;
     const width = stove.w - 16;
-    kit.roundRect(left, topY, width, 16, 6, '#4a4f55', '#2d3136', 2);
+    // Every pan busy: the range glows (and a banner says so for a moment).
+    const busy = pans.every((_, slot) => cookingIn(slot));
+    if (busy) {
+      ctx.save();
+      ctx.shadowColor = COLORS.orange;
+      ctx.shadowBlur = 14 + 6 * Math.sin(view.time * 10) * motion;
+      kit.roundRect(left, topY, width, 16, 6, '#6a4a3a');
+      ctx.restore();
+    }
+    kit.roundRect(left, topY, width, 16, 6, busy ? '#5a4f4a' : '#4a4f55', busy ? COLORS.orange : '#2d3136', 2);
     kit.roundRect(left + 8, topY + 5, 7, 7, 3, '#c9ced4');
     kit.roundRect(left + width - 15, topY + 5, 7, 7, 3, '#c9ced4');
 
@@ -903,6 +933,13 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       const pop = 0.6 + 0.4 * ease(sincePerfect / POP_TIME);
       ctx.globalAlpha = 1 - Math.max(0, sincePerfect - BIG_TEXT_TIME * 0.7) / (BIG_TEXT_TIME * 0.3);
       kit.text(t('fx.perfect'), c.x, c.y - 40, { size: Math.round(34 * pop), weight: 900, color: COLORS.glow, outline: COLORS.ink });
+      ctx.globalAlpha = 1;
+    }
+    const sinceFull = view.time - view.fullStoveAt;
+    if (sinceFull < FULL_STOVE_TIME) {
+      const pop = 0.6 + 0.4 * ease(sinceFull / POP_TIME);
+      ctx.globalAlpha = 1 - Math.max(0, sinceFull - FULL_STOVE_TIME * 0.7) / (FULL_STOVE_TIME * 0.3);
+      kit.text(t('fx.fullStove'), c.x, layout.stove.y - 4, { size: Math.round(22 * pop), weight: 900, color: COLORS.orange, outline: COLORS.ink });
       ctx.globalAlpha = 1;
     }
     const sinceSecret = view.time - view.secretAt;

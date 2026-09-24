@@ -46,9 +46,9 @@ describe('pip director', () => {
     expect(seen).toEqual(['counterSale']);
   });
 
-  it('close call, secret and overflow lines', () => {
+  it('just-in-time serve and overflow lines', () => {
     const { pip, engine } = setup();
-    pip.handle([{ type: 'cook', customerSlot: 0, patienceLeft: 0.05, chain: 1 }]);
+    pip.handle([{ type: 'served', slot: 0, patienceLeft: 0.05, justInTime: true }]);
     expect(pip.current().key).toMatch(/^pip\.closeCall/);
     engine.state.time += balance.pipLineInterval + 1;
     pip.handle([{ type: 'overflow' }]);

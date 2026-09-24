@@ -249,6 +249,8 @@ export function createEngine({
         golden,
       };
     else state.score += points;
+    // Every pan on the stove busy at once (pure feedback, spec 2.6).
+    const fullStove = Boolean(customer) && cookingCustomers().length === rules.maxCustomers;
 
     const ingredients = cells.map((i) => state.grid.cells[i].ingredient);
     for (const i of cells) {
@@ -272,6 +274,7 @@ export function createEngine({
       patienceLeft: customer ? customer.patience / customer.maxPatience : null,
       secretFound,
     });
+    if (fullStove) events.push({ type: 'fullStove' });
     if (combo.perfect) events.push({ type: 'perfect' });
     if (combo.feverStarted) events.push({ type: 'fever' });
     return true;
@@ -290,7 +293,19 @@ export function createEngine({
     state.servedTypes.push(customer.typeId);
     state.servedRecipes.push(recipeId);
     if (state.status === 'playing') state.timeLeft += balance.timeBonusPerOrder;
-    events.push({ type: 'served', recipeId, slot: customer.slot, customerTypeId: customer.typeId, points, multiplier, golden, fragments });
+    const patienceLeft = customer.patience / customer.maxPatience;
+    events.push({
+      type: 'served',
+      recipeId,
+      slot: customer.slot,
+      customerTypeId: customer.typeId,
+      points,
+      multiplier,
+      golden,
+      fragments,
+      patienceLeft,
+      justInTime: patienceLeft < balance.closeCallPatience, // served in the last moments: a little celebration
+    });
   }
 
   const cookingCustomers = () => state.customers.filter((c) => c.cooking);

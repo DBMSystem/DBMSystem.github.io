@@ -20,7 +20,9 @@ export function feedbackFor(event) {
       if (event.golden) return ['coin', 'medium'];
       return [event.customerSlot !== null ? 'sizzle' : 'cook', 'light'];
     case 'served':
-      return ['serve', 'light'];
+      return event.justInTime ? ['justInTime', 'medium'] : ['serve', 'light'];
+    case 'fullStove':
+      return ['fullStove', 'medium'];
     case 'burnt':
       return ['burn', 'medium'];
     case 'noRecipe':

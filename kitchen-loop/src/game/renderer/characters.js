@@ -19,6 +19,8 @@ const ANGRY_SCALE = 0.8; // the angry art is a bust, drawn a bit smaller so head
 const PORTRAIT_SCALE = 1.25;
 const PORTRAIT_SINK = 0.2; // share of the sprite hidden behind the counter
 const TYPE_SPEED = 45; // characters per second
+const REACTION_DELAY = 0.5; // after the points and "¡Servido!" have floated away
+const REACTION_TIME = 1.5; // a served customer's line stays this long (they keep it while leaving)
 
 export function createCharacters({ ctx, kit, view, state, getLayout, getPixelScale, reducedMotion }) {
   const motion = reducedMotion ? 0 : 1;
@@ -92,6 +94,27 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
     ctx.restore();
   }
 
+  // A served customer's reaction, in a small bubble where their order was (content: react.<type>.n).
+  function drawReaction(slot, text, k) {
+    if (k >= 1) return;
+    const pop = ease(k / 0.12) * (1 - clamp01((k - 0.8) / 0.2));
+    const x = slot.x + 4;
+    const w = slot.w - 8;
+    const size = kit.wrap(text, w - 10, 10, 800).length > 2 ? 8 : 10;
+    const lines = kit.wrap(text, w - 10, size, 800).slice(0, 2);
+    const h = 12 + lines.length * (size + 2);
+    const y = slot.y + 18;
+    const tailX = slot.x + slot.w / 2;
+    ctx.save();
+    ctx.globalAlpha *= pop;
+    ctx.translate(tailX, y + h);
+    ctx.scale(0.7 + 0.3 * pop, 0.7 + 0.3 * pop);
+    ctx.translate(-tailX, -(y + h));
+    kit.bubble(x, y, w, h, tailX, y + h + 7, { stroke: COLORS.ok, lineWidth: 2 });
+    lines.forEach((line, i) => kit.text(line, x + w / 2, y + 6 + size / 2 + i * (size + 2), { size, weight: 800, color: COLORS.ink }));
+    ctx.restore();
+  }
+
   // Red "anger" mark next to an impatient customer's head.
   function drawAngerMark(x, y) {
     ctx.strokeStyle = COLORS.bad;
@@ -133,14 +156,19 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
       const since = view.time - (view.customerSeen.get(customer.uid) ?? -10);
       const arrive = ease(since / ARRIVE_TIME);
       const ratio = clamp01(customer.patience / customer.maxPatience);
-      const urgent = ratio < 0.3 && !frozen;
       const phase = customer.uid * 1.7;
+      // Their dish in the pan (spec 2.6): happy and bouncing while it will be ready in time, angry if it will burn.
+      const cooking = customer.cooking;
+      const late = Boolean(cooking) && !frozen && customer.patience < cooking.readyAt - state.time;
+      const expecting = Boolean(cooking) && !late && view.time >= (view.pans[customer.slot]?.landAt ?? 0);
+      const urgent = late || (!cooking && ratio < 0.3 && !frozen);
 
       const cx = slot.x + slot.w / 2 + (1 - arrive) * 70 + (urgent ? Math.sin(view.time * 40) * 1.5 * motion : 0);
       const walkHop = since < ARRIVE_TIME ? Math.abs(Math.sin(since * 22)) * 6 * motion : 0;
-      const feetY = slot.y + slot.h + 2 - walkHop;
+      const eagerHop = expecting ? Math.abs(Math.sin(view.time * 6 + phase)) * 4 * motion : 0;
+      const feetY = slot.y + slot.h + 2 - walkHop - eagerHop;
       const breathe = 1 + Math.sin(view.time * 3 + phase) * 0.025 * motion;
-      const pose = urgent ? 'angry' : since < ARRIVE_TIME * 2 ? 'arrive' : 'idle';
+      const pose = urgent ? 'angry' : expecting ? 'happy' : since < ARRIVE_TIME * 2 ? 'arrive' : 'idle';
       const key = poseKey(type.id, pose);
       const angryArt = key.endsWith('_angry');
       const art = customerArt(type.id, key);
@@ -150,6 +178,11 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
         alpha: arrive,
       });
       if (urgent && !angryArt) drawAngerMark(cx + CHARACTER * 0.32, feetY - CHARACTER * 0.85);
+      if (expecting) {
+        const heart = getSprite('vfx/hearts');
+        const s = 20 + Math.sin(view.time * 5 + phase) * 3 * motion;
+        if (heart) drawSmooth(ctx, heart, cx + CHARACTER * 0.3 - s / 2, feetY - CHARACTER * 0.95 - s / 2, s, s);
+      }
       // Special customers wear a star, legendary ones a crown (spec 3.3: own visual personality).
       const badge = getSprite(type.category === 'legendary' ? 'ui/icon_legendary' : type.category === 'special' ? 'ui/icon_rare' : '');
       if (badge) {
@@ -167,8 +200,9 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
     // Customers leaving: happy hop when served, grumpy shake when they gave up.
     for (const d of view.departures) {
       const k = (view.time - d.at) / LEAVE_TIME;
-      if (k >= 1) continue;
       const slot = layout.customers[d.slot];
+      if (d.line && view.time - d.at >= REACTION_DELAY) drawReaction(slot, t(d.line), (view.time - d.at - REACTION_DELAY) / REACTION_TIME);
+      if (k >= 1) continue;
       const type = customerById[d.typeId];
       const cx = slot.x + slot.w / 2;
       const feetY = slot.y + slot.h + 2;
@@ -190,7 +224,7 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
         });
       }
     }
-    view.departures = view.departures.filter((d) => view.time - d.at < LEAVE_TIME);
+    view.departures = view.departures.filter((d) => view.time - d.at < Math.max(LEAVE_TIME, d.line ? REACTION_DELAY + REACTION_TIME : 0));
     ctx.restore();
 
     // Service counter in front of the customers' legs.

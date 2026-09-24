@@ -12,6 +12,8 @@ export const sfx = {
   cook: [NOISE(0, 0.22, 2400, 0.6), NOTE(330, 0, 0.1, 'square', 520, 0.4)],
   // A dish in the pan (spec 2.6): a sizzle as long as the cooking, with a few crackles.
   sizzle: [NOISE(0, 2.5, 3800, 0.22), NOISE(0, 0.3, 1600, 0.35), ...[0.35, 0.8, 1.2, 1.55, 1.9, 2.25].map((at, i) => NOISE(at, 0.05, 5200 + i * 300, 0.4))],
+  justInTime: [NOTE(1568, 0, 0.3, 'sine', null, 0.6), ...arpeggio([1319, 1568, 2093, 2637], 0.07, 0.16, 'square', 0.4)],
+  fullStove: [NOISE(0, 0.7, 2600, 0.45), NOTE(180, 0, 0.5, 'sawtooth', 520, 0.3), ...arpeggio([523, 784, 1047], 0.09, 0.14, 'triangle', 0.45)],
   burn: [NOISE(0, 0.6, 900, 0.6), NOTE(220, 0.05, 0.35, 'sawtooth', 110, 0.3)],
   noRecipe: [NOTE(140, 0, 0.09, 'sine', 90, 0.7)],
   serve: [NOTE(1568, 0, 0.35, 'sine', null, 0.6), NOTE(2093, 0.02, 0.4, 'sine', null, 0.35), NOTE(1319, 0.12, 0.18)], // ding!
