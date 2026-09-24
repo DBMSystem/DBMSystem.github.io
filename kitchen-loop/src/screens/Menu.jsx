@@ -14,13 +14,19 @@ import { contentFor } from '../systems/unlocks.js';
 import { decorById } from '../data/decor.js';
 import { panById } from '../data/products.js';
 
+let calendarShownThisSession = false;
+
 // Main menu (spec 8.3): kitchen scene, PLAY, album, warehouse (locked until chapter 3) and settings.
 export function Menu({ services, onPlay, onAlbum, onWarehouse, onSettings, onDevLevelUp, onDevCoins }) {
   const { saveManager, adManager } = services;
   const save = saveManager.get();
   const today = calendarToday(save);
   const calendarReady = canClaimCalendar(save, today);
-  const [showCalendar, setShowCalendar] = useState(calendarReady);
+  // Opens by itself once per session; afterwards, from its button (it no longer pops up on every return to the menu).
+  const [showCalendar, setShowCalendar] = useState(() => calendarReady && !calendarShownThisSession);
+  useEffect(() => {
+    if (showCalendar) calendarShownThisSession = true;
+  }, [showCalendar]);
   const { level, xp, name } = save.player;
   const xpShare = level >= balance.maxLevel ? 1 : xp / xpToNext(level);
   const albumDot = save.packs.standard + save.packs.special > 0 || (save.stats.loopsPlayed >= balance.adsMinLoops && adManager.freePackWait() === 0);

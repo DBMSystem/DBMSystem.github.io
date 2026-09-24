@@ -49,7 +49,7 @@ export function Story({ scene, playerName, onDone }) {
       <div className={`story-stage ${brulee ? 'right' : ''}`}>
         <div className="speech">
           {chapter && <span className="speaker">{t(brulee ? 'story.brulee' : 'story.pip')}</span>}
-          <Typewriter text={t(bubble.key, { nombre: playerName })} skip={typed} onDone={() => setTyped(true)} />
+          <Typewriter text={t(bubble.key, { nombre: playerName })} skip={typed} onDone={() => setTyped(true)} voice={bubble.speaker} />
           {typed && <span className="next-hint">{t('story.next')} ▸</span>}
         </div>
         {brulee ? (

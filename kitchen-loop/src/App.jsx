@@ -14,7 +14,7 @@ import { pendingScenes, markSceneSeen } from './systems/story.js';
 import { availableSpecialties } from './systems/specialty.js';
 import { finalizeLoop } from './economy/rewards.js';
 import { addXp, xpToNext } from './economy/progression.js';
-import { addCoins } from './inventory/inventory.js';
+import { addCoins, hasMaestroPass } from './inventory/inventory.js';
 
 const DEV_COINS = 1000; // playtest button to try the warehouse quickly (development/playtest builds only)
 import { createRng } from './utils/rng.js';
@@ -106,6 +106,13 @@ export function App({ services }) {
       setReturnTo(null);
     }
   };
+  // Music (spec 9.5): the service theme in a loop, the calm theme everywhere else; the Cocina Nocturna of the
+  // Maestro Pass has its own rainy theme and darkens the service one.
+  const night = hasMaestroPass(saveManager.get()) && saveManager.get().settings.nightTheme;
+  useEffect(() => {
+    services.audio.music(screen === 'game' ? 'game' : night ? 'night' : 'menu', { night });
+  }, [screen, night, services.audio]);
+
   const backRef = useRef(goBack);
   backRef.current = goBack;
   useEffect(() => setRootBackHandler(() => backRef.current()), []);

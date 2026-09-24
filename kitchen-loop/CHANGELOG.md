@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.1 — Música y sonidos
+
+- Música provisional: tema del menú, tema de partida con capa extra en la fiebre y tema de la Cocina Nocturna con lluvia. Volumen en Ajustes.
+- Sonidos de botón, compra, equipar sartén y combo; voces de Pip y Brûlée al hablar.
+- El calendario de Pip se abre solo una vez por sesión.
+- 161 tests.
+
 ## 0.8.0 — Fase 6: Android
 
 - App Android con Capacitor: vertical, icono y pantalla de inicio de Kitchen Loop, márgenes seguros.

@@ -146,7 +146,7 @@ export function Results({ result, playerName, services, onAgain, onMenu }) {
       <div className="pip-says">
         <PipSprite expression={pip.expression} size={84} />
         <p className="speech small">
-          <Typewriter text={t(pip.key, { nombre: playerName })} skip={skip} />
+          <Typewriter text={t(pip.key, { nombre: playerName })} skip={skip} voice="pip" />
         </p>
       </div>
       <Button icon="icon_cook" onClick={onAgain}>

@@ -82,3 +82,35 @@ describe('data integrity', () => {
     }
   });
 });
+
+describe('music and sounds (spec 9.5)', () => {
+  it('every track fits its bars: steps 0–15, notes in range, sensible tempo', async () => {
+    const { musicTracks } = await import('../src/data/music.js');
+    for (const [id, track] of Object.entries(musicTracks)) {
+      expect(track.bpm, id).toBeGreaterThan(50);
+      expect(track.bars.length, id).toBeGreaterThan(0);
+      for (const bar of track.bars) {
+        for (const n of [...bar.chord, bar.root]) expect(n, id).toBeGreaterThanOrEqual(28);
+        for (const [step, n, length] of bar.melody) {
+          expect(step + length, id).toBeLessThanOrEqual(16);
+          expect(n, id).toBeLessThanOrEqual(96);
+        }
+      }
+      for (const [step] of [...track.keys, ...track.bass]) expect(step, id).toBeLessThan(16);
+    }
+  });
+
+  it('every sound the game asks for exists', async () => {
+    const { sfx } = await import('../src/audio/sfx.js');
+    const { feedbackFor } = await import('../src/audio/gameFeedback.js');
+    const events = [
+      { type: 'cook', customerSlot: 0, chain: 4 },
+      { type: 'cook', customerSlot: null, chain: 1 },
+      { type: 'served', justInTime: true },
+      { type: 'burnt' },
+      { type: 'fullStove' },
+    ];
+    for (const e of events) for (const sound of [feedbackFor(e)[0]].flat()) expect(sfx[sound], sound).toBeDefined();
+    for (const sound of ['tap', 'purchase', 'equip', 'voice', 'voiceLow', 'combo']) expect(sfx[sound], sound).toBeDefined();
+  });
+});

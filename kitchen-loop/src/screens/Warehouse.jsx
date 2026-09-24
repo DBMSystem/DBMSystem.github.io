@@ -51,7 +51,7 @@ export function Warehouse({ services, onClose, onTrial }) {
       if (ok) advanceStory(s); // the Runic Counter opens chapter 4, and so on (scenes play when leaving)
     });
     if (!ok) return;
-    audio.play('levelUp');
+    audio.play('purchase');
     haptics.vibrate('medium');
     setLine(kind === 'utensil' && treeComplete(saveManager.get()) ? 'warehouse.bruleeDone' : rng.pick(warehouseLines).key);
     refresh();
@@ -61,7 +61,7 @@ export function Warehouse({ services, onClose, onTrial }) {
     const { status } = await shop.buy(productId);
     setNotice(t(`shop.${status}`));
     if (status === 'purchased') {
-      audio.play('levelUp');
+      audio.play('purchase');
       haptics.vibrate('medium');
     }
     refresh();
@@ -69,7 +69,7 @@ export function Warehouse({ services, onClose, onTrial }) {
 
   async function equip(panId) {
     await saveManager.update((s) => equipPan(s, panId));
-    audio.play('tap');
+    audio.play('equip');
     refresh();
   }
 

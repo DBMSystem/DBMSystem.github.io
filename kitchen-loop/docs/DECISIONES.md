@@ -434,3 +434,18 @@ Tres mejoras de feedback sobre la sartén, sin mecánicas nuevas ni efecto en pu
 - **Arreglo de un test:** el de la espera del sobre gratis usaba como hora fija "hoy a las 12:00" (24/09/2026). Al pasar esa hora real, la protección contra el reloj retrocedido lo hacía fallar. Ahora usa una fecha de 2099.
 - **Pendiente de Daniel para cerrar la fase (aceptación 14):** 100 partidas en un móvil real de gama media sin cierres, y comprobar que la partida sobrevive a forzar el cierre de la app.
 
+## 22. Música y sonidos (Daniel: "Realiza las mejoras, sonidos y demás también")
+
+- **Música provisional (D-3)**, compuesta en código (`src/data/music.js`, draft) y tocada con Web Audio (`src/audio/music.js`). Son los tres temas de la especificación 9.5:
+  - **Cocina tranquila:** menús, álbum y almacén. Lo-fi suave en do mayor, 86 BPM.
+  - **Servicio:** la partida. Más alegre, en fa mayor, 116 BPM. En la fiebre se le suma una capa de arpegio rápido y platillos.
+  - **Lluvia en la cocina:** la Cocina Nocturna del Pase. La menor, 72 BPM, con lluvia. En la partida nocturna, el tema Servicio suena más apagado y con lluvia.
+  - Volumen propio en Ajustes (el control estaba marcado como "Próximamente"). Se calla en segundo plano con el resto del audio.
+  - Cuando haya música definitiva, basta con sustituir este reproductor.
+- **Sonidos nuevos:**
+  - Clic suave en todos los botones.
+  - "Cha-ching" al comprar y un "clonc" metálico al equipar una sartén (antes sonaba el de subir de nivel).
+  - Remate de combo desde x3.
+  - Voz de Pip (pitidos agudos) y de Brûlée (graves) mientras escriben en las escenas y en los resultados.
+- **Calendario de Pip:** se abre solo una vez por sesión. Antes volvía a aparecer cada vez que se regresaba al menú sin recoger el regalo.
+

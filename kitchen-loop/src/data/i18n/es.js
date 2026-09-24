@@ -717,7 +717,6 @@ export const es = {
   // Settings (spec 8.8)
   'settings.title': 'Ajustes',
   'settings.music': 'Música',
-  'settings.musicSoon': 'Próximamente',
   'settings.sfx': 'Efectos',
   'settings.vibration': 'Vibración',
   'settings.reducedMotion': 'Reducir animaciones',

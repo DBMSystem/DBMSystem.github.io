@@ -156,3 +156,8 @@ Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challe
 - **Salir desde el menú** (`exit.*`): "¿Cerrar Kitchen Loop?", "SEGUIR COCINANDO" y "Salir".
 - **Poses generadas de los clientes especiales y legendarios** (`customers/<id>_happy` y `_angry`): su retrato con corazones, o con rubor y vapor. Provisionales hasta tener arte con expresiones propias.
 - **Icono y pantalla de inicio** de Android: `icon_final.png` sobre la madera oscura del juego.
+
+## Música provisional (draft)
+
+- Tres temas compuestos en código (`src/data/music.js`): "Cocina tranquila" (menú), "Servicio" (partida, con capa de fiebre) y "Lluvia en la cocina" (Cocina Nocturna). Son provisionales hasta tener música definitiva (D-3).
+- Voces de diálogo: pitidos agudos para Pip y graves para Brûlée.

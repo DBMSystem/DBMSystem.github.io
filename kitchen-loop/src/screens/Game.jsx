@@ -87,9 +87,10 @@ export function Game({ tutorial = false, specialty = null, trial = null, service
       },
       onEvents: (events) => {
         for (const event of events) {
+          if (event.type === 'fever' || event.type === 'feverEnd') audio.musicLayer('fever', event.type === 'fever');
           const feedback = feedbackFor(event);
           if (!feedback) continue;
-          audio.play(feedback[0]);
+          for (const sound of [feedback[0]].flat()) audio.play(sound);
           if (feedback[1]) haptics.vibrate(feedback[1]);
         }
       },
@@ -181,9 +182,7 @@ export function Game({ tutorial = false, specialty = null, trial = null, service
                 embedded
               />
             )}
-            <Button onClick={closePanel}>
-              {t(panelFromHud ? 'pause.resume' : 'book.close')}
-            </Button>
+            <Button onClick={closePanel}>{t(panelFromHud ? 'pause.resume' : 'book.close')}</Button>
           </div>
         </div>
       )}
