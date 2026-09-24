@@ -7,9 +7,13 @@ import { Button } from '../components/Button.jsx';
 import { Toggle } from '../components/Toggle.jsx';
 import { t } from '../utils/i18n.js';
 import { DEV_TOOLS } from '../utils/platform.js';
+import { tutorial as tutorialScript } from '../data/tutorial.js';
+import { RecipeBook } from './RecipeBook.jsx';
+
+const TIP_PREFIX = 'tip.';
 
 // Mounts the canvas and the engine. React only hears onOverflow / onLoopEnd / pause (spec 10.3).
-export function Game({ level, saveManager, adManager, onEnd, onQuit }) {
+export function Game({ level, tutorial = false, saveManager, adManager, onEnd, onQuit }) {
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
   const controllerRef = useRef(null);
@@ -19,24 +23,37 @@ export function Game({ level, saveManager, adManager, onEnd, onQuit }) {
   const [paused, setPaused] = useState(false);
   const [overflow, setOverflow] = useState(null);
   const [adBusy, setAdBusy] = useState(false);
+  const [showRecipes, setShowRecipes] = useState(false);
+  const loopLevel = tutorial ? tutorialScript.level : level;
   const [tapToPlace, setTapToPlace] = useState(saveManager.get().settings.tapToPlace);
 
   useEffect(() => {
     const save = saveManager.get();
     const engine = createEngine({
       balance,
-      level,
+      level: loopLevel,
       discoveredSecrets: discoveredSecrets(save),
       seed: Date.now(),
       onOverflow: setOverflow,
-      onEnd: (result) => onEndRef.current(result),
+      onEnd: (result) => onEndRef.current({ ...result, tutorial }),
+      ...(tutorial && { ingredientQueue: tutorialScript.ingredientQueue, timerRunning: false }),
     });
+    const tips = new Set(save.story.seenScenes.filter((id) => id.startsWith(TIP_PREFIX)).map((id) => id.slice(TIP_PREFIX.length)));
     const controller = createGameController({
       canvas: canvasRef.current,
       engine,
       balance,
       settings: { ...save.settings },
       showFps: DEV_TOOLS,
+      tutorial: tutorial ? tutorialScript : null,
+      pipOptions: {
+        tips,
+        playerName: save.player.name,
+        onTipSeen: (tip) =>
+          saveManager.update((s) => {
+            s.story.seenScenes.push(TIP_PREFIX + tip);
+          }),
+      },
       onPauseRequest: () => setPaused(true),
     });
     engineRef.current = engine;
@@ -56,7 +73,7 @@ export function Game({ level, saveManager, adManager, onEnd, onQuit }) {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('keydown', onKey);
     };
-  }, [attempt, level, saveManager]);
+  }, [attempt, loopLevel, tutorial, saveManager]);
 
   useEffect(() => {
     controllerRef.current?.setPaused(paused);
@@ -84,11 +101,20 @@ export function Game({ level, saveManager, adManager, onEnd, onQuit }) {
     <div className="game">
       <canvas ref={canvasRef} className="game-canvas" />
 
-      {paused && (
+      {paused && showRecipes && (
+        <div className="overlay scroll">
+          <RecipeBook level={loopLevel} discovered={discoveredSecrets(saveManager.get())} onClose={() => setShowRecipes(false)} />
+        </div>
+      )}
+
+      {paused && !showRecipes && (
         <div className="overlay">
           <div className="panel">
             <h2>{t('pause.title')}</h2>
             <Button onClick={() => setPaused(false)}>{t('pause.resume')}</Button>
+            <Button variant="secondary" onClick={() => setShowRecipes(true)}>
+              {t('pause.recipes')}
+            </Button>
             <Button variant="secondary" onClick={() => setAttempt((n) => n + 1)}>
               {t('pause.restart')}
             </Button>

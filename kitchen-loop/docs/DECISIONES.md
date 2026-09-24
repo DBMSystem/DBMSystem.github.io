@@ -13,7 +13,7 @@
 |---|---|---|
 | D-1 | Secreto de la historia | Propuesta de la sección 6.5. Todo lore se escribirá como `draft` (no afecta a la Fase 1). |
 | D-2 | Origen del arte | **Actualizado**: Daniel ha aportado imágenes de referencia (ver sección 7). Los sprites se recortan de ellas y pasan por `src/assets/manifest.js`; lo que no tiene arte sigue usando placeholders procedurales. |
-| D-3 | Música | Sin música. Los efectos sintetizados son de la Fase 3: **la Fase 1 no tiene sonido**. |
+| D-3 | Música | Sin música. Los efectos sintetizados son de la Fase 3: **todavía no hay sonido**. |
 | D-4 | Público objetivo | 13+, no dirigido a niños. |
 | D-5 | Sobre diario del Pase | Se mantiene (Fase 5). |
 | D-6 | Idioma | Español; todo texto sale de `src/data/i18n/es.js` mediante `t()`. |
@@ -138,3 +138,28 @@ Solo como **referencia visual** para fases posteriores (no se usan todavía): `p
 - Hay ingredientes que no están en el juego (aguacate, guindilla, gamba, brócoli, zanahoria, ajo). No se añaden.
 - La ilustración de carga y el logo dicen "Kitchen Loop" / "Loading..."; en el menú se usa solo la parte superior (el logo en inglés es el nombre del juego).
 - Solo hay 8 expresiones de Pip; la sección 3.4 pide 15.
+
+---
+
+## 8. Feedback de Daniel tras probar la Fase 1 (adelantos de fases posteriores)
+
+Daniel pidió contexto, historia, tutorial, un menú de combinaciones, pedidos como personajes con bocadillo y animaciones. Como la petición es suya, se adelanta sin añadir sistemas nuevos (todo está en la especificación):
+
+| Pedido | Qué se ha hecho | Sección de la especificación |
+|---|---|---|
+| Historia y contexto | Primera sesión: Pip se presenta (3 bocadillos) → "¿Cómo te llamas?" → premisa (3 bocadillos) → tutorial. Botón HISTORIA en el menú para verla otra vez. Textos `draft` (D-1). | 6.1, 6.2, 6.3, 8.1 |
+| Tutorial | Loop guiado: huevo → bacon → cocinar → cliente con Tostada con Tomate → 30 s libres. Reloj parado hasta el paso 5, casillas guiadas, dedo animado. No se salta la primera vez; botón TUTORIAL para repetirlo. La primera carta garantizada llegará con las cartas (Fase 2). | 8.2 |
+| Menú de combinaciones | RECETARIO (menú y pausa): recetas conocidas con su forma, puntos, nivel de desbloqueo y acertijos de las secretas. | 4.9 (pestaña Recetas) |
+| Pedidos como personaje | Cada cliente es su retrato detrás del mostrador y pide con un bocadillo (nombre, ingredientes dibujados según la forma y paciencia). | 2.1, 3.3 |
+| Animaciones | Clientes: entran caminando, respiran, se impacientan (temblor + marca de enfado), saltan contentos al ser servidos o se van enfadados. Pip: respira, salta al hablar, cambia de expresión, texto a máquina. Ingredientes: flotan en la bandeja, se aplastan al caer, rebotan al brillar, giran al cocinarse. Todo respeta "Reducir animaciones". | 3.3, 9.3, 9.4 |
+| Frases de Pip en partida | Sistema de frases por disparador, sin repetir las 5 últimas y con 4 s entre frases (las de eventos importantes tienen prioridad). | 3.6 |
+
+**¿Por qué puedo cocinar recetas que nadie ha pedido?** Es la "venta de mostrador" de la sección 2.6: cualquier receta conocida que brille se puede cocinar; si nadie la pidió, da la mitad de puntos pero cuenta para el combo. Sirve para hacer hueco y mantener la cadena. Ahora se explica en el recetario y Pip lo cuenta la primera vez que ocurre. Si Daniel prefiere que solo se puedan cocinar los pedidos, es un cambio de diseño: habría que decidirlo (afecta al desbordamiento y a los combos).
+
+**Decisiones menores:**
+- Las animaciones de personajes se hacen por código (respirar, saltar, temblar, girar) sobre cada imagen fija, porque de momento hay una sola imagen por personaje. Con más poses (lista en `docs/ASSET_REQUESTS.md`) se podrán cambiar de imagen según el estado.
+- La historia de fondo difumina la ilustración del menú, porque esa imagen ya incluye a Pip. Pedido un fondo de cocina sin Pip.
+- El texto de Pip en partida cabe en ≤ 60 caracteres (test automático); las escenas de historia no tienen ese límite.
+- Pip usa las 8 expresiones disponibles; las otras 7 de la sección 3.4 están pedidas.
+- Los consejos que Pip da una sola vez se guardan en `story.seenScenes` (`tip.counterSale`).
+- La línea "Fase actual" de `CLAUDE.md` sigue sin tocar: la actualiza Daniel.

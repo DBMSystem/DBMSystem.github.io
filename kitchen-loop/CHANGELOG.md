@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 — Historia, tutorial, recetario y personajes animados (feedback de Daniel)
+
+- Primera sesión con historia: Pip se presenta, pide el nombre y cuenta la premisa (escenas saltables, texto a máquina).
+- Tutorial guiado (sección 8.2) con dedo animado, casillas guiadas y reloj parado hasta el loop libre de 30 s.
+- Recetario en el menú y en la pausa: forma de cada receta, puntos, nivel de desbloqueo, acertijos de secretas y explicación de la venta de mostrador.
+- Clientes como personajes detrás del mostrador que piden con un bocadillo; entran, respiran, se impacientan, celebran o se van enfadados.
+- Pip en partida con frases por disparador (sección 3.6) y 8 expresiones; frase de Pip en resultados.
+- Ingredientes animados (flotar, aplastarse al caer, rebotar al brillar, girar al cocinarse).
+- Motor: cola de ingredientes, reloj detenible, casillas permitidas y pedidos guionizados para el tutorial.
+- 66 tests (nuevos: diálogo, Pip, tutorial, contenido de frases).
+
 ## 0.1.1 — Arte de referencia
 
 - Imágenes de referencia de Daniel guardadas en `assets/ref/` (originales y recortes).

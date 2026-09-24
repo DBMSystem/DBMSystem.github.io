@@ -24,11 +24,16 @@ INGREDIENT_CELLS = {"egg": (0, 0), "bacon": (1, 0), "cheese": (2, 0), "tomato": 
 UI_KIT_ICONS = {"fish": (82, 319, 151, 380), "bread": (320, 319, 386, 380), "herbs": (469, 319, 529, 380)}
 CUSTOMER_CELLS = {"office": (0, 0), "calm": (1, 0), "student": (2, 0), "mystery": (3, 0),
                   "old_master": (0, 1), "tourist": (1, 1), "rival_chef": (2, 1), "critic": (3, 1)}
+# Pip expressions sheet: 4 columns, 2 rows; boxes stop above the English labels.
+PIP_ROWS = ((32, 372), (425, 766))
+PIP_CELLS = {"happy": (0, 0), "worried": (1, 0), "angry": (2, 0), "thumbs_up": (3, 0),
+             "thinking": (0, 1), "neutral": (1, 1), "surprised": (2, 1), "sleeping": (3, 1)}
 PANS = {"golden": "pan_golden_ref.jpg", "rusty": "pan_rusty_ref.jpg", "pink": "pan_pink_ref.jpg", "black": "pan_black_ref.jpg"}
 
 INGREDIENT_SIZE = 192  # 64 logical px × 3 device px
 INGREDIENT_FILL = 0.82  # margin so the recipe glow around a cell stays visible
 CUSTOMER_SIZE = 160
+PIP_SIZE = 192
 PAN_SIZE = 256
 
 
@@ -123,6 +128,12 @@ def main():
     for customer_id, (col, row) in CUSTOMER_CELLS.items():
         crop = customers.crop(cell(col, row))
         save(fit(remove_background(crop), CUSTOMER_SIZE), SPRITES / "customers" / f"{customer_id}.png")
+
+    pip = Image.open(REF / "pip_expressions_ref.jpg")
+    for expression, (col, row) in PIP_CELLS.items():
+        top, bottom = PIP_ROWS[row]
+        crop = pip.crop((col * SHEET + 4, top, (col + 1) * SHEET - 4, bottom))
+        save(fit(remove_background(crop), PIP_SIZE), SPRITES / "pip" / f"{expression}.png")
 
     for pan_id, name in PANS.items():
         pan = Image.open(REF / name)

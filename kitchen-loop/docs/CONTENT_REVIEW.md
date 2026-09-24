@@ -36,3 +36,35 @@ Retratos de `assets/ref/customers_ref.jpg` asignados a los tipos de la sección 
 | Cliente misterioso | Guindilla demoníaca | Sorpresa |
 | Maestro antiguo | Gallo rey con capa | Legendario |
 | Coleccionista, Crítico legendario, Visitante de la Cocina Nocturna | Sin retrato (placeholder) | Falta arte |
+
+## Historia, tutorial y frases (draft)
+
+Todos en `src/data/i18n/es.js`; marcados `draft: true` en `src/data/dialogues.js` y `src/data/tutorial.js`.
+
+**Escena "intro"** (antes del nombre): `story.intro.1–3`
+> ¡Ah! ¡Alguien ha entrado en mi cocina! · Soy Chef Pip. El mejor chef de este barrio… de esta calle… bueno, de esta cocina. · Espera, ¿esa hoja que traes es una receta? Qué vieja… ¿Cómo te llamas?
+
+**Escena "premise"** (después del nombre): `story.premise.1–3`
+> ¡Encantado, {nombre}! Esa receta está rota, pero huele a algo importante. · Te cuento un secreto: esta cocina recuerda cada plato que se cocina en ella. Algún día verás por qué. · Yo te enseño a cocinar y tú intentas no quemar nada. ¡Trato hecho!
+
+**Tutorial**: `tutorial.*`
+> Arrastra el huevo a la encimera, a la casilla que brilla. · Ahora el bacon, justo al lado del huevo. · ¡Brillan! Eso es una receta. Tócala para cocinarla. · ¡Un cliente! Quiere Tostada con Tomate: pan y tomate juntos. · ¡Ahora sin ayuda! Tienes 30 segundos. Cocina seguido para hacer combo.
+
+**Frases nuevas de Pip** (las de la tabla 3.6 no se listan):
+- Inicio: ¡Abrimos la cocina! Que pase el primero.
+- Receta: ¡Ni yo lo habría hecho mejor! Bueno… · ¡Otro plato que la cocina no olvidará!
+- Combo: ¡Más rápido que mi sartén favorita!
+- Por los pelos: ¡Por los pelos del bigote que no tengo!
+- Fiebre: ¡Fiebre en la cocina! ¡Todo vale el doble de rico!
+- Cliente se va: Se ha ido con hambre. Qué drama.
+- Toque sin receta: Eso aún no es una receta. ¡Sigue juntando! · Solo se cocina lo que brilla.
+- Consejo (una vez): Sin pedido se vende en el mostrador: ¡también suma combo!
+
+**Acertijos de recetas secretas** (el de Corona de Bacon es de la especificación):
+- Tortilla Imposible: Cuatro iguales, bien juntitos, hacen algo imposible.
+- Revuelto Místico: Tres sombreros y un sol.
+- Sopa del Maestro: Lo que el maestro sacaba del mar, del huerto y de la tierra.
+- Tomate Explosivo: Rojo, fundido y con chispa.
+- La Receta Perdida: Cuatro esquinas: una joya negra y el desayuno de siempre.
+
+**Textos de interfaz nuevos**: recetario (`book.*`), nombre (`name.*`), menú (`menu.recipes`, `menu.story`, `menu.tutorial`, `menu.greeting`), `story.skip`, `story.next`.

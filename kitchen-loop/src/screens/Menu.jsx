@@ -6,7 +6,7 @@ import { DEV_TOOLS } from '../utils/platform.js';
 import { maxContentLevel } from '../data/unlocks.js';
 import { spriteUrl } from '../assets/manifest.js';
 
-export function Menu({ saveManager, level, onLevelChange, onPlay }) {
+export function Menu({ saveManager, level, onLevelChange, onPlay, onRecipes, onStory, onTutorial }) {
   const save = saveManager.get();
   const [tapToPlace, setTapToPlace] = useState(save.settings.tapToPlace);
 
@@ -21,12 +21,23 @@ export function Menu({ saveManager, level, onLevelChange, onPlay }) {
     <div className="screen menu">
       <img className="menu-scene" src={spriteUrl('ui/menu_scene')} alt={t('game.title')} />
       <p className="slogan">{t('game.slogan')}</p>
+      <p className="greeting">{t('menu.greeting', { nombre: save.player.name })}</p>
       <Button onClick={onPlay}>{t('menu.play')}</Button>
+      <div className="menu-row">
+        <Button variant="secondary" onClick={onRecipes}>
+          {t('menu.recipes')}
+        </Button>
+        <Button variant="secondary" onClick={onStory}>
+          {t('menu.story')}
+        </Button>
+        <Button variant="secondary" onClick={onTutorial}>
+          {t('menu.tutorial')}
+        </Button>
+      </div>
       <div className="stats">
         <span>{t('menu.bestScore', { score: formatNumber(save.stats.bestScore) })}</span>
         <span>{t('menu.loopsPlayed', { n: save.stats.loopsPlayed })}</span>
       </div>
-      <p className="hint">{t('menu.howTo')}</p>
       <Toggle label={t('menu.tapToPlace')} value={tapToPlace} onChange={changeTapToPlace} />
       {DEV_TOOLS && (
         <div className="dev-panel">
