@@ -6,14 +6,16 @@ import { products, starterPack, pans, panById, PASS } from '../data/products.js'
 import { CardView } from '../components/CardView.jsx';
 import { warehouseLines } from '../data/dialogues.js';
 import { utensilCost, utensilState, treeComplete, utensilsOwned } from '../systems/utensils.js';
-import { buyUtensil, buyDecor, equipPan, ownsPan, ownsCard } from '../inventory/inventory.js';
+import { buyUtensil, buyDecor, placeDecor, buyPack, equipPan, ownsPan, ownsCard } from '../inventory/inventory.js';
+import { balance } from '../data/balance.js';
 import { useAds } from '../monetization/useAds.js';
 import { advanceStory } from '../systems/story.js';
 import { createRng } from '../utils/rng.js';
 import { spriteUrl } from '../assets/manifest.js';
 import { t, formatNumber } from '../utils/i18n.js';
 
-const TABS = ['utensils', 'decor', 'showcase'];
+const TABS = ['utensils', 'decor', 'packs', 'showcase'];
+const PACKS = ['standard', 'special'];
 const TIERS = [1, 2, 3, 4];
 
 function requirementText({ requires }) {
@@ -22,15 +24,16 @@ function requirementText({ requires }) {
   return t('warehouse.requires.tier', requires);
 }
 
-const Price = ({ coins }) => (
-  <span className="price coins">
-    <img src={spriteUrl('ui/icon_coin')} alt="" />
+// Coins (gold coin) or fragments (the star of the album): the two currencies earned by playing.
+const Price = ({ coins, fragments = false }) => (
+  <span className={`price ${fragments ? 'fragments' : 'coins'}`}>
+    <img src={spriteUrl(fragments ? 'ui/icon_rare' : 'ui/icon_coin')} alt={t(fragments ? 'warehouse.fragments' : 'warehouse.coins')} />
     {formatNumber(coins)}
   </span>
 );
 
 // Brûlée's warehouse (spec 8.7): a room full of objects with Brûlée commenting, not a web shop.
-// Utensils and decoration cost coins; the showcase sells pans and the Pass (real money, fixed content, never an
+// Utensils, decoration and card packs cost coins, Brûlée's magic corner costs fragments; the showcase sells pans and the Pass (real money, fixed content, never an
 // advantage) and the small chest holds the Pack de Inicio. Coin prices and euro prices look different at a glance.
 // "Try" (rewarded ad, spec 7.2) lends a utensil or a pan you do not own for one service: onTrial starts it.
 export function Warehouse({ services, onClose, onTrial }) {
@@ -67,6 +70,48 @@ export function Warehouse({ services, onClose, onTrial }) {
     refresh();
   }
 
+  async function place(id) {
+    await saveManager.update((s) => placeDecor(s, id));
+    audio.play('equip');
+    refresh();
+  }
+
+  async function buyCardPack(kind) {
+    let ok = false;
+    await saveManager.update((s) => {
+      ok = buyPack(s, kind);
+    });
+    if (!ok) return;
+    audio.play('purchase');
+    haptics.vibrate('medium');
+    setNotice(t('warehouse.packBought'));
+    refresh();
+  }
+
+  // One decoration object: buy it (coins or fragments), then choose which object of its slot is on show.
+  const DecorItem = ({ d }) => {
+    const owned = save.unlockedItems.includes(d.id);
+    const fragments = d.currency === 'fragments';
+    const funds = fragments ? save.fragments : save.coins;
+    return (
+      <div className={`item ${owned ? 'owned' : 'available'}`}>
+        <img className="decor-img" src={spriteUrl(`decor/${d.id}`)} alt="" />
+        <strong>{t(`decor.${d.id}.name`)}</strong>
+        {!owned && (
+          <Button disabled={funds < d.cost} onClick={() => buy('decor', d.id)}>
+            <Price coins={d.cost} fragments={fragments} />
+          </Button>
+        )}
+        {owned && save.decor[d.slot] === d.id && <span className="badge ok">{t('warehouse.placed')}</span>}
+        {owned && save.decor[d.slot] !== d.id && (
+          <Button variant="secondary" onClick={() => place(d.id)}>
+            {t('warehouse.place')}
+          </Button>
+        )}
+      </div>
+    );
+  };
+
   async function equip(panId) {
     await saveManager.update((s) => equipPan(s, panId));
     audio.play('equip');
@@ -92,9 +137,9 @@ export function Warehouse({ services, onClose, onTrial }) {
     <div className="screen warehouse scroll">
       <div className="warehouse-head">
         <h2>{t('warehouse.title')}</h2>
-        <span className="coins">
-          <img src={spriteUrl('ui/icon_coin')} alt="" />
-          {formatNumber(save.coins)}
+        <span className="wallet">
+          <Price coins={save.coins} />
+          <Price coins={save.fragments} fragments />
         </span>
       </div>
       <button type="button" className="brulee-says" onClick={() => setLine(rng.pick(warehouseLines).key)}>
@@ -148,23 +193,46 @@ export function Warehouse({ services, onClose, onTrial }) {
       {tab === 'decor' && (
         <div className="shelves">
           <p className="hint small">{t('decor.hint')}</p>
+          <section className="shelf">
+            <h3>{t('warehouse.kitchenDecor')}</h3>
+            <div className="shelf-row wrap">
+              {decorItems
+                .filter((d) => d.currency !== 'fragments')
+                .map((d) => (
+                  <DecorItem key={d.id} d={d} />
+                ))}
+            </div>
+          </section>
+          <section className="shelf magic">
+            <h3>{t('warehouse.magicCorner')}</h3>
+            <p className="hint small">{t('warehouse.magicHint')}</p>
+            <div className="shelf-row wrap">
+              {decorItems
+                .filter((d) => d.currency === 'fragments')
+                .map((d) => (
+                  <DecorItem key={d.id} d={d} />
+                ))}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {tab === 'packs' && (
+        <div className="shelves">
+          <p className="hint small">{t('warehouse.packsHint')}</p>
           <div className="shelf-row wrap">
-            {decorItems.map((d) => {
-              const owned = save.unlockedItems.includes(d.id);
-              return (
-                <div key={d.id} className={`item ${owned ? 'owned' : 'available'}`}>
-                  <img className="decor-img" src={spriteUrl(`decor/${d.id}`)} alt="" />
-                  <strong>{t(`decor.${d.id}.name`)}</strong>
-                  {owned ? (
-                    <span className="badge ok">{t('warehouse.placed')}</span>
-                  ) : (
-                    <Button disabled={save.coins < d.cost} onClick={() => buy('decor', d.id)}>
-                      <Price coins={d.cost} />
-                    </Button>
-                  )}
+            {PACKS.map((kind) => (
+              <div key={kind} className="item available">
+                <div className={`pack mini ${kind === 'special' ? 'pack-special' : ''}`}>
+                  <img src={`${import.meta.env.BASE_URL}icon-512.png`} alt="" />
                 </div>
-              );
-            })}
+                <strong>{t(kind === 'special' ? 'pack.special' : 'pack.title')}</strong>
+                <span className="hint small">{t(`warehouse.pack.${kind}`)}</span>
+                <Button disabled={save.coins < balance.packPrices[kind]} onClick={() => buyCardPack(kind)}>
+                  <Price coins={balance.packPrices[kind]} />
+                </Button>
+              </div>
+            ))}
           </div>
         </div>
       )}

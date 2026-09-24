@@ -161,3 +161,10 @@ Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challe
 
 - Tres temas compuestos en código (`src/data/music.js`): "Cocina tranquila" (menú), "Servicio" (partida, con capa de fiebre) y "Lluvia en la cocina" (Cocina Nocturna). Son provisionales hasta tener música definitiva (D-3).
 - Voces de diálogo: pitidos agudos para Pip y graves para Brûlée.
+
+## Economía: decoración nueva y rincón mágico (draft)
+
+- **Decoración de monedas:** Reloj de Pared, Cruasán de Exposición, Tortitas del Domingo, Arroz Frito de Pip, Sushi del Viajero y Chuletón de Gala.
+- **Rincón mágico de Brûlée (fragmentos):** Poción de Sabor, Tarro de Polvo de Estrellas, Setas del Bosque Encantado, Recetario de Brûlée y Trufa Dorada. Texto: "Objetos que Brûlée trajo de sus viajes."
+- **Sobres del Almacén:** "Sobres de cartas por monedas. Se guardan en tu Álbum para abrirlos cuando quieras."
+- **Chef del Vacío:** pista nueva, "Termina un servicio con 2 ingredientes o menos en la encimera".

@@ -79,6 +79,7 @@ export function createEngine({
     recipesCooked: 0,
     customersLost: 0,
     burntCount: 0,
+    fullStoveAt: -Infinity,
     goldenCooked: 0,
     legendaryArrived: false,
     cookedCounts: {},
@@ -249,8 +250,14 @@ export function createEngine({
         golden,
       };
     else state.score += points;
-    // Every pan on the stove busy at once (pure feedback, spec 2.6).
-    const fullStove = Boolean(customer) && cookingCustomers().length === rules.maxCustomers;
+    // ¡Cocina a tope! (pure feedback, spec 2.6): every pan busy, or several pans in the middle of a combo.
+    const pansBusy = cookingCustomers().length;
+    const rule = balance.fullStove;
+    const fullStove =
+      Boolean(customer) &&
+      state.time - state.fullStoveAt >= rule.cooldown &&
+      (pansBusy === rules.maxCustomers || (pansBusy >= rule.pans && combo.chain >= rule.combo));
+    if (fullStove) state.fullStoveAt = state.time;
 
     const ingredients = cells.map((i) => state.grid.cells[i].ingredient);
     for (const i of cells) {
@@ -478,6 +485,7 @@ export function createEngine({
       specialty,
       endReason: state.endReason,
       emptyGridAtEnd: state.endReason === 'time' && state.grid.cells.every((cell) => cell.ingredient === null),
+      leftoverAtEnd: state.endReason === 'time' ? state.grid.cells.filter((cell) => cell.ingredient !== null).length : null,
     };
   }
 

@@ -387,6 +387,7 @@ if __name__ == "__main__":
     generate_happy_poses()
     generate_special_poses()
     extract_utensils()
+    generate_shop_decor()
     extract_decor()
     generate_phase4_art()
     generate_dish_art()
@@ -449,6 +450,79 @@ def extract_decor():
         img.putalpha(alpha)
         img = img.crop(img.getbbox())
         save(img.resize((img.width * DECOR_SCALE, img.height * DECOR_SCALE), Image.NEAREST), SPRITES / "decor" / f"{decor_id}.png")
+
+
+# ---------- More decoration for coins and Brûlée's magic corner for fragments ----------
+# Display plates: the mega pack plates no recipe uses. Magic items: Brûlée's potion cut from his portrait, and game
+# sprites repainted as magical objects (Daniel: design new art yourself in the same pixel art).
+DISPLAY_PLATES = {"plate_pancakes": (1, 1), "plate_croissant": (1, 2), "plate_sushi": (2, 1), "plate_steak": (2, 0), "plate_fried_rice": (3, 2)}
+
+
+def dark_cut(img, outline=38, step=46):
+    """Scene objects on a dark background: flood from the border through pixels that are not the black outline and
+    change little from their neighbour; the outlined object stays. Keeps the largest island."""
+    rgb = np.asarray(img.convert("RGB")).astype(int)
+    h, w, _ = rgb.shape
+    passable = rgb @ np.array([0.3, 0.59, 0.11]) > outline
+    seen = np.zeros((h, w), bool)
+    queue = deque()
+    for y, x in [(y, x) for y in range(h) for x in (0, w - 1)] + [(y, x) for x in range(w) for y in (0, h - 1)]:
+        if passable[y, x] and not seen[y, x]:
+            seen[y, x] = True
+            queue.append((y, x))
+    while queue:
+        y, x = queue.popleft()
+        for ny, nx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)):
+            if 0 <= ny < h and 0 <= nx < w and not seen[ny, nx] and passable[ny, nx] and np.abs(rgb[ny, nx] - rgb[y, x]).sum() < step:
+                seen[ny, nx] = True
+                queue.append((ny, nx))
+    alpha = np.where(seen, 0, 255).astype(np.uint8)
+    drop_specks(alpha, 1)
+    return Image.fromarray(np.dstack([rgb.astype(np.uint8), alpha]), "RGBA")
+
+
+def generate_shop_decor():
+    from PIL import ImageDraw
+    out = SPRITES / "decor"
+    mega = Image.open(ORIGINALS / "20_mega_pack.jpg").convert("RGB")
+    for decor_id, (col, row) in DISPLAY_PLATES.items():
+        crop = mega.crop((DISH_COLS[col][0] - 4, DISH_ROWS[row][0], DISH_COLS[col][1] + 4, DISH_ROWS[row][1]))
+        img = remove_background(crop, tolerance=40)
+        save(img.crop(img.getbbox()), out / f"{decor_id}.png")
+    save(sprite("ui/icon_timer"), out / "wall_clock.png")
+
+    brulee = Image.open(ORIGINALS / "09_brulee_ref.jpg").convert("RGB")
+    potion = dark_cut(brulee.crop((145, 1527, 228, 1660)))
+    alpha = potion.getchannel("A")
+    alpha.paste(0, (0, 0, 15, potion.height))  # a bit of the shelf and the wall on the left
+    potion.putalpha(alpha)
+    save(potion.crop(potion.getbbox()), out / "magic_potion.png")
+
+    purple = [(46, 24, 72), (84, 46, 130), (126, 80, 186), (167, 139, 250), (214, 196, 255)]
+    book = recolour(sprite("ui/icon_recipe"), lambda h, s, v: 60 <= h <= 170 and s > 0.15, purple)
+    save(glints(book, [(20, 16, 2), (70, 30, 1), (56, 62, 1)]), out / "brulee_book.png")
+
+    red = [(110, 16, 22), (160, 26, 32), (196, 38, 40), (222, 54, 50), (240, 84, 72)]
+    cap = recolour(sprite("ingredients/mushroom"), lambda h, s, v: (h < 40 or h > 330) and s > 0.18 and v > 0.45 and v < 0.97, red)
+    dots = ImageDraw.Draw(cap)
+    for x, y in ((56, 44), (92, 30), (128, 50), (76, 70), (112, 66)):
+        blocks(dots, [(x, y), (x + PX, y), (x, y + PX), (x + PX, y + PX)], (255, 250, 240, 255))
+    group = Image.new("RGBA", (300, 220), (0, 0, 0, 0))
+    small = cap.resize((120, 120), Image.NEAREST)
+    group.alpha_composite(small, (0, 96))
+    group.alpha_composite(small.transpose(Image.FLIP_LEFT_RIGHT), (180, 100))
+    group.alpha_composite(cap, (54, 20))
+    save(glints(group.crop(group.getbbox()), [(30, 40, 2), (250, 60, 2)], block=3), out / "enchanted_mushrooms.png")
+
+    night = [(20, 24, 70), (38, 52, 130), (70, 96, 200), (130, 160, 250), (200, 220, 255)]
+    jar = sprite("ingredients/spice")
+    contents = recolour(jar.crop((0, 62, 192, 192)), lambda h, s, v: s > 0.2 and v > 0.15, night)  # below the wooden lid
+    jar.alpha_composite(contents, (0, 62))
+    save(glints(jar, [(80, 90, 2), (110, 120, 1), (70, 128, 1), (120, 80, 1)], block=3), out / "star_jar.png")
+
+    gold = [(110, 70, 10), (180, 120, 20), (230, 170, 40), (255, 213, 79), (255, 240, 170)]
+    truffle = recolour(sprite("ingredients/truffle"), lambda h, s, v: s > 0.15 and v > 0.12, gold)
+    save(glints(truffle, [(60, 50, 2), (140, 70, 2), (100, 140, 1)], block=3), out / "golden_truffle.png")
 
 
 # ---------- Phase 4: special customers and special ingredients ----------

@@ -449,3 +449,31 @@ Tres mejoras de feedback sobre la sartén, sin mecánicas nuevas ni efecto en pu
   - Voz de Pip (pitidos agudos) y de Brûlée (graves) mientras escriben en las escenas y en los resultados.
 - **Calendario de Pip:** se abre solo una vez por sesión. Antes volvía a aparecer cada vez que se regresaba al menú sin recoger el regalo.
 
+## 23. Mejoras de la partida simulada y economía de monedas y fragmentos (Daniel: "Aplica todas las mejoras y decoraciones y artículos de ventas para el uso de monedas y fragmentos, teniendo en cuenta una economía coherente")
+
+**Balance** (verificado con `scripts/simulatePlaythrough.js`; informe en `docs/PLAYTHROUGH_REPORT.md`):
+- **Combo y fiebre:** ventana de combo de 3 a 4 s y fiebre en x5 (antes x6). El casual pasa de 0 a 0,2–0,6 fiebres por servicio.
+- **Fiebre tras fiebre:** tras una fiebre, la siguiente pide otras 5 recetas en la cadena. Si no, la cadena sobrevivía a la fiebre y el hábil encadenaba 4–5 por servicio; ahora tiene unas 2.
+- **Brûlée:** aparece desde el servicio 5 (antes el 3), garantizado en el 7. Los primeros servicios ya no son una escena detrás de otra.
+- **¡Cocina a tope!:** también con 2 sartenes a la vez en un combo de x3 o más, como mucho cada 10 s. Antes solo con todas las sartenes: un 1 % de los servicios.
+- **Chef del Vacío:** acabar con 2 ingredientes o menos (antes 0: el hábil tardó 63 días y el casual no lo lograba).
+
+**Economía.** Monedas y fragmentos solo se ganan jugando; ningún producto de pago los da.
+
+| | Fuentes | Gastos (total) |
+|---|---|---|
+| **Monedas** | Pedidos, puntos, niveles, maestría, encargos de Pip | Árbol de Brûlée 13.500 · decoración 16 objetos, 20.450 · **sobres** 900 / 2.400, sin límite |
+| **Fragmentos** | Duplicados, calendario, maestría, encargos, coleccionista, Noche de Brûlée | Fabricar cartas · **rincón mágico** 5 objetos, 11.800 · **brillantes** 26.650 en total |
+
+- **Decoración nueva por monedas:**
+  - Reloj de pared, 1.000.
+  - 5 platos de exposición: cruasán 1.200, tortitas 1.500, arroz frito 1.800, sushi 2.200 y chuletón 2.600. Son los platos del mega pack que no usa ninguna receta.
+  - Varios objetos comparten sitio: el último comprado se coloca y en el Almacén se elige cuál se ve ("COLOCAR").
+- **Rincón mágico de Brûlée (fragmentos):**
+  - Poción de sabor 600: recortada de su retrato.
+  - Tarro de polvo de estrellas 1.200, setas del bosque encantado 2.000, Recetario de Brûlée 3.000 y trufa dorada 5.000: sprites del juego repintados en el mismo pixel art.
+- **Sobres por monedas** en la pestaña nueva "Sobres" del Almacén. Se guardan en el Álbum. Es el gasto sin fin del final de la partida: sus duplicados dan fragmentos para las brillantes.
+- **Resultado con el bot hábil** (8 servicios al día, 150 días): cartas de sobre el día 38, toda la decoración de monedas el día 48 y el rincón mágico el día 86. Gasta casi todo (le sobran 269 monedas y 59 fragmentos): 51.300 monedas en sobres y 13.900 fragmentos en brillantes, así que siempre tiene algo que perseguir.
+- **Resultado con el bot casual** (4 servicios al día): en 150 días completa el árbol y casi toda la decoración, y tiene el rincón mágico a medias. Sigue teniendo metas.
+- La especificación (2.8, 2.10, 5.6, 6.3 y la tabla de cartas) queda actualizada con estos cambios.
+

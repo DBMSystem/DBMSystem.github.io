@@ -6,10 +6,11 @@ export const balance = {
   gridSize: 4,
   maxRecipeSize: 4,
   cookDuration: 0.4, // cells stay locked and the ingredients fly to the pan
+  fullStove: { pans: 2, combo: 3, cooldown: 10 }, // ¡Cocina a tope!: every pan busy, or this many pans in a combo
   panCookTime: 2.5, // an order sizzles in its customer's pan before it is served (spec 2.6)
 
   // Combos, ¡En su punto!, fiebre
-  comboWindow: 3.0,
+  comboWindow: 4.0, // 3 → 4 s: casual players also reach the fever (docs/PLAYTHROUGH_REPORT.md)
   comboMultipliers: [
     { chain: 1, multiplier: 1.0 },
     { chain: 2, multiplier: 1.2 },
@@ -19,7 +20,7 @@ export const balance = {
   ],
   perfectWindow: 4,
   perfectRecipes: 3,
-  feverThreshold: 6,
+  feverThreshold: 5,
   feverDuration: 5,
   feverMultiplier: 1.5,
   feverComboWindowMultiplier: 1.5,
@@ -73,6 +74,7 @@ export const balance = {
     special: { common: 0, rare: 0, epic: 0.9, legendary: 0.1 },
   },
   packSize: 3,
+  packPrices: { standard: 900, special: 2400 }, // coins, in Brûlée's warehouse (docs/DECISIONES.md §23)
   epicPity: 10,
   legendaryPity: 60, // spec 40 (48 cards); 120-card album: 60
   legendaryMinPacks: 5,
@@ -146,8 +148,8 @@ export const balance = {
 
   // Story (phase 4)
   bruleeScoreThreshold: 1200,
-  bruleeFromLoop: 3,
-  bruleeGuaranteedLoop: 6,
+  bruleeFromLoop: 5, // not before the 5th service: the first services are not a string of scenes
+  bruleeGuaranteedLoop: 7,
   chapterTriggers: { 5: { level: 12, utensils: 3 }, 6: { level: 16, secrets: 3 } },
 
   // Presentation

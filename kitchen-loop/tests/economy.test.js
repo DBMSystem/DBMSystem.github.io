@@ -313,3 +313,13 @@ describe('album data (spec 4.3, 6.4, 15.1)', () => {
     for (const r of Object.keys(balance.craftCost)) expect(balance.duplicateFragments[r]).toBeLessThan(balance.craftCost[r]);
   });
 });
+
+describe('Chef del Vacío (docs/PLAYTHROUGH_REPORT.md)', () => {
+  it('ending a service with 2 ingredients or fewer on the board is enough', async () => {
+    const { discoveriesFor } = await import('../src/cards/album.js');
+    const base = { discovered: [], servedTypes: [], cookedCounts: {}, feverCount: 0, bestCombo: 1, perfectCount: 0, score: 0, endReason: 'time', customersLost: 1, ordersServed: 0 };
+    expect(discoveriesFor({ ...base, leftoverAtEnd: 2 })).toContain('void_chef');
+    expect(discoveriesFor({ ...base, leftoverAtEnd: 3 })).not.toContain('void_chef');
+    expect(discoveriesFor({ ...base, leftoverAtEnd: null, emptyGridAtEnd: false })).not.toContain('void_chef');
+  });
+});

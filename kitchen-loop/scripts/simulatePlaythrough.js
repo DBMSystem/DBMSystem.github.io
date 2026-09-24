@@ -13,7 +13,7 @@ import { createDefaultSave } from '../src/save/schema.js';
 import { finalizeLoop, discoveredSecrets } from '../src/economy/rewards.js';
 import { openPack } from '../src/cards/packs.js';
 import { claimCalendar } from '../src/systems/calendar.js';
-import { craftCard, takePack, buyUtensil, buyDecor } from '../src/inventory/inventory.js';
+import { craftCard, makeShiny, takePack, buyUtensil, buyDecor, buyPack } from '../src/inventory/inventory.js';
 import { utensilState, utensilCost, treeComplete } from '../src/systems/utensils.js';
 import { advanceStory, pendingScenes, markSceneSeen, LAST_CHAPTER } from '../src/systems/story.js';
 import { unlockContext, contentFor } from '../src/systems/unlocks.js';
@@ -91,7 +91,6 @@ const studied = new Set();
 const discoveryWay = {};
 let loopCount = 0;
 let coinsEarned = 0;
-let coinsSpent = 0;
 const packCards = cards.filter((c) => c.source === 'pack');
 
 function knownRecipes() {
@@ -107,35 +106,76 @@ function knownRecipes() {
     });
 }
 
+const spent = { utensils: 0, decor: 0, packs: 0, magic: 0, craft: 0, shiny: 0 };
+const pay = (kind, before, after) => (spent[kind] += before - after);
+const coinDecor = decorItems.filter((d) => d.currency !== 'fragments').sort((a, b) => a.cost - b.cost);
+const magicDecor = decorItems.filter((d) => d.currency === 'fragments').sort((a, b) => a.cost - b.cost);
+const done = {};
+const once = (key, what, day) => {
+  if (!done[key]) {
+    done[key] = day;
+    mark(what, day, loopCount);
+  }
+};
+
+// Coins: Brûlée's tree first (cheapest available), then the kitchen's decoration, then card packs while the album
+// is incomplete; with nothing left, packs for the duplicates (fragments for shiny cards).
 function shop(day) {
-  // Brûlée's tree first (cheapest available), then decoration.
   for (;;) {
     const next = utensils.filter((u) => utensilState(save, u.id) === 'available').sort((a, b) => utensilCost(a.id) - utensilCost(b.id))[0];
     if (!next || save.coins < utensilCost(next.id)) break;
     const before = save.coins;
     buyUtensil(save, next.id);
-    coinsSpent += before - save.coins;
+    pay('utensils', before, save.coins);
     mark(`Utensilio: ${next.id}`, day, loopCount);
   }
   if (treeComplete(save) && contentFor(save).features.includes('warehouse')) {
-    for (const d of decorItems) {
+    for (const d of coinDecor) {
       if (save.unlockedItems.includes(d.id) || save.coins < d.cost) continue;
-      coinsSpent += d.cost;
+      const before = save.coins;
       buyDecor(save, d.id);
-      mark(`Decoración: ${d.id}`, day, loopCount);
+      pay('decor', before, save.coins);
+    }
+    if (coinDecor.every((d) => save.unlockedItems.includes(d.id))) {
+      once('decor', 'Toda la decoración de monedas', day);
+      while (save.coins >= balance.packPrices.standard) {
+        const before = save.coins;
+        buyPack(save, 'standard');
+        pay('packs', before, save.coins);
+      }
     }
   }
   for (const n of advanceStory(save)) mark(`Capítulo ${n}`, day, loopCount);
   for (const id of pendingScenes(save)) markSceneSeen(save, id);
 }
 
-function craft(now) {
+// Fragments: missing cards first, then Brûlée's magic corner, then shiny cards (cheapest first).
+function craft(now, day) {
   for (const rarity of ['legendary', 'epic', 'rare', 'common']) {
     for (const c of packCards.filter((x) => x.rarity === rarity && !save.cards[x.id])) {
       if (save.fragments < balance.craftCost[rarity]) break;
+      const before = save.fragments;
       craftCard(save, c.id, now);
+      pay('craft', before, save.fragments);
     }
   }
+  if (!packCards.every((c) => save.cards[c.id]) || !contentFor(save).features.includes('warehouse')) return;
+  for (const d of magicDecor) {
+    if (save.unlockedItems.includes(d.id) || save.fragments < d.cost) continue;
+    const before = save.fragments;
+    buyDecor(save, d.id);
+    pay('magic', before, save.fragments);
+  }
+  if (!magicDecor.every((d) => save.unlockedItems.includes(d.id))) return;
+  once('magic', 'Rincón mágico completo', day);
+  const shinyable = cards.filter((c) => save.cards[c.id] && !save.cards[c.id].shiny).sort((a, b) => balance.shinyCost[a.rarity] - balance.shinyCost[b.rarity]);
+  for (const c of shinyable) {
+    if (save.fragments < balance.shinyCost[c.rarity]) break;
+    const before = save.fragments;
+    makeShiny(save, c.id);
+    pay('shiny', before, save.fragments);
+  }
+  if (cards.every((c) => save.cards[c.id]?.shiny)) once('shiny', 'Todas las cartas brillantes', day);
 }
 
 const seen = { level: 1, chapter: 1, album: 0 };
@@ -188,7 +228,7 @@ for (let day = 1; day <= MAX_DAYS && !finished; day++) {
   for (let i = 0; i < skill.adPacks; i++) openPack(save, rng, now);
   while (takePack(save, 'standard')) openPack(save, rng, now);
   while (takePack(save, 'special')) openPack(save, rng, now, { special: true });
-  craft(now);
+  craft(now, day);
   const owned = cards.filter((c) => save.cards[c.id]).length;
   if (!seen.packAlbum && packCards.every((c) => save.cards[c.id])) {
     seen.packAlbum = true;
@@ -218,7 +258,13 @@ console.log(
   `Generado con \`node scripts/simulatePlaythrough.js ${skillName}\`. Un bot juega con el motor real (reacción media ${skill.think} s, ${Math.round(skill.mistake * 100)} % de colocaciones descuidadas), ${skill.loopsPerDay} servicios al día y ${skill.adPacks} sobres por anuncio al día, sin pagar nada.\n`,
 );
 console.log(
-  `**Resultado:** ${finished ? `todo desbloqueado el día ${finished}` : `sin completar en ${MAX_DAYS} días`} · ${loopCount} servicios · nivel ${save.player.level} · capítulo ${save.story.chapter}/${LAST_CHAPTER} · álbum ${owned.length}/${cards.length} · monedas ganadas ${coinsEarned.toLocaleString('es-ES')}, gastadas ${coinsSpent.toLocaleString('es-ES')}.\n`,
+  `**Resultado:** ${finished ? `todo desbloqueado el día ${finished}` : `sin completar en ${MAX_DAYS} días`} · ${loopCount} servicios · nivel ${save.player.level} · capítulo ${save.story.chapter}/${LAST_CHAPTER} · álbum ${owned.length}/${cards.length} · monedas ganadas ${coinsEarned.toLocaleString('es-ES')}.\n`,
+);
+const n = (v) => v.toLocaleString('es-ES');
+console.log('## En qué se gasta\n');
+console.log('| Monedas | Fragmentos |\n|---|---|');
+console.log(
+  `| Utensilios ${n(spent.utensils)} · Decoración ${n(spent.decor)} · Sobres ${n(spent.packs)} | Fabricar cartas ${n(spent.craft)} · Rincón mágico ${n(spent.magic)} · Brillantes ${n(spent.shiny)} |\n`,
 );
 console.log('## Hitos\n\n| Día | Servicio | Hito |\n|---|---|---|');
 for (const m of milestones) console.log(`| ${m.day} | ${m.loop} | ${m.what} |`);
