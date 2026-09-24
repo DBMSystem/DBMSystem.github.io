@@ -4,10 +4,10 @@ export const LOGICAL_MIN_HEIGHT = 640;
 const CELL_SIZE = { 4: 64, 5: 48 };
 const TRAY_SLOT = 72;
 const PREVIEW = 48;
-const HUD_HEIGHT = 48;
-const CUSTOMER_HEIGHT = 118;
-const ABILITY_ROW = 36;
-const PIP_HEIGHT = 56;
+const HUD_HEIGHT = 44;
+const CUSTOMER_HEIGHT = 152; // speech bubble + character behind the counter
+const ABILITY_ROW = 0; // utensil abilities row, only when utensils exist (phase 4)
+const PIP_HEIGHT = 74;
 
 export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, traySlots) {
   const scale = Math.min(cssWidth / LOGICAL_WIDTH, cssHeight / LOGICAL_MIN_HEIGHT);
@@ -23,7 +23,7 @@ export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, trayS
 
   let y = 0;
   const hud = { x: ox, y, w: LOGICAL_WIDTH, h: HUD_HEIGHT };
-  const pause = { x: ox + 4, y: y + 2, w: 44, h: 44 };
+  const pause = { x: ox + 4, y, w: 44, h: 44 };
   y += HUD_HEIGHT + gap;
 
   const slotW = (LOGICAL_WIDTH - 16) / maxCustomers;
@@ -49,7 +49,7 @@ export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, trayS
   const preview = { x: trayX + trayWidth - PREVIEW, y: y + (TRAY_SLOT - PREVIEW) / 2, w: PREVIEW, h: PREVIEW };
   y += TRAY_SLOT + gap;
 
-  const pip = { x: ox + 8, y, w: 120, h: PIP_HEIGHT };
+  const pip = { x: ox + 6, y, w: LOGICAL_WIDTH - 12, h: PIP_HEIGHT };
 
   return { scale, width, height, ox, hud, pause, customers, board, grid, abilities, tray, preview, pip };
 }

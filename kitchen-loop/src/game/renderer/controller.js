@@ -1,19 +1,38 @@
 import { createRenderer } from './renderer.js';
 import { cellAt, inside } from './layout.js';
 import { isCellFree } from '../grid.js';
+import { createPip } from '../../systems/pip.js';
+import { createTutorialRunner } from '../../systems/tutorial.js';
+import { createRng } from '../../utils/rng.js';
 
 const STEP = 1 / 60;
 const MAX_FRAME = 0.1;
 const DRAG_START_DISTANCE = 8;
 
-// Runs a loop on a canvas: fixed-step engine updates, rendering, and touch input (spec 10.3).
-export function createGameController({ canvas, engine, balance, settings, showFps, onPauseRequest }) {
+// Runs a loop on a canvas: fixed-step engine updates, rendering, touch input (spec 10.3),
+// Pip's lines and, for the first loop, the tutorial.
+export function createGameController({ canvas, engine, balance, settings, showFps, tutorial, pipOptions, onPauseRequest }) {
   const renderer = createRenderer(canvas, engine, { balance, reducedMotion: settings.reducedMotion, showFps });
   const { view } = renderer;
+  const pip = createPip({ engine, balance, rng: createRng(), ...pipOptions });
+  const runner = tutorial ? createTutorialRunner(engine, tutorial, balance) : null;
+  const nameVars = { nombre: pipOptions.playerName };
   let paused = false;
   let running = true;
   let last = performance.now();
   let accumulator = 0;
+
+  function syncTutorial() {
+    const step = runner?.step;
+    renderer.setHint(step?.hint ?? null);
+    if (step && !step.until) pip.show(step.key, step.expression, balance.tutorialLineDuration);
+  }
+
+  function updatePipLine() {
+    const step = runner?.step;
+    if (step?.until) renderer.setPipLine({ key: step.key, expression: step.expression, at: step.id }, { persistent: true, vars: nameVars });
+    else renderer.setPipLine(pip.current(), { vars: nameVars });
+  }
 
   function frame(now) {
     if (!running) return;
@@ -27,7 +46,11 @@ export function createGameController({ canvas, engine, balance, settings, showFp
       }
       renderer.update(dt);
     }
-    renderer.handleEvents(engine.drainEvents());
+    const events = engine.drainEvents();
+    if (runner?.handle(events)) syncTutorial();
+    else if (!runner?.step?.until) pip.handle(events);
+    renderer.handleEvents(events);
+    updatePipLine();
     renderer.draw(paused);
     requestAnimationFrame(frame);
   }
@@ -71,7 +94,8 @@ export function createGameController({ canvas, engine, balance, settings, showFp
     }
     if (d.active) {
       const cell = cellAt(renderer.getLayout(), p.x, p.y - balance.dragLiftOffset);
-      view.targetCell = cell !== -1 && isCellFree(engine.state.grid, cell, engine.state.time) ? cell : -1;
+      const allowed = !engine.state.allowedCells || engine.state.allowedCells.has(cell);
+      view.targetCell = cell !== -1 && allowed && isCellFree(engine.state.grid, cell, engine.state.time) ? cell : -1;
     }
   }
 
@@ -101,6 +125,8 @@ export function createGameController({ canvas, engine, balance, settings, showFp
   canvas.addEventListener('pointercancel', onPointerCancel);
   window.addEventListener('resize', onResize);
   renderer.resize();
+  if (runner) syncTutorial();
+  else pip.say('loopStart');
   requestAnimationFrame(frame);
 
   return {

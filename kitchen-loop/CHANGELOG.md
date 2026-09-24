@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.2.2 — Tercer lote de arte: efectos, platos y enfados
+
+- Efectos de la hoja de VFX en combo, servir, cliente que se va, desbordamiento, receta secreta, ¡En su punto! y fiebre.
+- 13 platos cocinados (8 nuevos) vuelan al cliente y aparecen en el recetario.
+- Clientes con cara de enfado cuando se impacientan y al irse; personajes reasignados para que cada cliente sea siempre la misma persona.
+
+## 0.2.1 — Segundo lote de arte
+
+- Cocina de fondo detrás de los clientes y en las escenas de historia.
+- Clientes comunes con poses (llegar, esperar, contento).
+- Pan, pescado y hierbas HD; platos cocinados que vuelan al cliente y aparecen en el recetario.
+- Nuevo icono oficial (sartén con cartas) como favicon e iconos de la app.
+- Iconos de reloj, recetario, sartén y anuncio en el HUD y los botones.
+- Brûlée (7 expresiones), fondo nocturno e iconos de moneda y rareza recortados para fases posteriores.
+
+## 0.2.0 — Historia, tutorial, recetario y personajes animados (feedback de Daniel)
+
+- Primera sesión con historia: Pip se presenta, pide el nombre y cuenta la premisa (escenas saltables, texto a máquina).
+- Tutorial guiado (sección 8.2) con dedo animado, casillas guiadas y reloj parado hasta el loop libre de 30 s.
+- Recetario en el menú y en la pausa: forma de cada receta, puntos, nivel de desbloqueo, acertijos de secretas y explicación de la venta de mostrador.
+- Clientes como personajes detrás del mostrador que piden con un bocadillo; entran, respiran, se impacientan, celebran o se van enfadados.
+- Pip en partida con frases por disparador (sección 3.6) y 8 expresiones; frase de Pip en resultados.
+- Ingredientes animados (flotar, aplastarse al caer, rebotar al brillar, girar al cocinarse).
+- Motor: cola de ingredientes, reloj detenible, casillas permitidas y pedidos guionizados para el tutorial.
+- 66 tests (nuevos: diálogo, Pip, tutorial, contenido de frases).
+
 ## 0.1.1 — Arte de referencia
 
 - Imágenes de referencia de Daniel guardadas en `assets/ref/` (originales y recortes).

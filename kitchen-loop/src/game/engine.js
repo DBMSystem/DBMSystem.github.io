@@ -13,7 +13,9 @@ import { chooseOrder, customerFor, freeSlot } from './customers.js';
 export const TRAY_SLOTS = 3;
 
 // One loop of play. Pure logic: no DOM, no React. The view reads `state` and drains `events`.
-export function createEngine({ balance, level, discoveredSecrets = [], seed, onOverflow, onEnd }) {
+// Tutorial options: `ingredientQueue` fixes the first ingredients, `timerRunning: false` stops the clock,
+// customers and patience until startTimer(), and `allowedSlots` / `allowedCells` restrict placing.
+export function createEngine({ balance, level, discoveredSecrets = [], seed, onOverflow, onEnd, ingredientQueue = [], timerRunning = true }) {
   const rng = createRng(seed);
   const content = getUnlockedContent(level);
   const pool = content.ingredients.map((id) => ingredientById[id]).filter((i) => i.weight > 0);
@@ -25,6 +27,9 @@ export function createEngine({ balance, level, discoveredSecrets = [], seed, onO
 
   const state = {
     status: 'playing', // playing | overflow | ended
+    timerRunning,
+    allowedSlots: null, // Set of tray slots, or null = any
+    allowedCells: null, // Set of grid cells, or null = any
     time: 0,
     timeLeft: balance.loopDuration,
     score: 0,
@@ -48,8 +53,11 @@ export function createEngine({ balance, level, discoveredSecrets = [], seed, onO
   };
 
   const orderRecipes = () => state.customers.map((c) => recipeById[c.recipeId]);
+  const queue = [...ingredientQueue];
   const generate = (tray) =>
-    generateIngredient(rng, { pool, orderRecipes: orderRecipes(), grid: state.grid, tray, orderBias: balance.orderBias });
+    queue.length > 0
+      ? queue.shift()
+      : generateIngredient(rng, { pool, orderRecipes: orderRecipes(), grid: state.grid, tray, orderBias: balance.orderBias });
   state.tray = createTray(TRAY_SLOTS, generate);
 
   const isKnown = (recipe) => recipe.kind !== 'secret' || discovered.has(recipe.id);
@@ -74,26 +82,27 @@ export function createEngine({ balance, level, discoveredSecrets = [], seed, onO
     }
   }
 
-  function spawnCustomer() {
+  function addCustomer(type, recipe) {
     const slot = freeSlot(state.customers, balance.maxCustomers);
-    if (slot === -1 || customerTypes.length === 0 || orderable.length === 0) return;
-    const type = rng.pick(customerTypes);
-    const recipe = chooseOrder(
-      rng,
-      type,
-      orderable,
-      { ordersIssued: state.ordersIssued, activeRecipeIds: new Set(state.customers.map((c) => c.recipeId)) },
-      balance,
-    );
+    if (slot === -1) return null;
     const patience = balance.customerPatience * type.patience;
     const customer = { uid: ++state.customerSeq, typeId: type.id, recipeId: recipe.id, slot, patience, maxPatience: patience };
     state.customers.push(customer);
     state.ordersIssued += 1;
     events.push({ type: 'customerArrived', customer });
+    return customer;
+  }
+
+  function spawnCustomer() {
+    if (customerTypes.length === 0 || orderable.length === 0) return;
+    const type = rng.pick(customerTypes);
+    const activeRecipeIds = new Set(state.customers.map((c) => c.recipeId));
+    addCustomer(type, chooseOrder(rng, type, orderable, { ordersIssued: state.ordersIssued, activeRecipeIds }, balance));
   }
 
   function placeIngredient(slot, cellIndex) {
     if (state.status !== 'playing' || !state.tray.slots[slot] || !isCellFree(state.grid, cellIndex, state.time)) return false;
+    if (state.allowedSlots?.has(slot) === false || state.allowedCells?.has(cellIndex) === false) return false;
     const ingredient = takeFromTray(state.tray, slot, generate);
     const cell = state.grid.cells[cellIndex];
     cell.ingredient = ingredient;
@@ -150,6 +159,8 @@ export function createEngine({ balance, level, discoveredSecrets = [], seed, onO
       multiplier,
       chain: combo.chain,
       customerSlot: customer ? customer.slot : null,
+      customerTypeId: customer ? customer.typeId : null,
+      patienceLeft: customer ? customer.patience / customer.maxPatience : null,
       secretFound,
     });
     if (combo.perfect) events.push({ type: 'perfect' });
@@ -160,11 +171,11 @@ export function createEngine({ balance, level, discoveredSecrets = [], seed, onO
   function step(dt) {
     if (state.status !== 'playing') return;
     state.time += dt;
-    state.timeLeft -= dt;
-
     const combo = updateCombo(state.combo, state.time, balance);
     if (combo.feverEnded) events.push({ type: 'feverEnd' });
     if (combo.chainBroken) events.push({ type: 'comboBreak' });
+    if (!state.timerRunning) return;
+    state.timeLeft -= dt;
 
     for (const customer of state.customers) customer.patience -= dt;
     const leaving = state.customers.filter((c) => c.patience <= 0);
@@ -202,6 +213,17 @@ export function createEngine({ balance, level, discoveredSecrets = [], seed, onO
     return true;
   }
 
+  // Tutorial helpers.
+  function orderFrom(typeId, recipeId) {
+    return addCustomer(customerById[typeId], recipeById[recipeId]);
+  }
+
+  function startTimer(duration) {
+    state.timerRunning = true;
+    state.timeLeft = duration;
+    state.nextCustomerAt = state.time + balance.firstCustomerAt;
+  }
+
   function finishOverflow() {
     if (state.status === 'overflow') end('overflow');
   }
@@ -223,5 +245,18 @@ export function createEngine({ balance, level, discoveredSecrets = [], seed, onO
 
   const drainEvents = () => events.splice(0, events.length);
 
-  return { state, placeIngredient, cookAt, step, applySecondChance, finishOverflow, getResult, drainEvents, isKnown, refreshMatches };
+  return {
+    state,
+    placeIngredient,
+    cookAt,
+    step,
+    applySecondChance,
+    finishOverflow,
+    getResult,
+    drainEvents,
+    isKnown,
+    refreshMatches,
+    orderFrom,
+    startTimer,
+  };
 }

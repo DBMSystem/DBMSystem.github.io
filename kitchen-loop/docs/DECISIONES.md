@@ -13,7 +13,7 @@
 |---|---|---|
 | D-1 | Secreto de la historia | Propuesta de la sección 6.5. Todo lore se escribirá como `draft` (no afecta a la Fase 1). |
 | D-2 | Origen del arte | **Actualizado**: Daniel ha aportado imágenes de referencia (ver sección 7). Los sprites se recortan de ellas y pasan por `src/assets/manifest.js`; lo que no tiene arte sigue usando placeholders procedurales. |
-| D-3 | Música | Sin música. Los efectos sintetizados son de la Fase 3: **la Fase 1 no tiene sonido**. |
+| D-3 | Música | Sin música. Los efectos sintetizados son de la Fase 3: **todavía no hay sonido**. |
 | D-4 | Público objetivo | 13+, no dirigido a niños. |
 | D-5 | Sobre diario del Pase | Se mantiene (Fase 5). |
 | D-6 | Idioma | Español; todo texto sale de `src/data/i18n/es.js` mediante `t()`. |
@@ -138,3 +138,73 @@ Solo como **referencia visual** para fases posteriores (no se usan todavía): `p
 - Hay ingredientes que no están en el juego (aguacate, guindilla, gamba, brócoli, zanahoria, ajo). No se añaden.
 - La ilustración de carga y el logo dicen "Kitchen Loop" / "Loading..."; en el menú se usa solo la parte superior (el logo en inglés es el nombre del juego).
 - Solo hay 8 expresiones de Pip; la sección 3.4 pide 15.
+
+---
+
+## 8. Feedback de Daniel tras probar la Fase 1 (adelantos de fases posteriores)
+
+Daniel pidió contexto, historia, tutorial, un menú de combinaciones, pedidos como personajes con bocadillo y animaciones. Como la petición es suya, se adelanta sin añadir sistemas nuevos (todo está en la especificación):
+
+| Pedido | Qué se ha hecho | Sección de la especificación |
+|---|---|---|
+| Historia y contexto | Primera sesión: Pip se presenta (3 bocadillos) → "¿Cómo te llamas?" → premisa (3 bocadillos) → tutorial. Botón HISTORIA en el menú para verla otra vez. Textos `draft` (D-1). | 6.1, 6.2, 6.3, 8.1 |
+| Tutorial | Loop guiado: huevo → bacon → cocinar → cliente con Tostada con Tomate → 30 s libres. Reloj parado hasta el paso 5, casillas guiadas, dedo animado. No se salta la primera vez; botón TUTORIAL para repetirlo. La primera carta garantizada llegará con las cartas (Fase 2). | 8.2 |
+| Menú de combinaciones | RECETARIO (menú y pausa): recetas conocidas con su forma, puntos, nivel de desbloqueo y acertijos de las secretas. | 4.9 (pestaña Recetas) |
+| Pedidos como personaje | Cada cliente es su retrato detrás del mostrador y pide con un bocadillo (nombre, ingredientes dibujados según la forma y paciencia). | 2.1, 3.3 |
+| Animaciones | Clientes: entran caminando, respiran, se impacientan (temblor + marca de enfado), saltan contentos al ser servidos o se van enfadados. Pip: respira, salta al hablar, cambia de expresión, texto a máquina. Ingredientes: flotan en la bandeja, se aplastan al caer, rebotan al brillar, giran al cocinarse. Todo respeta "Reducir animaciones". | 3.3, 9.3, 9.4 |
+| Frases de Pip en partida | Sistema de frases por disparador, sin repetir las 5 últimas y con 4 s entre frases (las de eventos importantes tienen prioridad). | 3.6 |
+
+**¿Por qué puedo cocinar recetas que nadie ha pedido?** Es la "venta de mostrador" de la sección 2.6: cualquier receta conocida que brille se puede cocinar; si nadie la pidió, da la mitad de puntos pero cuenta para el combo. Sirve para hacer hueco y mantener la cadena. Ahora se explica en el recetario y Pip lo cuenta la primera vez que ocurre. Si Daniel prefiere que solo se puedan cocinar los pedidos, es un cambio de diseño: habría que decidirlo (afecta al desbordamiento y a los combos).
+
+**Decisiones menores:**
+- Las animaciones de personajes se hacen por código (respirar, saltar, temblar, girar) sobre cada imagen fija, porque de momento hay una sola imagen por personaje. Con más poses (lista en `docs/ASSET_REQUESTS.md`) se podrán cambiar de imagen según el estado.
+- La historia de fondo difumina la ilustración del menú, porque esa imagen ya incluye a Pip. Pedido un fondo de cocina sin Pip.
+- El texto de Pip en partida cabe en ≤ 60 caracteres (test automático); las escenas de historia no tienen ese límite.
+- Pip usa las 8 expresiones disponibles; las otras 7 de la sección 3.4 están pedidas.
+- Los consejos que Pip da una sola vez se guardan en `story.seenScenes` (`tip.counterSale`).
+- La línea "Fase actual" de `CLAUDE.md` sigue sin tocar: la actualiza Daniel.
+
+---
+
+## 9. Segundo lote de arte (Meta AI) — "úsalos con libertad de diseño"
+
+Originales en `assets/ref/originals/17–20`. Recortes con `scripts/extract_sprites.py`.
+
+| Recurso | Uso |
+|---|---|
+| Fondo de cocina de día | Detrás de los clientes en la partida (con el mostrador delante) y fondo de las escenas de historia (ya no aparecen dos Pip). |
+| Fondo de cocina de noche | Guardado para el tema Cocina Nocturna del Pase (Fase 5). |
+| Icono con sartén y cartas holográficas | Nuevo `assets/ref/icon_final.png` por indicación de Daniel ("ICONO OFICIAL"); el anterior pasa a `icon_final_v1.png`. Favicon e iconos de la app sobre un cuadrado crema. |
+| Pan, pescado y hierbas HD | Sustituyen a los iconos pequeños del UI kit. Huevo, bacon y queso HD no se usan: el huevo frito y el bacon en tiras de la primera hoja cuadran mejor con los platos y con el resto de ingredientes. |
+| 4 clientes × 3 poses | Clientes comunes con poses: llegar (solo el estudiante), esperar y contento al ser servidos. Asignación en `CONTENT_REVIEW.md`. Los retratos detallados anteriores quedan para clientes especiales. |
+| Platos | Solo 5 de los 15 corresponden a recetas del juego: Pescado a las Hierbas, Tortilla de Champiñones, Guiso Marinero, Ensalada de la Huerta, Brocheta de la Huerta. Cuando existe el plato, es el plato lo que vuela al cliente al cocinar y aparece en el recetario. |
+| Brûlée (hoja de 7 expresiones grande) | Recortado para la Fase 4 (capítulo 3). No aparece antes para respetar la historia (sección 3.5). |
+| Iconos de interfaz | Reloj en el HUD; recetario, sartén y anuncio en los botones. Moneda, rara y legendaria, para las Fases 2 y 5. |
+
+**No usado, y por qué:**
+- **Icono "LIFE" (corazón)**: la sección 17 prohíbe vidas.
+- **Las 7 expresiones nuevas de Pip y las 7 de Brûlée del mega pack**: son bustos con otra ropa (Pip con chaqueta azul), no cuadran con el Pip de cuerpo entero que ya usamos.
+- **Primera columna de clientes del mega pack**: en tres de las cuatro filas la primera pose es otro personaje (otra chica, otro chico con cascos, otra ropa de la abuela).
+- **10 platos que no son recetas del juego** (ramen, filete, sushi, tortitas, croissant…).
+- **`vfx_sheet.png`** (efectos): el texto lo menciona, pero la imagen no ha llegado.
+- Las ideas de efectos del texto de Meta AI (humo al fallar, sartén en llamas con el tiempo crítico, pausa del juego en la legendaria) quedan como propuestas para la Fase 3; las cartas "Seta Dorada" no existen en la especificación (la legendaria es la Trufa Dorada).
+
+---
+
+## 10. Tercer lote de arte
+
+Originales en `assets/ref/originals/21–24`.
+
+| Recurso | Uso |
+|---|---|
+| Hoja de efectos | Chispas doradas: combo ×3 o más. Corazones: cliente servido. Humo: cliente que se va (pequeño) y desbordamiento (grande). Espiral arcoíris: receta secreta descubierta. Estrella azul: ¡En su punto! Sartén en llamas: a los lados del cartel de ¡Fiebre en la cocina! Monedas: guardadas para la Fase 2. Duraciones dentro de la tabla 9.3. |
+| 8 platos | Bacon con Huevo, Tostada con Tomate, Triple Bacon, Revuelto con Queso, Bocadillo de Bacon, Patatas Bravas, Tortilla de Patatas, Pescado con Patatas. Faltan Tostada Especial y Desayuno Completo. |
+| Caras de enfado | Pose "enfadado" de los 4 clientes comunes: se ve cuando les queda poca paciencia y cuando se van sin comer. Es un busto, se dibuja al 80 % para que la cabeza cuadre con las poses de cuerpo entero. |
+
+**Cambio de personajes para que cada cliente sea siempre la misma persona** (las caras de enfado no coinciden con todas las poses anteriores):
+- Oficinista: ahora la chica de media melena castaña y camiseta verde (antes, la chica de pelo verde, que no tiene cara de enfado).
+- Cliente tranquilo: ahora la abuela de rebeca lila, como en su cara de enfado (antes, la de rebeca beige).
+- Estudiante y Turista: sin cambios.
+- Oficinista y Cliente tranquilo no tienen pose "contento": usan la de espera con un salto.
+
+**No usado**: la hoja de 7 expresiones de Pip de este lote es **otro personaje** (piel más oscura, bigote, sin pelo castaño), no el Pip del juego. Se guarda en `assets/ref/originals/23_pip_expressions_2.webp`.

@@ -303,3 +303,346 @@ body {
   gap: 4px;
   color: var(--purple);
 }
+
+/* ---------- Pip, story and dialogue ---------- */
+
+.pip-sprite {
+  image-rendering: auto;
+  transform-origin: 50% 100%;
+  animation: pip-breathe 2.6s ease-in-out infinite;
+}
+
+.pip-sprite.talking {
+  animation: pip-talk 0.35s ease-in-out infinite alternate;
+}
+
+@keyframes pip-breathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(0.98, 1.03);
+  }
+}
+
+@keyframes pip-talk {
+  from {
+    transform: translateY(0) rotate(-1.5deg);
+  }
+  to {
+    transform: translateY(-5px) rotate(1.5deg);
+  }
+}
+
+.speech {
+  position: relative;
+  margin: 0;
+  padding: 14px 16px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: var(--cream);
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: left;
+  animation: bubble-pop 0.25s ease-out;
+}
+
+.speech.small {
+  font-size: 14px;
+  padding: 10px 12px;
+}
+
+@keyframes bubble-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.story {
+  justify-content: flex-end;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* The kitchen in the background, blurred so the talking Pip stands out. */
+.story::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  background: linear-gradient(rgba(20, 12, 8, 0.25), rgba(20, 12, 8, 0.8)), var(--scene) top center / cover;
+  filter: blur(1.5px) brightness(0.8);
+}
+
+.story > * {
+  position: relative;
+}
+
+.story-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 420px;
+  gap: 4px;
+}
+
+.story .speech {
+  align-self: stretch;
+  min-height: 96px;
+}
+
+.story .speech::after {
+  content: '';
+  position: absolute;
+  left: 54px;
+  bottom: -16px;
+  border: 14px solid transparent;
+  border-top-color: var(--ink);
+  border-bottom: 0;
+}
+
+.next-hint {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--orange);
+  animation: blink 1s steps(2) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.skip {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(20, 12, 8, 0.6);
+  color: var(--cream);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dots {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 248, 231, 0.3);
+}
+
+.dots span.on {
+  background: var(--peach);
+}
+
+.name-input input {
+  width: 100%;
+  max-width: 320px;
+  min-height: 52px;
+  padding: 10px 16px;
+  border: 3px solid var(--peach);
+  border-radius: 14px;
+  background: var(--cream);
+  color: var(--ink);
+  font: inherit;
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.greeting {
+  margin: 0;
+  font-weight: 800;
+  color: var(--peach);
+}
+
+.menu-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.menu-row .btn {
+  min-width: 0;
+  flex: 1;
+  padding: 10px 4px;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.pip-says {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.pip-says .speech {
+  flex: 1;
+  margin-bottom: 30px;
+}
+
+/* ---------- Recipe book ---------- */
+
+.screen.scroll,
+.overlay.scroll {
+  justify-content: flex-start;
+  overflow-y: auto;
+  align-items: center;
+}
+
+.recipe-book {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 380px;
+  padding: 16px 12px 24px;
+  border-radius: 18px;
+  background: #3a281d;
+}
+
+.recipe-book h2,
+.recipe-book h3 {
+  margin: 6px 0 0;
+  color: var(--peach);
+}
+
+.recipe-book .tip {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(167, 139, 250, 0.2);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.recipe-book ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recipe-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.recipe-row.locked {
+  opacity: 0.45;
+}
+
+.recipe-row.secret {
+  background: rgba(167, 139, 250, 0.25);
+  color: var(--cream);
+}
+
+.recipe-head {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.points {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted, #8a735f);
+}
+
+.pattern-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8a735f;
+}
+
+.pattern-group,
+.pattern-line {
+  display: flex;
+  align-items: center;
+}
+
+.pattern-line {
+  padding: 3px 6px;
+  border-radius: 8px;
+  background: rgba(255, 204, 128, 0.6);
+}
+
+.pattern-item {
+  display: flex;
+  align-items: center;
+}
+
+.plus {
+  margin: 0 4px;
+  font-weight: 800;
+  color: #8a735f;
+}
+
+.pattern-square {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+}
+
+.ingredient-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  object-fit: contain;
+}
+
+.ingredient-icon.placeholder {
+  border-radius: 50%;
+  background: var(--peach);
+  font-weight: 800;
+}
+
+.btn .btn-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 6px;
+  vertical-align: -6px;
+}
+
+.menu-row .btn .btn-icon {
+  display: block;
+  margin: 0 auto 2px;
+}
+
+.dish {
+  width: 72px;
+  height: 72px;
+  margin: -6px 0 -10px;
+}

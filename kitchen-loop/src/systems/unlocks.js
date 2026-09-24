@@ -9,3 +9,8 @@ export function getUnlockedContent(level) {
   }
   return content;
 }
+
+// Level at which a recipe (or any other unlockable id) first appears, or null.
+export function unlockLevelOf(kind, id) {
+  return levelUnlocks.find((row) => row[kind]?.includes(id))?.level ?? null;
+}

@@ -77,6 +77,15 @@ export const balance = {
   loopModifiersEnabled: true,
   loopModifiersFromLevel: 4,
 
+  // Tutorial and Pip (spec 8.2, 3.6)
+  tutorialLoopDuration: 30,
+  pipLineInterval: 4,
+  pipLineDuration: 3.2,
+  tutorialLineDuration: 5,
+  dialogueHistory: 5,
+  closeCallPatience: 0.15,
+  weakLoopScore: 300,
+
   // Story (phase 4)
   bruleeScoreThreshold: 1200,
   bruleeFromLoop: 3,
