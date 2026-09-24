@@ -9,6 +9,7 @@ import { Settings } from './screens/Settings.jsx';
 import { finalizeLoop } from './economy/rewards.js';
 import { addXp, xpToNext } from './economy/progression.js';
 import { createRng } from './utils/rng.js';
+import { calendarToday } from './components/Calendar.jsx';
 
 // Routes between screens. Game data lives in the save manager, not in component state.
 // First session (spec 8.1): Pip introduces himself → name → premise → tutorial → results (first card) → menu.
@@ -29,7 +30,7 @@ export function App({ services }) {
   async function handleLoopEnd(loopResult) {
     let summary = null;
     await saveManager.update((s) => {
-      summary = finalizeLoop(s, loopResult, { rng: createRng(), now: Date.now() });
+      summary = finalizeLoop(s, loopResult, { rng: createRng(), now: Date.now(), today: calendarToday(s) });
       if (loopResult.tutorial) s.tutorialDone = true;
     });
     if (!summary) return;

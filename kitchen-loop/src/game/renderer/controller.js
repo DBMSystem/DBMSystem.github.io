@@ -4,6 +4,8 @@ import { isCellFree } from '../grid.js';
 import { createPip } from '../../systems/pip.js';
 import { createTutorialRunner } from '../../systems/tutorial.js';
 import { createRng } from '../../utils/rng.js';
+import { progressWith, challengeText } from '../../systems/challenges.js';
+import { t } from '../../utils/i18n.js';
 
 const STEP = 1 / 60;
 const MAX_FRAME = 0.1;
@@ -11,13 +13,28 @@ const DRAG_START_DISTANCE = 8;
 
 // Runs a loop on a canvas: fixed-step engine updates, rendering, touch input (spec 10.3),
 // Pip's lines and, for the first loop, the tutorial.
-export function createGameController({ canvas, engine, balance, settings, showFps, tutorial, pipOptions, onPauseRequest, onEvents }) {
+// `challenges`: today's Pip orders; a toast appears the moment one is completed during the service.
+export function createGameController({ canvas, engine, balance, settings, showFps, tutorial, pipOptions, challenges = [], onPauseRequest, onQuickRequest, onEvents }) {
   const renderer = createRenderer(canvas, engine, { balance, reducedMotion: settings.reducedMotion, showFps });
   const { view } = renderer;
   const pip = createPip({ engine, balance, rng: createRng(), ...pipOptions });
   const runner = tutorial ? createTutorialRunner(engine, tutorial, balance) : null;
   const nameVars = { nombre: pipOptions.playerName };
+  const pending = challenges.filter((c) => !c.done);
   let paused = false;
+
+  // Checks Pip's orders after cooking events; completed ones show a toast and a sound.
+  function checkChallenges(events) {
+    if (pending.length === 0 || !events.some((e) => e.type === 'cook' || e.type === 'perfect' || e.type === 'fever')) return;
+    const live = engine.getResult();
+    for (let i = pending.length - 1; i >= 0; i--) {
+      if (progressWith(pending[i], live) >= pending[i].target) {
+        renderer.showToast(t('challenges.done'), challengeText(pending[i]));
+        events.push({ type: 'challengeDone' });
+        pending.splice(i, 1);
+      }
+    }
+  }
   let running = true;
   let last = performance.now();
   let accumulator = 0;
@@ -50,6 +67,7 @@ export function createGameController({ canvas, engine, balance, settings, showFp
     if (runner?.handle(events)) syncTutorial();
     else if (!runner?.step?.until) pip.handle(events);
     renderer.handleEvents(events);
+    if (!runner) checkChallenges(events);
     if (events.length > 0) onEvents?.(events);
     updatePipLine();
     renderer.draw(paused);
@@ -68,6 +86,10 @@ export function createGameController({ canvas, engine, balance, settings, showFp
     const layout = renderer.getLayout();
     if (inside(layout.pause, p.x, p.y)) {
       if (engine.state.status === 'playing') onPauseRequest();
+      return;
+    }
+    if (inside(layout.quick, p.x, p.y)) {
+      if (engine.state.status === 'playing') onQuickRequest?.();
       return;
     }
     if (!canAct() || view.drag) return;

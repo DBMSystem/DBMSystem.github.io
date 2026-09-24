@@ -9,6 +9,7 @@ import { addXp, xpToNext, unlocksBetween } from '../src/economy/progression.js';
 import { finalizeLoop, loopCoins, loopXp, TUTORIAL_CARD } from '../src/economy/rewards.js';
 import { claimCalendar, canClaimCalendar } from '../src/systems/calendar.js';
 import { cards, cardById } from '../src/data/cards.js';
+import { discoveriesFor } from '../src/cards/album.js';
 import { recipes } from '../src/data/recipes.js';
 import { balance } from '../src/data/balance.js';
 import { createRng } from '../src/utils/rng.js';
@@ -257,11 +258,12 @@ describe('save validation (phase 2)', () => {
 describe('album data (spec 4.3, 6.4, 15.1)', () => {
   const countBy = (rarity, source) => cards.filter((c) => c.rarity === rarity && c.source === source).length;
 
-  it('48 cards with the spec distribution and unique ids/numbers', () => {
-    expect(cards).toHaveLength(48);
-    expect([countBy('common', 'pack'), countBy('rare', 'pack'), countBy('epic', 'pack'), countBy('legendary', 'pack')]).toEqual([20, 10, 5, 2]);
-    expect([countBy('rare', 'discovery'), countBy('epic', 'discovery'), countBy('legendary', 'discovery')]).toEqual([4, 5, 2]);
-    expect(new Set(cards.map((c) => c.id)).size).toBe(48);
+  it('120 cards with the expanded distribution (D-8) and unique ids/numbers', () => {
+    expect(cards).toHaveLength(120);
+    expect([countBy('common', 'pack'), countBy('rare', 'pack'), countBy('epic', 'pack'), countBy('legendary', 'pack')]).toEqual([50, 30, 14, 4]);
+    expect([countBy('rare', 'discovery'), countBy('epic', 'discovery'), countBy('legendary', 'discovery')]).toEqual([9, 8, 5]);
+    expect(new Set(cards.map((c) => c.id)).size).toBe(120);
+    expect(new Set(cards.map((c) => c.number)).size).toBe(120);
   });
 
   it('12 story fragments, at least 8 on common or rare cards', () => {
@@ -283,6 +285,19 @@ describe('album data (spec 4.3, 6.4, 15.1)', () => {
       expect(t(`card.${c.id}.lore`).length, c.id).toBeLessThanOrEqual(140);
       if (c.source === 'discovery') expect(hasKey(`card.${c.id}.hint`), c.id).toBe(true);
     }
+  });
+
+  it('discovery cards come from what happens in a loop', () => {
+    const base = loop({ perfectCount: 0, customersLost: 1 });
+    expect(discoveriesFor(base)).toEqual([]);
+    expect(discoveriesFor({ ...base, bestCombo: 10 })).toContain('combo_ten');
+    expect(discoveriesFor({ ...base, perfectCount: 3 })).toContain('perfect_trio');
+    expect(discoveriesFor({ ...base, score: 3000 })).toContain('high_score');
+    expect(discoveriesFor({ ...base, customersLost: 0, ordersServed: 8 })).toContain('untouchable');
+    expect(discoveriesFor({ ...base, customersLost: 0, ordersServed: 8, endReason: 'overflow' })).not.toContain('untouchable');
+    expect(discoveriesFor({ ...base, feverCount: 3 })).toEqual(expect.arrayContaining(['double_fever', 'triple_fever']));
+    const known = ['secret', 'serve', 'cookInLoop', 'emptyGridAtEnd', 'feverInLoop', 'comboInLoop', 'perfectInLoop', 'scoreInLoop', 'noLossLoop'];
+    for (const c of cards.filter((c) => c.unlock)) expect(known, c.id).toContain(c.unlock.type);
   });
 
   it('every art layer points to an existing sprite', () => {

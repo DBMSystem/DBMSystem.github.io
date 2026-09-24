@@ -21,6 +21,7 @@ const FLASH_TIME = 0.15;
 const GLOW_JITTER_TIME = 0.2;
 const HINT_CYCLE = 1.4;
 const LOW_TIME = 10;
+const TOAST_TIME = 2.2;
 const TEXT_POOL = 24;
 const FLYER_POOL = 32;
 const VFX_POOL = 12;
@@ -56,6 +57,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     secretAt: -10,
     secretRecipe: null,
     comboPopAt: -10,
+    toast: null, // { title, text, at }
     fps: 60,
   };
   const texts = Array.from({ length: TEXT_POOL }, () => ({ alive: false }));
@@ -272,6 +274,10 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     }
   }
 
+  const showToast = (title, text) => {
+    view.toast = { title, text, at: view.time };
+  };
+
   const setHint = (hint) => {
     view.hint = hint;
   };
@@ -288,16 +294,19 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
   }
 
   function drawHud() {
-    const { hud, pause } = layout;
+    const { hud, pause, quick } = layout;
     kit.roundRect(pause.x + 6, pause.y + 6, pause.w - 12, pause.h - 12, 8, 'rgba(255, 248, 231, 0.15)');
     ctx.fillStyle = COLORS.cream;
     ctx.fillRect(pause.x + 17, pause.y + 15, 4, 14);
     ctx.fillRect(pause.x + 25, pause.y + 15, 4, 14);
+    kit.roundRect(quick.x + 6, quick.y + 6, quick.w - 12, quick.h - 12, 8, 'rgba(255, 248, 231, 0.15)');
+    const book = getSprite('ui/icon_recipe');
+    if (book) drawSmooth(ctx, book, quick.x + 11, quick.y + 11, quick.w - 22, quick.h - 22);
 
     const seconds = Math.ceil(state.timeLeft);
     const low = state.timeLeft <= LOW_TIME && state.status === 'playing' && state.timerRunning;
     const pulse = low ? 1 + 0.08 * Math.sin(view.time * 10) : 1;
-    const clockX = hud.x + 66;
+    const clockX = hud.x + 112;
     const cy = hud.y + 22;
     const timerIcon = getSprite('ui/icon_timer');
     const iconSize = 22 * pulse;
@@ -311,7 +320,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     }
     kit.text(state.timerRunning ? String(seconds) : '–', clockX + 14, cy, { size: Math.round(22 * pulse), weight: 800, align: 'left', color: low ? COLORS.bad : COLORS.cream });
 
-    kit.text(formatNumber(state.score), hud.x + hud.w / 2 + 10, cy, { size: 24, weight: 800 });
+    kit.text(formatNumber(state.score), hud.x + hud.w / 2 + 34, cy, { size: 24, weight: 800 });
 
     const { chain } = state.combo;
     if (chain >= 2) {
@@ -569,6 +578,16 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       kit.text(t(`recipe.${view.secretRecipe}`), c.x, c.y + 48, { size: 18, weight: 800, color: COLORS.cream, outline: COLORS.ink });
       ctx.globalAlpha = 1;
     }
+    if (view.toast && view.time - view.toast.at < TOAST_TIME) {
+      const k = (view.time - view.toast.at) / TOAST_TIME;
+      const pop = 0.7 + 0.3 * ease(k / 0.1);
+      ctx.globalAlpha = 1 - clamp01((k - 0.8) / 0.2);
+      const y = board.y + 34;
+      kit.roundRect(c.x - 150 * pop, y - 22, 300 * pop, 46, 14, 'rgba(59, 42, 32, 0.92)', COLORS.ok, 3);
+      kit.text(view.toast.title, c.x, y - 8, { size: 15, weight: 900, color: COLORS.ok });
+      kit.text(view.toast.text, c.x, y + 11, { size: 11, weight: 700, color: COLORS.cream });
+      ctx.globalAlpha = 1;
+    }
     const sinceFlash = view.time - view.flashAt;
     if (sinceFlash < FLASH_TIME) {
       ctx.fillStyle = `rgba(255, 255, 255, ${balance.perfectFlashMaxOpacity * (1 - sinceFlash / FLASH_TIME)})`;
@@ -606,5 +625,5 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     view.returning = { slot, x: x - CELL_SPRITE / 2, y: y - balance.dragLiftOffset - CELL_SPRITE / 2, at: view.time };
   }
 
-  return { resize, handleEvents, update, draw, view, getLayout: () => layout, returnDragged, setPipLine, setHint };
+  return { resize, handleEvents, update, draw, view, getLayout: () => layout, returnDragged, setPipLine, setHint, showToast };
 }

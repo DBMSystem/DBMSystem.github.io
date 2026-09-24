@@ -3,6 +3,7 @@ import { cardById } from '../data/cards.js';
 import { calendarDays } from '../data/calendar.js';
 import { balance } from '../data/balance.js';
 import { xpToNext } from '../economy/progression.js';
+import { challengeTemplates } from '../data/challenges.js';
 
 export const SAVE_VERSION = 1;
 
@@ -28,6 +29,7 @@ export function createDefaultSave(now = Date.now()) {
     cooldowns: { lastFreePackTime: 0, lastPassPackDate: null },
     dailyCaps: { date: null, secondChances: 0, trials: 0 },
     calendar: { dayIndex: 0, lastClaimDate: null },
+    challenges: { date: null, list: [], bonusClaimed: false },
     entitlements: { maestroPass: false, skins: [], starterPack: false, starterPackGranted: false, verifiedAt: 0 },
     equippedPan: 'default',
     grantedRewards: [],
@@ -82,6 +84,16 @@ export function validateSave(raw) {
   clean.dailyCaps = { date: dateOrNull(clean.dailyCaps.date), secondChances: count(clean.dailyCaps.secondChances), trials: count(clean.dailyCaps.trials) };
   const dayIndex = count(clean.calendar.dayIndex);
   clean.calendar = { dayIndex: dayIndex < calendarDays.length ? dayIndex : 0, lastClaimDate: dateOrNull(clean.calendar.lastClaimDate) };
+
+  const challengeIds = new Set(challengeTemplates.map((c) => c.id));
+  const list = Array.isArray(clean.challenges.list) ? clean.challenges.list : [];
+  clean.challenges = {
+    date: dateOrNull(clean.challenges.date),
+    bonusClaimed: Boolean(clean.challenges.bonusClaimed),
+    list: list
+      .filter((c) => isPlainObject(c) && challengeIds.has(c.id) && Number.isInteger(c.target) && c.target > 0)
+      .map((c) => ({ id: c.id, target: c.target, recipeId: recipeById[c.recipeId] ? c.recipeId : null, progress: Math.min(count(c.progress), c.target), done: Boolean(c.done) })),
+  };
 
   const { story } = clean;
   story.chapter = Number.isInteger(story.chapter) && story.chapter >= 1 ? story.chapter : 1;

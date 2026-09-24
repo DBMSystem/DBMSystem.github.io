@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Button } from '../components/Button.jsx';
 import { Calendar, calendarToday } from '../components/Calendar.jsx';
 import { canClaimCalendar } from '../systems/calendar.js';
+import { todayChallenges } from '../systems/challenges.js';
+import { Challenges } from '../components/Challenges.jsx';
 import { xpToNext } from '../economy/progression.js';
 import { balance } from '../data/balance.js';
 import { t, formatNumber } from '../utils/i18n.js';
@@ -12,7 +14,8 @@ import { spriteUrl } from '../assets/manifest.js';
 export function Menu({ services, onPlay, onAlbum, onSettings, onDevLevelUp }) {
   const { saveManager, adManager } = services;
   const save = saveManager.get();
-  const calendarReady = canClaimCalendar(save, calendarToday(save));
+  const today = calendarToday(save);
+  const calendarReady = canClaimCalendar(save, today);
   const [showCalendar, setShowCalendar] = useState(calendarReady);
   const { level, xp, name } = save.player;
   const xpShare = level >= balance.maxLevel ? 1 : xp / xpToNext(level);
@@ -37,6 +40,7 @@ export function Menu({ services, onPlay, onAlbum, onSettings, onDevLevelUp }) {
       <Button icon="icon_cook" onClick={onPlay}>
         {t('menu.play')}
       </Button>
+      {save.tutorialDone && <Challenges list={todayChallenges(save, today)} compact />}
       <div className="menu-row">
         <Button variant="secondary" icon="icon_rare" onClick={onAlbum}>
           {t('menu.album')}

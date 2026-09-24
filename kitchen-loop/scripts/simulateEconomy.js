@@ -47,6 +47,9 @@ function playLoop(rng, save, id) {
     ordersServed,
     orderCoins: ordersServed * balance.coinsPerOrder,
     bestCombo: 1 + Math.floor(rng.next() * 8),
+    recipesCooked: ordersServed + Math.round(rng.next() * 6),
+    perfectCount: rng.next() < 0.5 ? 1 + Math.floor(rng.next() * 2) : 0,
+    customersLost: rng.next() < 0.45 ? 0 : 1 + Math.floor(rng.next() * 2),
     servedTypes: [],
     feverCount: rng.next() < 0.25 ? (rng.next() < 0.1 ? 2 : 1) : 0,
     emptyGridAtEnd: rng.next() < 0.01,
@@ -77,7 +80,7 @@ function simulate(profile, seed) {
     claimCalendar(save, rng, `d${day}`, now);
     for (let i = 0; i < habit.loopsPerDay; i++) {
       const before = save.coins;
-      finalizeLoop(save, playLoop(rng, save, ++loopId), { rng, now });
+      finalizeLoop(save, playLoop(rng, save, ++loopId), { rng, now, today: `d${day}` });
       coinsEarned += save.coins - before;
     }
     const packs = (profile.ads ? habit.adPacks : 0) + (profile.pass ? 1 : 0);

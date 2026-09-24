@@ -98,3 +98,20 @@ Nombres y lore en `src/data/i18n/es.js` (`card.<id>.name|lore|hint`); `draft: tr
 **Calendario, álbum, ajustes y resultados:** textos de interfaz nuevos en `es.js` (`calendar.*`, `album.*`, `settings.*`, `results.*`, `reveal.*`, `pack.*`).
 
 **Créditos (Ajustes):** "Idea y dirección: Daniel · Arte de referencia generado con Meta AI · Programación con Claude Code". Revisar.
+
+## Álbum ampliado a 120 cartas (72 cartas nuevas, todas draft)
+
+Nombres, lore y acertijos en `es.js`; arte compuesto en `cards.js`.
+
+| Rareza | De sobre (nuevas) | De descubrimiento (nuevas) |
+|---|---|---|
+| Común (+30) | Huevo Valiente, Patata Rodante, Tomates Gemelos, Luna de Queso, Seta Paraguas, Aros de Cebolla, Ramillete de Hierbas, Pez Saltarín, Ola de Bacon, Tostada Perfecta, Tostada de la Casa, Revuelto de Domingo, Tortilla del Bosque, Desfile de Brochetas, Almuerzo Marinero, Guiso Calentito, El Clásico, Torre de Bocadillo, Pip Despistado, Guiño de Pip, Pip Preocupado, Cliente de Siempre, Estudiante con Prisa, Pausa del Café, Turista Perdido, Propina Caída, Nube de Humo, Nota en la Nevera, Cocina al Amanecer, Familia Patata | — |
+| Rara (+20 · +5) | Cocina de Medianoche, Pip de Fiesta, Pip Orgulloso, Pip Llorón, Recuerdo de Viaje, Oficinista Satisfecho, Banquete Estudiante, Tarde Tranquila, Rey del Mar, Fondue Furtiva, Buscatrufas, Ensalada Arcoíris, Bravas de Madrugada, Tortilla de Concurso, Mago de las Hierbas, Torre de Huevos, Lluvia de Tomates, Lluvia de Monedas, Carta de Amor, Último Segundo | Invitado Misterioso, Visita del Coleccionista, Hora Punta, Tres en su Punto, Nadie se Queda sin Comer |
+| Épica (+9 · +3) | La Sonrisa de Brûlée, Celos de Repostería, La Risa de Brûlée, Tregua Dulce, Huevo de Oro, Sueño Febril, Casa Llena, Tapa Misteriosa, Desayuno Estelar | Cadena de Diez, Rival Convencido, Noche de Récord |
+| Legendaria (+2 · +3) | La Sartén Soñada, El Corazón de la Cocina | Visitante Nocturno, Cinco Estrellas, Fuego Triple |
+
+Brûlée aparece en 4 cartas épicas (La Sonrisa de Brûlée, Celos de Repostería, La Risa de Brûlée, Tregua Dulce) aunque en la historia aparece en el capítulo 3: si prefieres que no se vea antes, se pueden cambiar de arte o pasar a descubrimiento.
+
+## Encargos de Pip
+
+Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challenges` en `es.js`. Ejemplos: "Llega a combo x3 en un servicio", "Cocina Bacon con Huevo 3 veces", "Termina un servicio sin que se vaya ningún cliente", "Tres encargos cada día. Cúmplelos todos y Pip te regala un sobre."

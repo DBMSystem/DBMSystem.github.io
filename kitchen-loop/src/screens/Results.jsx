@@ -9,6 +9,7 @@ import { endTrigger } from '../systems/pip.js';
 import { balance } from '../data/balance.js';
 import { xpToNext } from '../economy/progression.js';
 import { createRng } from '../utils/rng.js';
+import { challengeText } from '../systems/challenges.js';
 import { spriteUrl } from '../assets/manifest.js';
 
 const XP_FILL_MS = 900;
@@ -91,6 +92,18 @@ export function Results({ result, playerName, services, onAgain, onMenu }) {
           {t('results.mastery', { recipe: t(`recipe.${m.recipeId}`), n: m.level })}
         </p>
       ))}
+
+      {result.challenges.completed.length > 0 && (
+        <div className="challenges-done pop-in">
+          <span className="label">{t('results.challenges')}</span>
+          {result.challenges.completed.map((c) => (
+            <p key={c.id}>
+              ✔ {challengeText(c)} <span className="hint small">{t('challenges.reward', c.reward)}</span>
+            </p>
+          ))}
+          {result.challenges.bonus && <p className="bonus">{t('challenges.bonus')}</p>}
+        </div>
+      )}
 
       <dl className="result-rows">
         {rows.map(([key, value]) => (

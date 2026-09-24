@@ -5,6 +5,7 @@ import { addXp, unlocksBetween } from './progression.js';
 import { rollLoopCard } from '../cards/drops.js';
 import { discoveriesFor, masteryLevel, albumProgress } from '../cards/album.js';
 import { track } from '../analytics/analytics.js';
+import { applyChallenges } from '../systems/challenges.js';
 
 export const TUTORIAL_CARD = 'dubious_toast';
 
@@ -19,7 +20,7 @@ function remember(save, rewardId) {
 
 // Applies a finished loop to the save exactly once (spec 2.11: only after the loop really ends;
 // spec 11.4: idempotent by `result.loopId`). Returns the summary shown on the results screen.
-export function finalizeLoop(save, result, { rng, now }) {
+export function finalizeLoop(save, result, { rng, now, today }) {
   if (save.grantedRewards.includes(result.loopId)) return null;
   remember(save, result.loopId);
 
@@ -56,6 +57,8 @@ export function finalizeLoop(save, result, { rng, now }) {
   const xpBefore = save.player.xp;
   const levels = addXp(save, xp);
 
+  const challenges = result.tutorial || !today ? { completed: [], bonus: null } : applyChallenges(save, result, today);
+
   const cards = [];
   if (result.tutorial && !ownsCard(save, TUTORIAL_CARD)) cards.push(addCard(save, TUTORIAL_CARD, now, 'tutorial'));
   for (const cardId of discoveriesFor(result)) if (!ownsCard(save, cardId)) cards.push(addCard(save, cardId, now, 'discovery'));
@@ -75,6 +78,7 @@ export function finalizeLoop(save, result, { rng, now }) {
     levels,
     unlocks: unlocksBetween(levelBefore, save.player.level),
     mastery,
+    challenges,
     cards: cards.map((c) => ({ ...c, rarity: cardById[c.cardId].rarity })),
     album: albumProgress(save),
   };
