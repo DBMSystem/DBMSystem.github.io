@@ -7,19 +7,19 @@ const lines = (prefix, count, draftFrom = Infinity) =>
 export const pipTriggers = {
   loopStart: { expression: 'happy', lines: lines('pip.loopStart', 4, 4) },
   cook: { expression: 'thumbs_up', lines: lines('pip.cook', 5, 4) },
-  combo: { expression: 'happy', lines: lines('pip.combo', 3, 3) },
+  combo: { expression: 'celebrating', lines: lines('pip.combo', 3, 3) },
   closeCall: { expression: 'surprised', lines: lines('pip.closeCall', 2, 2) },
-  perfect: { expression: 'surprised', priority: true, lines: lines('pip.perfect', 2) },
-  fever: { expression: 'happy', priority: true, lines: lines('pip.fever', 2, 2) },
+  perfect: { expression: 'crying', priority: true, lines: lines('pip.perfect', 2) },
+  fever: { expression: 'celebrating', priority: true, lines: lines('pip.fever', 2, 2) },
   customerLeft: { expression: 'worried', lines: lines('pip.customerLeft', 3, 3) },
   gridNearlyFull: { expression: 'worried', lines: lines('pip.gridNearlyFull', 2) },
-  noRecipe: { expression: 'thinking', lines: lines('pip.noRecipe', 3, 2) },
-  overflow: { expression: 'angry', priority: true, lines: lines('pip.overflow', 2) },
-  endRecord: { expression: 'thumbs_up', lines: lines('pip.endRecord', 2) },
+  noRecipe: { expression: 'confused', lines: lines('pip.noRecipe', 3, 2) },
+  overflow: { expression: 'scared', priority: true, lines: lines('pip.overflow', 2) },
+  endRecord: { expression: 'proud', lines: lines('pip.endRecord', 2) },
   endNormal: { expression: 'happy', lines: lines('pip.endNormal', 2) },
-  endWeak: { expression: 'worried', lines: lines('pip.endWeak', 2) },
+  endWeak: { expression: 'embarrassed', lines: lines('pip.endWeak', 2) },
   secret: { expression: 'surprised', priority: true, lines: lines('pip.secret', 1) },
-  counterSaleTip: { expression: 'thinking', priority: true, lines: lines('pip.counterSaleTip', 1, 1) },
+  counterSaleTip: { expression: 'winking', priority: true, lines: lines('pip.counterSaleTip', 1, 1) },
 };
 
 // Story scenes: at most 3 bubbles each (spec 6.3), skippable. All draft until D-1 is approved.

@@ -240,6 +240,118 @@ def main():
         save(tile, ROOT / "public" / name)
 
 
+# ---------- Art generated from the existing sprites (Daniel: "genera tú lo que falta") ----------
+
+PX = 4  # pixel-art block size in the 192 px Pip sprites
+EYES = ((79, 92), (114, 92))  # Pip's eye centres in the 192 px sprites
+
+
+def sprite(key):
+    return Image.open(SPRITES / f"{key}.png").convert("RGBA")
+
+
+def blocks(draw, points, color):
+    for x, y in points:
+        draw.rectangle((x, y, x + PX - 1, y + PX - 1), fill=color)
+
+
+def glyph(draw, rows, left, top, color, outline=(59, 42, 32, 255)):
+    """Draws a small pixel glyph ('#' = filled) with a dark outline."""
+    cells = [(left + c * PX, top + r * PX) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"]
+    for x, y in cells:
+        draw.rectangle((x - 2, y - 2, x + PX + 1, y + PX + 1), fill=outline)
+    blocks(draw, cells, color)
+
+
+def drop(draw, x, y, color=(120, 190, 255, 255)):
+    glyph(draw, [".#.", "###", "###", ".#."], x, y, color, outline=(40, 90, 160, 255))
+
+
+def overlay(base, key, scale, x, y):
+    art = sprite(key)
+    art = art.resize((round(art.width * scale), round(art.height * scale)), Image.LANCZOS)
+    base.alpha_composite(art, (x, y))
+    return base
+
+
+def generate_pip():
+    from PIL import ImageDraw
+    import random
+    rng = random.Random(7)
+    out = {}
+    img = sprite("pip/happy")
+    d = ImageDraw.Draw(img)
+    colors = [(255, 112, 67, 255), (255, 213, 79, 255), (167, 139, 250, 255), (102, 187, 106, 255), (79, 195, 247, 255)]
+    for _ in range(26):
+        x, y = rng.randrange(8, 180), rng.randrange(2, 70)
+        if 50 < x < 140 and y > 20:
+            continue
+        blocks(d, [(x, y)], rng.choice(colors))
+    out["celebrating"] = img
+
+    img = sprite("pip/worried")
+    d = ImageDraw.Draw(img)
+    for x, y in ((40, 60), (150, 70), (30, 100), (158, 110)):
+        drop(d, x, y)
+    out["scared"] = img
+
+    out["proud"] = overlay(sprite("pip/thumbs_up"), "vfx/sparkle", 0.22, 132, 8)
+
+    img = sprite("pip/neutral")
+    glyph(ImageDraw.Draw(img), [".###.", "#...#", "...#.", "..#..", ".....", "..#.."], 146, 30, (255, 213, 79, 255))
+    out["confused"] = img
+
+    img = sprite("pip/happy")
+    d = ImageDraw.Draw(img)
+    for ex, ey in EYES:
+        for k in range(4):
+            blocks(d, [(ex - 2 + (k % 2) * 2, ey + 6 + k * PX)], (120, 190, 255, 230))
+        drop(d, ex - 4, ey + 24)
+    out["crying"] = img
+
+    img = sprite("pip/neutral")
+    d = ImageDraw.Draw(img)
+    ex, ey = EYES[1]
+    skin = img.getpixel((ex, ey + 12))
+    d.rectangle((ex - 7, ey - 7, ex + 7, ey + 5), fill=skin)
+    blocks(d, [(ex - 6, ey - 2), (ex - 2, ey), (ex + 2, ey - 2)], (59, 42, 32, 255))
+    out["winking"] = overlay(img, "vfx/star", 0.12, 132, 64)
+
+    img = sprite("pip/neutral")
+    d = ImageDraw.Draw(img)
+    for ex, ey in EYES:
+        d.ellipse((ex - 14, ey + 9, ex + 4, ey + 17), fill=(255, 120, 160, 150))
+    drop(d, 146, 64)
+    out["embarrassed"] = img
+
+    for name, img in out.items():
+        save(img, SPRITES / "pip" / f"{name}.png")
+
+
+def generate_dishes():
+    size = DISH_SIZE
+    full = sprite("dishes/bacon_egg")
+    overlay(full, "ingredients/bread", 0.32, 88, 78)
+    overlay(full, "ingredients/tomato", 0.24, 18, 86)
+    save(full, SPRITES / "dishes" / "full_breakfast.png")
+
+    special = sprite("dishes/tomato_toast")
+    overlay(special, "ingredients/cheese", 0.36, 52, 30)
+    overlay(special, "ingredients/tomato", 0.22, 98, 70)
+    save(special, SPRITES / "dishes" / "special_toast.png")
+    assert full.size == (size, size)
+
+
+def generate_happy_poses():
+    """Customers without a happy pose: their idle pose with hearts."""
+    for customer_id in ("office", "calm"):
+        img = sprite(f"customers/{customer_id}_idle")
+        save(overlay(img, "vfx/hearts", 0.3, 100, 4), SPRITES / "customers" / f"{customer_id}_happy.png")
+
+
 if __name__ == "__main__":
     (SPRITES / "ui").mkdir(parents=True, exist_ok=True)
     main()
+    generate_pip()
+    generate_dishes()
+    generate_happy_poses()

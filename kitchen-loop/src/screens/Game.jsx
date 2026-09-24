@@ -3,6 +3,7 @@ import { createEngine } from '../game/engine.js';
 import { createGameController } from '../game/renderer/controller.js';
 import { balance } from '../data/balance.js';
 import { discoveredSecrets } from '../economy/rewards.js';
+import { feedbackFor } from '../audio/gameFeedback.js';
 import { Button } from '../components/Button.jsx';
 import { Toggle } from '../components/Toggle.jsx';
 import { t } from '../utils/i18n.js';
@@ -13,7 +14,9 @@ import { RecipeBook } from './RecipeBook.jsx';
 const TIP_PREFIX = 'tip.';
 
 // Mounts the canvas and the engine. React only hears onOverflow / onLoopEnd / pause (spec 10.3).
-export function Game({ level, tutorial = false, saveManager, adManager, onEnd, onQuit }) {
+export function Game({ tutorial = false, services, onEnd, onQuit }) {
+  const { saveManager, adManager, audio, haptics } = services;
+  const level = saveManager.get().player.level;
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
   const controllerRef = useRef(null);
@@ -29,13 +32,14 @@ export function Game({ level, tutorial = false, saveManager, adManager, onEnd, o
 
   useEffect(() => {
     const save = saveManager.get();
+    const loopId = `loop-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
     const engine = createEngine({
       balance,
       level: loopLevel,
       discoveredSecrets: discoveredSecrets(save),
       seed: Date.now(),
       onOverflow: setOverflow,
-      onEnd: (result) => onEndRef.current({ ...result, tutorial }),
+      onEnd: (result) => onEndRef.current({ ...result, tutorial, loopId }),
       ...(tutorial && { ingredientQueue: tutorialScript.ingredientQueue, timerRunning: false }),
     });
     const tips = new Set(save.story.seenScenes.filter((id) => id.startsWith(TIP_PREFIX)).map((id) => id.slice(TIP_PREFIX.length)));
@@ -55,6 +59,14 @@ export function Game({ level, tutorial = false, saveManager, adManager, onEnd, o
           }),
       },
       onPauseRequest: () => setPaused(true),
+      onEvents: (events) => {
+        for (const event of events) {
+          const feedback = feedbackFor(event);
+          if (!feedback) continue;
+          audio.play(feedback[0]);
+          if (feedback[1]) haptics.vibrate(feedback[1]);
+        }
+      },
     });
     engineRef.current = engine;
     controllerRef.current = controller;
@@ -73,7 +85,7 @@ export function Game({ level, tutorial = false, saveManager, adManager, onEnd, o
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('keydown', onKey);
     };
-  }, [attempt, loopLevel, tutorial, saveManager]);
+  }, [attempt, loopLevel, tutorial, saveManager, audio, haptics]);
 
   useEffect(() => {
     controllerRef.current?.setPaused(paused);

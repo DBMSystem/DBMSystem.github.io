@@ -15,9 +15,10 @@ async function setup(outcome, loopsPlayed = balance.adsMinLoops) {
       return outcome;
     },
   };
-  let day = '2026-09-24';
-  const ads = createAdManager({ saveManager, provider, today: () => day });
-  return { ads, saveManager, setDay: (d) => (day = d) };
+  let time = new Date(2026, 8, 24, 12).getTime();
+  saveManager.get().lastSeenTimestamp = time;
+  const ads = createAdManager({ saveManager, provider, clock: () => time });
+  return { ads, saveManager, setTime: (t) => (time = t), getTime: () => time };
 }
 
 describe('ad manager — second chance', () => {
@@ -52,10 +53,32 @@ describe('ad manager — second chance', () => {
   });
 
   it('daily cap, reset on a new local day', async () => {
-    const { ads, setDay } = await setup('rewarded');
+    const { ads, setTime, getTime } = await setup('rewarded');
     for (let i = 0; i < balance.secondChanceDailyCap; i++) await ads.showRewarded('SECOND_CHANCE', () => {});
     expect(ads.canOffer('SECOND_CHANCE')).toBe(false);
-    setDay('2026-09-25');
+    setTime(getTime() + 24 * 3600 * 1000);
     expect(ads.canOffer('SECOND_CHANCE')).toBe(true);
+  });
+});
+
+describe('ad manager — free pack', () => {
+  it('cooldown of freePackCooldown after a completed ad', async () => {
+    const { ads, setTime, getTime } = await setup('rewarded');
+    expect(ads.canOffer('CARD_PACK')).toBe(true);
+    const start = getTime();
+    await ads.showRewarded('CARD_PACK', () => {});
+    expect(ads.canOffer('CARD_PACK')).toBe(false);
+    expect(ads.freePackWait()).toBe(balance.freePackCooldown);
+    setTime(start + balance.freePackCooldown * 1000);
+    expect(ads.canOffer('CARD_PACK')).toBe(true);
+  });
+
+  it('turning the clock back does not skip the cooldown', async () => {
+    const { ads, saveManager, setTime, getTime } = await setup('rewarded');
+    const start = getTime();
+    await ads.showRewarded('CARD_PACK', () => {});
+    saveManager.get().lastSeenTimestamp = start + 3600 * 1000; // played an hour later
+    setTime(start - 2 * 24 * 3600 * 1000); // then moved the clock two days back
+    expect(ads.freePackWait()).toBe(balance.freePackCooldown - 3600);
   });
 });

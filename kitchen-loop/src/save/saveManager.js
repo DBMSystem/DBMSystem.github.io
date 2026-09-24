@@ -53,5 +53,14 @@ export function createSaveManager(storage, { now = Date.now, onEvent = () => {} 
     return data;
   }
 
-  return { load, get: () => data, update, persist };
+  // Deletes the game (settings "Borrar partida"): a brand-new save, backup included.
+  async function reset() {
+    data = createDefaultSave(now());
+    await storage.remove(BACKUP_KEY);
+    await persist();
+    await storage.remove(BACKUP_KEY);
+    return data;
+  }
+
+  return { load, get: () => data, update, persist, reset };
 }

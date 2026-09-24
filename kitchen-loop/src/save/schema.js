@@ -1,8 +1,12 @@
 import { recipeById } from '../data/recipes.js';
+import { cardById } from '../data/cards.js';
+import { calendarDays } from '../data/calendar.js';
+import { balance } from '../data/balance.js';
+import { xpToNext } from '../economy/progression.js';
 
 export const SAVE_VERSION = 1;
 
-// Save layout (spec 11.1). Phase 1 uses player, stats, recipes, dailyCaps and settings.
+// Save layout (spec 11.1). `packs` holds unopened packs (level-ups and calendar).
 export function createDefaultSave(now = Date.now()) {
   return {
     saveVersion: SAVE_VERSION,
@@ -15,6 +19,7 @@ export function createDefaultSave(now = Date.now()) {
     coins: 0,
     fragments: 0,
     cards: {},
+    packs: { standard: 0, special: 0 },
     recipes: {},
     unlockedItems: [],
     decor: {},
@@ -32,26 +37,64 @@ export function createDefaultSave(now = Date.now()) {
 
 const isCount = (v) => Number.isFinite(v) && v >= 0;
 const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const count = (v) => (Number.isInteger(v) && v >= 0 ? v : 0);
+const dateOrNull = (v) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
+const volume = (v, fallback) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : fallback);
+export const PANS = ['default', 'rusty', 'pink', 'black', 'golden'];
+export const NAME_MAX = 12;
 
-// Returns a clean save, or null when the data is unusable. Absurd values are corrected (spec 11.4).
-// Full validation of cards, entitlements, etc. arrives in phase 2.
+// Returns a clean save, or null when the data is unusable. Wrong types, negatives, NaN, out-of-range
+// values and unknown ids are corrected or dropped (spec 11.2, 11.4).
 export function validateSave(raw) {
   if (!isPlainObject(raw) || !Number.isInteger(raw.saveVersion)) return null;
-  const clean = createDefaultSave(raw.createdAt);
+  const clean = createDefaultSave(Number.isFinite(raw.createdAt) ? raw.createdAt : undefined);
   for (const key of Object.keys(clean)) {
     if (!(key in raw)) continue;
     clean[key] = isPlainObject(clean[key]) && isPlainObject(raw[key]) ? { ...clean[key], ...raw[key] } : raw[key];
   }
-  for (const key of Object.keys(clean.stats)) if (!isCount(clean.stats[key])) clean.stats[key] = 0;
-  if (!isCount(clean.dailyCaps.secondChances)) clean.dailyCaps.secondChances = 0;
-  if (!Number.isInteger(clean.player.level) || clean.player.level < 1) clean.player.level = 1;
-  for (const key of ['vibration', 'reducedMotion', 'tapToPlace', 'notifications']) {
-    clean.settings[key] = Boolean(clean.settings[key]);
-  }
+  const defaults = createDefaultSave(clean.createdAt);
+  for (const key of ['lastSavedAt', 'lastSeenTimestamp']) if (!isCount(clean[key])) clean[key] = defaults[key];
+  clean.tutorialDone = Boolean(clean.tutorialDone);
+
+  const { player } = clean;
+  player.name = typeof player.name === 'string' && player.name.trim() ? player.name.trim().slice(0, NAME_MAX) : defaults.player.name;
+  player.level = Number.isInteger(player.level) ? Math.min(balance.maxLevel, Math.max(1, player.level)) : 1;
+  player.xp = Math.min(count(player.xp), player.level >= balance.maxLevel ? 0 : xpToNext(player.level) - 1);
+
+  for (const key of Object.keys(defaults.stats)) clean.stats[key] = count(clean.stats[key]);
+  clean.coins = count(clean.coins);
+  clean.fragments = count(clean.fragments);
+  clean.packs = { standard: count(clean.packs?.standard), special: count(clean.packs?.special) };
+  for (const key of Object.keys(defaults.pity)) clean.pity[key] = count(clean.pity[key]);
+
+  clean.cards = Object.fromEntries(
+    Object.entries(isPlainObject(clean.cards) ? clean.cards : {})
+      .filter(([id, entry]) => cardById[id] && isPlainObject(entry) && Number.isInteger(entry.count) && entry.count >= 1)
+      .map(([id, entry]) => [id, { count: entry.count, firstObtainedAt: isCount(entry.firstObtainedAt) ? entry.firstObtainedAt : 0, shiny: Boolean(entry.shiny) }]),
+  );
   clean.recipes = Object.fromEntries(
     Object.entries(isPlainObject(clean.recipes) ? clean.recipes : {})
       .filter(([id, entry]) => recipeById[id] && isPlainObject(entry))
-      .map(([id, entry]) => [id, { discovered: Boolean(entry.discovered), timesCooked: isCount(entry.timesCooked) ? entry.timesCooked : 0 }]),
+      .map(([id, entry]) => [id, { discovered: Boolean(entry.discovered), timesCooked: count(entry.timesCooked) }]),
   );
+
+  clean.cooldowns = { lastFreePackTime: isCount(clean.cooldowns.lastFreePackTime) ? clean.cooldowns.lastFreePackTime : 0, lastPassPackDate: dateOrNull(clean.cooldowns.lastPassPackDate) };
+  clean.dailyCaps = { date: dateOrNull(clean.dailyCaps.date), secondChances: count(clean.dailyCaps.secondChances), trials: count(clean.dailyCaps.trials) };
+  const dayIndex = count(clean.calendar.dayIndex);
+  clean.calendar = { dayIndex: dayIndex < calendarDays.length ? dayIndex : 0, lastClaimDate: dateOrNull(clean.calendar.lastClaimDate) };
+
+  const { story } = clean;
+  story.chapter = Number.isInteger(story.chapter) && story.chapter >= 1 ? story.chapter : 1;
+  story.seenScenes = Array.isArray(story.seenScenes) ? story.seenScenes.filter((id) => typeof id === 'string') : [];
+  story.bruleeMet = Boolean(story.bruleeMet);
+
+  clean.unlockedItems = Array.isArray(clean.unlockedItems) ? clean.unlockedItems.filter((id) => typeof id === 'string') : [];
+  clean.grantedRewards = Array.isArray(clean.grantedRewards) ? clean.grantedRewards.filter((id) => typeof id === 'string').slice(-balance.grantedRewardsKept) : [];
+  clean.equippedPan = PANS.includes(clean.equippedPan) ? clean.equippedPan : 'default';
+
+  const { settings } = clean;
+  settings.music = volume(settings.music, defaults.settings.music);
+  settings.sfx = volume(settings.sfx, defaults.settings.sfx);
+  for (const key of ['vibration', 'reducedMotion', 'tapToPlace', 'notifications']) settings[key] = Boolean(settings[key]);
   return clean;
 }

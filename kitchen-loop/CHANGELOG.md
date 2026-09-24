@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.0 — Fase 2: progresión, colección y economía · sonido y vibración
+
+- XP y niveles reales (sin selector de prueba): desbloqueos desde la tabla, monedas por nivel y un sobre cada 3 niveles.
+- Recompensas del loop idempotentes: monedas, XP, carta al final del loop, cartas de descubrimiento, maestría de recetas.
+- 48 cartas con marco por rareza, estrellas, número y arte compuesto; álbum con 3 pestañas (Cartas, Recetas con maestría, Diario de la cocina con 12 fragmentos).
+- Sobres con garantías de épica y legendaria, prioridad a cartas nuevas, sobre especial; apertura y revelado animados y saltables; la legendaria con secuencia especial.
+- Duplicados → fragmentos, fabricar cartas y variantes brillantes.
+- Calendario de Pip (7 días, sin reinicio al faltar) y sobre gratis por anuncio con espera de 6 h (mock en desarrollo).
+- Primera carta garantizada al terminar el tutorial.
+- Guardado con validación completa, protección del reloj atrasado y borrado de partida.
+- Menú con nivel, XP y monedas; resultados con barra de XP, subidas de nivel, desbloqueos y cartas.
+- Efectos de sonido sintetizados, vibración y pantalla de Ajustes.
+- `scripts/simulateEconomy.js` + `docs/ECONOMY_REPORT.md`: balance ajustado a 6–8 semanas de álbum y 4–6 de árbol.
+- Arte generado: 7 expresiones de Pip, 2 platos y poses contentas.
+- 96 tests.
+
 ## 0.2.2 — Tercer lote de arte: efectos, platos y enfados
 
 - Efectos de la hoja de VFX en combo, servir, cliente que se va, desbordamiento, receta secreta, ¡En su punto! y fiebre.

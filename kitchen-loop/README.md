@@ -8,4 +8,6 @@ npm run dev -- --host   # servidor de desarrollo, accesible desde el móvil en l
 npm test                # Vitest
 npm run build:playtest  # versión de pruebas en play/ (con anuncio simulado)
 npm run build           # versión de producción en dist/ (sin mocks)
+node scripts/simulateEconomy.js > docs/ECONOMY_REPORT.md   # simulación de economía
+python3 scripts/extract_sprites.py                        # regenerar sprites (Pillow + numpy)
 ```

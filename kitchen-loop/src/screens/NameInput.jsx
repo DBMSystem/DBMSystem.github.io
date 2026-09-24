@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { Button } from '../components/Button.jsx';
 import { PipSprite } from '../components/PipSprite.jsx';
 import { t } from '../utils/i18n.js';
-
-export const NAME_MAX = 12;
+import { NAME_MAX } from '../save/schema.js';
 
 // "¿Cómo te llamas?" (spec 6.2). Empty → "Aprendiz". The name never leaves the device.
 export function NameInput({ initial = '', onDone }) {

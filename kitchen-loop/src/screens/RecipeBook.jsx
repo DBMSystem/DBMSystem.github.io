@@ -5,10 +5,11 @@ import { RecipeIngredients } from '../components/IngredientIcon.jsx';
 import { Button } from '../components/Button.jsx';
 import { t, formatNumber } from '../utils/i18n.js';
 import { spriteUrl } from '../assets/manifest.js';
+import { masteryLevel } from '../cards/album.js';
 
 const patternKey = (recipe) => (recipe.pattern === 'line' && recipe.ordered ? 'book.pattern.lineOrdered' : `book.pattern.${recipe.pattern}`);
 
-function RecipeRow({ recipe, locked }) {
+function RecipeRow({ recipe, locked, timesCooked = 0 }) {
   const dish = spriteUrl(`dishes/${recipe.id}`);
   return (
     <li className={`recipe-row ${locked ? 'locked' : ''}`}>
@@ -19,24 +20,26 @@ function RecipeRow({ recipe, locked }) {
       </div>
       <RecipeIngredients recipe={recipe} size={30} />
       <span className="pattern-text">{locked ? t('book.locked', { n: unlockLevelOf('recipes', recipe.id) }) : t(patternKey(recipe))}</span>
+      {!locked && <span className="mastery">{t('album.mastery', { n: masteryLevel(timesCooked), times: timesCooked })}</span>}
     </li>
   );
 }
 
 // Recipe book (spec 4.9 recipes tab): known recipes, what unlocks next and riddles for secrets.
-export function RecipeBook({ level, discovered, onClose }) {
+// `saved`: save.recipes (times cooked). `embedded`: inside the album, without title or close button.
+export function RecipeBook({ level, discovered, saved = {}, onClose, embedded = false }) {
   const unlocked = new Set(getUnlockedContent(level).recipes);
   const visible = recipes.filter((r) => r.kind === 'visible');
   const secrets = recipes.filter((r) => r.kind === 'secret' && unlocked.has(r.id));
   return (
     <div className="recipe-book">
-      <h2>{t('book.title')}</h2>
+      {!embedded && <h2>{t('book.title')}</h2>}
       <p className="hint">{t('book.intro')}</p>
       <p className="tip">{t('book.counterSale')}</p>
       <h3>{t('book.known')}</h3>
       <ul>
         {visible.map((r) => (
-          <RecipeRow key={r.id} recipe={r} locked={!unlocked.has(r.id)} />
+          <RecipeRow key={r.id} recipe={r} locked={!unlocked.has(r.id)} timesCooked={saved[r.id]?.timesCooked} />
         ))}
       </ul>
       {secrets.length > 0 && (
@@ -46,7 +49,7 @@ export function RecipeBook({ level, discovered, onClose }) {
           <ul>
             {secrets.map((r) =>
               discovered.includes(r.id) ? (
-                <RecipeRow key={r.id} recipe={r} />
+                <RecipeRow key={r.id} recipe={r} timesCooked={saved[r.id]?.timesCooked} />
               ) : (
                 <li key={r.id} className="recipe-row secret">
                   <strong>{t('book.unknownSecret')}</strong>
@@ -57,7 +60,7 @@ export function RecipeBook({ level, discovered, onClose }) {
           </ul>
         </>
       )}
-      <Button onClick={onClose}>{t('book.close')}</Button>
+      {!embedded && <Button onClick={onClose}>{t('book.close')}</Button>}
     </div>
   );
 }

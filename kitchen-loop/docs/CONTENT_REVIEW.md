@@ -79,3 +79,22 @@ Todos en `src/data/i18n/es.js`; marcados `draft: true` en `src/data/dialogues.js
 | Turista | Chico con gorra, gafas de sol y camisa de notas | esperar: con vinilo · contento: brazos arriba · enfadado (con cascos) |
 
 Los retratos grandes anteriores (abuela, chaval con cascos, chica enfadada, alien brócoli) se conservan para clientes especiales de la Fase 4.
+
+## Cartas (Fase 2)
+
+Nombres y lore en `src/data/i18n/es.js` (`card.<id>.name|lore|hint`); `draft: true` en `src/data/cards.js` para las cartas inventadas. **Todo el lore es borrador**, también el de las cartas con nombre de la especificación.
+
+| Rareza | De la especificación | Inventadas (draft) |
+|---|---|---|
+| Común (20) | Huevo Quemado, Tostada Dudosa, Tomate Triste, Bacon Normal, Patata Sospechosa | Queso Perezoso, Champiñón Tímido, Cebolla Llorona, Hierbas Despistadas, Pez Fuera del Agua, Pan Bailongo, Huevo de Dos Yemas, Bocadillo de Medianoche, Bacon Crujiente, Bravas Felices, Tortilla de la Abuela, Ensalada Solitaria, El Delantal de Pip, Sartén Abollada, Reloj de Cocina |
+| Rara (10 + 4 descubrimiento) | Vegana Enfadada, DJ del Bacon, Tomate Samurái, Huevo Astronauta · Corona de Bacon, Revuelto Místico, Sopa del Maestro, Crítico Satisfecho | La Abuela Exigente, Pip Dormido, Turista de Otro Mundo, Desayuno de Campeones, El Rey del Rebozado, Cocina Enamorada |
+| Épica (5 + 5) | Pan Galáctico · Maestro del Triple Bacon, Tomate Explosivo, Tortilla Imposible, Chef del Vacío, Fiebre Doble | Gallo Rey, El Chef Rival, Sartén en Llamas, Remolino de Especias |
+| Legendaria (2 + 2) | Trufa Dorada, La Primera Receta · Sello del Maestro Antiguo, La Receta Perdida | — |
+
+**Diario de la cocina** (`fragment.1–12`, draft hasta aprobar D-1): cuenta la sección 6.5 sin nombrar a Pip ni a Brûlée. Fragmento 1 en Tostada Dudosa (bienvenida); 2–10 en comunes y raras; 11 en Gallo Rey; 12 en La Primera Receta.
+
+**Acertijos de cartas de descubrimiento** (`card.<id>.hint`): p. ej. "Tres veces tres lonchas en un solo servicio" o "Termina un servicio sin dejar ni una miga".
+
+**Calendario, álbum, ajustes y resultados:** textos de interfaz nuevos en `es.js` (`calendar.*`, `album.*`, `settings.*`, `results.*`, `reveal.*`, `pack.*`).
+
+**Créditos (Ajustes):** "Idea y dirección: Daniel · Arte de referencia generado con Meta AI · Programación con Claude Code". Revisar.

@@ -42,6 +42,8 @@ export function createEngine({ balance, level, discoveredSecrets = [], seed, onO
     placeSeq: 0,
     combo: createComboState(),
     ordersServed: 0,
+    orderCoins: 0, // coins earned by orders: coinsPerOrder × the customer's pay multiplier
+    servedTypes: [],
     recipesCooked: 0,
     customersLost: 0,
     cookedCounts: {},
@@ -140,6 +142,8 @@ export function createEngine({ balance, level, discoveredSecrets = [], seed, onO
     if (customer) {
       state.customers = state.customers.filter((c) => c !== customer);
       state.ordersServed += 1;
+      state.orderCoins += balance.coinsPerOrder * customerById[customer.typeId].pay;
+      state.servedTypes.push(customer.typeId);
       state.timeLeft += balance.timeBonusPerOrder;
     }
 
@@ -232,6 +236,8 @@ export function createEngine({ balance, level, discoveredSecrets = [], seed, onO
     return {
       score: state.score,
       ordersServed: state.ordersServed,
+      orderCoins: Math.round(state.orderCoins),
+      servedTypes: [...new Set(state.servedTypes)],
       recipesCooked: state.recipesCooked,
       bestCombo: state.combo.best,
       feverCount: state.combo.fever.count,
@@ -240,6 +246,7 @@ export function createEngine({ balance, level, discoveredSecrets = [], seed, onO
       cookedCounts: { ...state.cookedCounts },
       discovered: [...state.newlyDiscovered],
       endReason: state.endReason,
+      emptyGridAtEnd: state.endReason === 'time' && state.grid.cells.every((cell) => cell.ingredient === null),
     };
   }
 
