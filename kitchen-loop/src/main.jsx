@@ -24,7 +24,12 @@ if (isNative()) {
     .then(adManager.setProvider)
     .catch(() => {}); // no plugin: ads stay unavailable
 }
-const audio = createAudioManager({ getVolume: () => saveManager.get()?.settings.sfx ?? 0 });
+const audio = createAudioManager({
+  getVolume: () => saveManager.get()?.settings.sfx ?? 0,
+  getMusicVolume: () => saveManager.get()?.settings.music ?? 0,
+});
+// Every button clicks softly (spec 9.5).
+document.addEventListener('click', (e) => e.target.closest?.('button') && audio.play('tap'), true);
 const haptics = createHaptics({ isEnabled: () => Boolean(saveManager.get()?.settings.vibration) });
 const shop = createShop({ saveManager });
 const services = { saveManager, adManager, audio, haptics, shop };

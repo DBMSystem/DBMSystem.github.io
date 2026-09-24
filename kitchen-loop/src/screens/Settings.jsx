@@ -65,7 +65,7 @@ export function Settings({ services, onClose, onRename, onTutorial, onStory, onD
   return (
     <div className="screen scroll settings">
       <h2>{t('settings.title')}</h2>
-      <Slider label={t('settings.music')} note={t('settings.musicSoon')} />
+      <Slider label={t('settings.music')} value={settings.music} onChange={(v) => set('music', v)} />
       <Slider label={t('settings.sfx')} value={settings.sfx} onChange={(v) => set('sfx', v)} />
       <Toggle label={t('settings.vibration')} value={settings.vibration} onChange={(v) => set('vibration', v)} />
       <Toggle label={t('settings.reducedMotion')} value={settings.reducedMotion} onChange={(v) => set('reducedMotion', v)} />

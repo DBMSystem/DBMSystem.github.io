@@ -1,9 +1,14 @@
 import { sfx } from './sfx.js';
+import { createMusic } from './music.js';
 import { onAppLifecycle } from '../utils/lifecycle.js';
 
-// Plays synthesised effects. The AudioContext starts on the first touch (browser rule, spec 9.5)
-// and is suspended while the app is in the background.
-export function createAudioManager({ getVolume }) {
+let current = null;
+// Interface sounds from components without services (dialogue voices): plays through the app's audio manager.
+export const uiSound = (name) => current?.play(name);
+
+// Plays synthesised effects and the provisional music. The AudioContext starts on the first touch (browser rule,
+// spec 9.5) and is suspended while the app is in the background.
+export function createAudioManager({ getVolume, getMusicVolume = () => 0 }) {
   let ctx = null;
   let noiseBuffer = null;
 
@@ -55,5 +60,13 @@ export function createAudioManager({ getVolume }) {
   window.addEventListener('pointerdown', unlock, { passive: true });
   onAppLifecycle({ hidden: () => ctx?.suspend(), shown: () => ctx?.resume() });
 
-  return { play };
+  const music = createMusic({ getContext: () => ctx, getNoise: () => noiseBuffer, getVolume: getMusicVolume });
+
+  current = {
+    play,
+    music: music.play,
+    musicLayer: music.setLayer,
+    stopMusic: music.stop,
+  };
+  return current;
 }

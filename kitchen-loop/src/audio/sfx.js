@@ -15,6 +15,11 @@ export const sfx = {
   justInTime: [NOTE(1568, 0, 0.3, 'sine', null, 0.6), ...arpeggio([1319, 1568, 2093, 2637], 0.07, 0.16, 'square', 0.4)],
   fullStove: [NOISE(0, 0.7, 2600, 0.45), NOTE(180, 0, 0.5, 'sawtooth', 520, 0.3), ...arpeggio([523, 784, 1047], 0.09, 0.14, 'triangle', 0.45)],
   burn: [NOISE(0, 0.6, 900, 0.6), NOTE(220, 0.05, 0.35, 'sawtooth', 110, 0.3)],
+  combo: arpeggio([784, 988, 1175], 0.045, 0.1, 'square', 0.3),
+  purchase: [NOISE(0, 0.08, 6000, 0.4), NOTE(1319, 0.02, 0.1, 'square', null, 0.35), NOTE(1760, 0.1, 0.12, 'square', null, 0.35), NOTE(2637, 0.2, 0.35, 'sine', null, 0.5)], // cha-ching!
+  equip: [NOTE(660, 0, 0.25, 'triangle', null, 0.5), NOTE(1320, 0, 0.3, 'sine', null, 0.3), NOISE(0, 0.05, 4500, 0.4)], // the pan goes on the stove
+  voice: [NOTE(620, 0, 0.035, 'square', 700, 0.12)], // Pip speaking, one blip every few letters
+  voiceLow: [NOTE(260, 0, 0.05, 'square', 230, 0.14)], // Brûlée
   noRecipe: [NOTE(140, 0, 0.09, 'sine', 90, 0.7)],
   serve: [NOTE(1568, 0, 0.35, 'sine', null, 0.6), NOTE(2093, 0.02, 0.4, 'sine', null, 0.35), NOTE(1319, 0.12, 0.18)], // ding!
   customerLeft: [NOTE(392, 0, 0.18, 'triangle', 330), NOTE(311, 0.16, 0.3, 'triangle', 247)],
