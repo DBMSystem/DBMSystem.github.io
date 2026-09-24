@@ -782,6 +782,9 @@ export const es = {
   'menu.howTo': 'Arrastra ingredientes a la encimera. Cuando brillen, tócalos para cocinar.',
 
   // Pause
+  'exit.title': '¿Cerrar Kitchen Loop?',
+  'exit.stay': 'SEGUIR COCINANDO',
+  'exit.leave': 'Salir',
   'pause.title': 'Pausa',
   'pause.resume': 'REANUDAR',
   'pause.restart': 'REINICIAR',

@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { App } from './App.jsx';
 import { createSaveManager } from './save/saveManager.js';
-import { localStorageAdapter } from './save/storageAdapter.js';
+import { localStorageAdapter, preferencesAdapter } from './save/storageAdapter.js';
 import { createAdManager } from './monetization/adManager.js';
 import { createAdMobProvider } from './monetization/admobProvider.js';
 import { createShop } from './monetization/shop.js';
@@ -10,9 +10,12 @@ import { DEV_TOOLS, isNative } from './utils/platform.js';
 import { loadSprites } from './assets/manifest.js';
 import { createAudioManager } from './audio/audioManager.js';
 import { createHaptics } from './utils/haptics.js';
+import { onAppLifecycle } from './utils/lifecycle.js';
+import { handleBack } from './utils/backButton.js';
+import { App as NativeApp } from '@capacitor/app';
 import './styles.css';
 
-const saveManager = createSaveManager(localStorageAdapter, { onEvent: (name) => console.info(`[analytics] ${name}`) });
+const saveManager = createSaveManager(isNative() ? preferencesAdapter : localStorageAdapter, { onEvent: (name) => console.info(`[analytics] ${name}`) });
 const adManager = createAdManager({ saveManager });
 // Android: AdMob with UMP consent (spec 7.7). Test ads in development/playtest builds and until the real ad
 // units are filled in (src/data/ads.js).
@@ -26,11 +29,13 @@ const haptics = createHaptics({ isEnabled: () => Boolean(saveManager.get()?.sett
 const shop = createShop({ saveManager });
 const services = { saveManager, adManager, audio, haptics, shop };
 
-// Save right away when the app goes to the background (spec 10.6).
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden && saveManager.get()) saveManager.persist();
-  else if (!document.hidden && saveManager.get()) shop.refreshEntitlements(); // spec 7.6: on returning to the game
+// Save right away when the app goes to the background; purchases refresh on returning (spec 7.6, 10.6).
+onAppLifecycle({
+  hidden: () => saveManager.get() && saveManager.persist(),
+  shown: () => saveManager.get() && shop.refreshEntitlements(),
 });
+// Android Back button (spec 8.9): the open overlay or the current screen answers; with nothing to answer, the app closes.
+if (isNative()) NativeApp.addListener('backButton', () => handleBack() || NativeApp.exitApp());
 
 Promise.all([saveManager.load(), loadSprites()]).then(() => {
   shop.refreshEntitlements(); // spec 7.6: the store confirms purchases on start; offline, the cache stays

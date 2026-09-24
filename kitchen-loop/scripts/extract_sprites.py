@@ -335,6 +335,29 @@ def generate_happy_poses():
         save(overlay(img, "vfx/hearts", 0.3, 100, 4), SPRITES / "customers" / f"{customer_id}_happy.png")
 
 
+# Special and legendary customers only have their full-body portrait: their happy and angry poses are that same
+# portrait (always the same person) with hearts, or flushed red with puffs of steam (the game draws the animated
+# anger mark on top, as for the others).
+SPECIAL_CUSTOMERS = ("critic", "rival_chef", "mystery", "collector", "old_master", "legendary_critic", "night_visitor")
+STEAM_PUFF = [".##..", "####.", "#####", ".###."]
+
+
+def generate_special_poses():
+    from PIL import ImageDraw
+    for customer_id in SPECIAL_CUSTOMERS:
+        portrait = sprite(f"customers/{customer_id}")
+        save(overlay(portrait.copy(), "vfx/hearts", 0.3, 100, 4), SPRITES / "customers" / f"{customer_id}_happy.png")
+        px = np.array(portrait).astype(float)
+        px[..., 1] *= 0.82
+        px[..., 2] *= 0.82
+        angry = Image.fromarray(px.clip(0, 255).astype(np.uint8), "RGBA")
+        top = portrait.getbbox()[1]
+        draw = ImageDraw.Draw(angry)
+        for x, y in ((22, top + 4), (8, top + 22), (116, top + 4), (132, top + 22)):
+            glyph(draw, STEAM_PUFF, x, y, (245, 245, 245, 255), outline=(150, 150, 160, 255))
+        save(angry, SPRITES / "customers" / f"{customer_id}_angry.png")
+
+
 # Brûlée's tree: the 9 utensil medallions of the skill tree reference, cut round inside their frames
 # (the padlocks and badges stay outside the circle).
 UTENSILS = {"runic_counter": (610, 639), "crystal_spatula": (368, 953), "time_ladle": (850, 953),
@@ -362,6 +385,7 @@ if __name__ == "__main__":
     main()
     generate_pip()
     generate_happy_poses()
+    generate_special_poses()
     extract_utensils()
     extract_decor()
     generate_phase4_art()

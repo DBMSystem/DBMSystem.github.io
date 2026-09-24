@@ -1,4 +1,20 @@
-// Async key/value storage. Browser: localStorage (development). Android: @capacitor/preferences (phase 6).
+import { Preferences } from '@capacitor/preferences';
+
+// Async key/value storage (spec 11.2). Browser: localStorage (development). Android: @capacitor/preferences,
+// which survives the WebView clearing its data and forced closes.
+export const preferencesAdapter = {
+  async get(key) {
+    const { value } = await Preferences.get({ key });
+    return value ?? null;
+  },
+  async set(key, value) {
+    await Preferences.set({ key, value });
+  },
+  async remove(key) {
+    await Preferences.remove({ key });
+  },
+};
+
 export const localStorageAdapter = {
   async get(key) {
     try {

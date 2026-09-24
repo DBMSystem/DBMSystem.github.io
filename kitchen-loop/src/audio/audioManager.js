@@ -1,4 +1,5 @@
 import { sfx } from './sfx.js';
+import { onAppLifecycle } from '../utils/lifecycle.js';
 
 // Plays synthesised effects. The AudioContext starts on the first touch (browser rule, spec 9.5)
 // and is suspended while the app is in the background.
@@ -52,11 +53,7 @@ export function createAudioManager({ getVolume }) {
 
   const unlock = () => ensureContext()?.resume();
   window.addEventListener('pointerdown', unlock, { passive: true });
-  document.addEventListener('visibilitychange', () => {
-    if (!ctx) return;
-    if (document.hidden) ctx.suspend();
-    else ctx.resume();
-  });
+  onAppLifecycle({ hidden: () => ctx?.suspend(), shown: () => ctx?.resume() });
 
   return { play };
 }

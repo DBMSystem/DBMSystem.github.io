@@ -414,3 +414,23 @@ Tres mejoras de feedback sobre la sartén, sin mecánicas nuevas ni efecto en pu
 - **¡Justo a tiempo!** al servir con menos del 15 % de paciencia (el mismo umbral que el "por los pelos" de Pip, que ahora salta al servir y no al cocinar). Sustituye a "¡Servido!", con estrellas, destello y sonido propio.
 - **¡Cocina a tope!** cuando todas las sartenes cocinan a la vez: aviso, fogón brillante, llamaradas, sonido y frase de Pip (3 frases draft). Evento `fullStove` en el motor.
 
+## 21. Fase 6 — Android (Daniel: "Si" a empezarla con un APK automático y las poses de los clientes especiales)
+
+- **Capacitor 8**, id `com.dbmsystem.kitchenloop`, nombre "Kitchen Loop", solo vertical. Plugins de la lista de la especificación (10.1): `@capacitor/app`, `@capacitor/haptics` y `@capacitor/preferences`, más el de AdMob que ya estaba.
+- **Guardado:** en Android va a Preferences; `localStorage` solo en el navegador. Sigue la escritura segura con copia de la especificación 11.2.
+- **Botón Atrás (8.9):**
+  - En partida pausa; en la pausa reanuda; en un panel lo cierra; en el desbordamiento no hace nada (se decide con sus botones).
+  - En el menú pregunta "¿Cerrar Kitchen Loop?". En Álbum, Ajustes, Almacén y Resultados vuelve atrás.
+  - Las ventanas abiertas (carta, calendario, especialidad) se cierran primero. Durante un sobre o un revelado de cartas no hace nada.
+  - En la primera sesión y en las escenas de capítulo no hace nada (se pasan con su botón).
+- **Segundo plano:** pausa la partida, silencia el audio y guarda. Al volver, refresca las compras. Escucha tanto a `visibilitychange` como a pause/resume de Capacitor, sin duplicar.
+- **Vibración** con Haptics en Android.
+- **Márgenes seguros** del notch y la barra de navegación con `env(safe-area-inset-*)` en las pantallas y ventanas.
+- **Icono y pantalla de inicio** a partir de `assets/ref/icon_final.png`, solo redimensionado (9.1), sobre la madera oscura del juego (`scripts/android_assets.py`).
+- **APK de prueba automático:** GitHub Actions lo compila en cada cambio. En `main` lo publica siempre en el mismo enlace (README). Es la versión de pruebas (`--mode playtest`), con anuncios de prueba de Google (el ID de app de prueba está en el `AndroidManifest`).
+- **Firma:** clave de prueba fija dentro del repositorio, para que cada APK se instale encima del anterior sin perder la partida. No sirve para la Play Store; la clave de publicación será privada (Fase 7).
+- **Analítica** en modo logger, sin cambios.
+- **Poses de los clientes especiales y legendarios:** su retrato con corazones (contento) o con rubor y vapor (enfadado), más la marca de enfado animada del juego. Se dibujan al mismo tamaño que su retrato para que no den saltos.
+- **Arreglo de un test:** el de la espera del sobre gratis usaba como hora fija "hoy a las 12:00" (24/09/2026). Al pasar esa hora real, la protección contra el reloj retrocedido lo hacía fallar. Ahora usa una fecha de 2099.
+- **Pendiente de Daniel para cerrar la fase (aceptación 14):** 100 partidas en un móvil real de gama media sin cierres, y comprobar que la partida sobrevive a forzar el cierre de la app.
+

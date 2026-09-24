@@ -132,10 +132,13 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
     }
   }
 
+  // Special and legendary customers: every pose is their full-body portrait (happy with hearts, angry flushed).
+  const fromPortrait = (typeId) => !getSprite(`customers/${typeId}_idle`);
+
   // Height and extra depth (below the feet line) of a customer sprite.
   function customerArt(typeId, key) {
+    if (fromPortrait(typeId)) return { size: CHARACTER * PORTRAIT_SCALE, sink: CHARACTER * PORTRAIT_SCALE * PORTRAIT_SINK };
     if (key.endsWith('_angry')) return { size: CHARACTER * ANGRY_SCALE, sink: 0 };
-    if (key === `customers/${typeId}`) return { size: CHARACTER * PORTRAIT_SCALE, sink: CHARACTER * PORTRAIT_SCALE * PORTRAIT_SINK };
     return { size: CHARACTER, sink: 0 };
   }
 
@@ -170,7 +173,7 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
       const breathe = 1 + Math.sin(view.time * 3 + phase) * 0.025 * motion;
       const pose = urgent ? 'angry' : expecting ? 'happy' : since < ARRIVE_TIME * 2 ? 'arrive' : 'idle';
       const key = poseKey(type.id, pose);
-      const angryArt = key.endsWith('_angry');
+      const angryArt = key.endsWith('_angry') && !fromPortrait(type.id); // the portrait poses still get the mark
       const art = customerArt(type.id, key);
       drawCharacter(key, type.color, t(`customer.${type.id}`).charAt(0), cx, feetY + art.sink, art.size, {
         sy: breathe,

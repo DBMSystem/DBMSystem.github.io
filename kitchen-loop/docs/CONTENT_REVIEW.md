@@ -150,3 +150,9 @@ Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challe
   - Justo a tiempo (`pip.closeCall.3–4`): "¡Justo a tiempo! Me late el corazón a mil."
 - **Textos flotantes:** "¡Justo a tiempo!" y "¡Cocina a tope!".
 
+
+## Fase 6 — Android
+
+- **Salir desde el menú** (`exit.*`): "¿Cerrar Kitchen Loop?", "SEGUIR COCINANDO" y "Salir".
+- **Poses generadas de los clientes especiales y legendarios** (`customers/<id>_happy` y `_angry`): su retrato con corazones, o con rubor y vapor. Provisionales hasta tener arte con expresiones propias.
+- **Icono y pantalla de inicio** de Android: `icon_final.png` sobre la madera oscura del juego.

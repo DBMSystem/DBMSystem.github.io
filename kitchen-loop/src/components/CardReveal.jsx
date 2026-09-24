@@ -3,6 +3,7 @@ import { CardView } from './CardView.jsx';
 import { STARS } from '../data/cards.js';
 import { spriteUrl } from '../assets/manifest.js';
 import { t } from '../utils/i18n.js';
+import { useBackButton } from '../utils/backButton.js';
 
 // Maximum reveal time per rarity (spec 4.5), then the card waits for a tap.
 const DURATION_MS = { common: 1000, rare: 1500, epic: 2500, legendary: 4000 };
@@ -12,6 +13,7 @@ const SOUND = { common: 'cardCommon', rare: 'cardRare', epic: 'cardEpic', legend
 export function CardReveal({ items, audio, haptics, onDone, lastIsSpecial = false }) {
   const [index, setIndex] = useState(0);
   const [settled, setSettled] = useState(false);
+  useBackButton(() => {}); // the cards are revealed with taps; Back must not close the screen behind
   const item = items[index];
 
   useEffect(() => {

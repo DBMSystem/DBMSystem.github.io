@@ -15,7 +15,7 @@ async function setup(outcome, loopsPlayed = balance.adsMinLoops) {
       return outcome;
     },
   };
-  let time = new Date(2026, 8, 24, 12).getTime();
+  let time = new Date(2099, 8, 24, 12).getTime(); // far ahead of the real clock, which the save also records
   saveManager.get().lastSeenTimestamp = time;
   const ads = createAdManager({ saveManager, provider, clock: () => time });
   return { ads, saveManager, setTime: (t) => (time = t), getTime: () => time };

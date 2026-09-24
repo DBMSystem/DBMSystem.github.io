@@ -15,6 +15,7 @@ import { createRng } from '../utils/rng.js';
 import { unlockContext } from '../systems/unlocks.js';
 import { useAds } from '../monetization/useAds.js';
 import { t, formatNumber } from '../utils/i18n.js';
+import { useBackButton } from '../utils/backButton.js';
 
 const TABS = ['cards', 'recipes', 'diary'];
 
@@ -30,6 +31,7 @@ function formatWait(seconds) {
 }
 
 function CardDetail({ cardId, save, onCraft, onShiny, onClose }) {
+  useBackButton(onClose);
   const card = cardById[cardId];
   const state = cardState(save, card);
   const owned = save.cards[cardId];

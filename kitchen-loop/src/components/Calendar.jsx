@@ -8,6 +8,7 @@ import { CardReveal } from './CardReveal.jsx';
 import { createRng } from '../utils/rng.js';
 import { localDateString, effectiveNow } from '../utils/time.js';
 import { t } from '../utils/i18n.js';
+import { useBackButton } from '../utils/backButton.js';
 
 function rewardText(day) {
   if (day.cards) {
@@ -28,6 +29,7 @@ export function Calendar({ services, onClose }) {
   const save = saveManager.get();
   const [claimed, setClaimed] = useState(null);
   const [revealing, setRevealing] = useState(false);
+  useBackButton(() => !revealing && onClose());
   const today = calendarToday(save);
   const current = save.calendar.dayIndex;
 

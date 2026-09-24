@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.0 — Fase 6: Android
+
+- App Android con Capacitor: vertical, icono y pantalla de inicio de Kitchen Loop, márgenes seguros.
+- Guardado en Preferences, vibración nativa, pausa y guardado al pasar a segundo plano.
+- Botón Atrás: pausa en partida, vuelve atrás en las pantallas y pregunta antes de cerrar desde el menú.
+- APK de prueba compilado por GitHub Actions en cada cambio y publicado en un enlace fijo (ver README).
+- Poses contenta y enfadada para los clientes especiales y legendarios.
+- 159 tests.
+
 ## 0.7.1 — Más vida en la cocina
 
 - Los clientes reaccionan a su sartén: contentos y dando saltitos mientras su plato llega a tiempo, enfadados si se va a quemar, y con una frase propia al servirles.

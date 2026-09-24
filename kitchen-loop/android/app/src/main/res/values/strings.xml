@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kitchen Loop</string>
+    <string name="title_activity_main">Kitchen Loop</string>
+    <string name="package_name">com.dbmsystem.kitchenloop</string>
+    <string name="custom_url_scheme">com.dbmsystem.kitchenloop</string>
+</resources>
