@@ -16,6 +16,8 @@ import { todayChallenges, progressWith } from '../systems/challenges.js';
 import { unlockContext } from '../systems/unlocks.js';
 import { hasMaestroPass } from '../inventory/inventory.js';
 import { useAds } from '../monetization/useAds.js';
+import { onAppLifecycle } from '../utils/lifecycle.js';
+import { useBackButton } from '../utils/backButton.js';
 
 const TIP_PREFIX = 'tip.';
 
@@ -100,13 +102,12 @@ export function Game({ tutorial = false, specialty = null, trial = null, service
     const pauseIfPlaying = () => {
       if (engine.state.status === 'playing') setPaused(true);
     };
-    const onVisibility = () => document.hidden && pauseIfPlaying();
     const onKey = (e) => e.key === 'Escape' && pauseIfPlaying();
-    document.addEventListener('visibilitychange', onVisibility);
+    const stopLifecycle = onAppLifecycle({ hidden: pauseIfPlaying });
     window.addEventListener('keydown', onKey);
     return () => {
       controller.destroy();
-      document.removeEventListener('visibilitychange', onVisibility);
+      stopLifecycle();
       window.removeEventListener('keydown', onKey);
     };
   }, [attempt, loopLevel, tutorial, specialty, trial, saveManager, audio, haptics, challenges]);
@@ -114,6 +115,21 @@ export function Game({ tutorial = false, specialty = null, trial = null, service
   useEffect(() => {
     controllerRef.current?.setPaused(paused);
   }, [paused]);
+
+  const closePanel = () => {
+    setPanel(null);
+    if (panelFromHud) setPaused(false);
+    setPanelFromHud(false);
+  };
+
+  // Back (spec 8.9): pauses the service; on the pause menu it resumes, on a panel it closes it. The overflow
+  // decision is only taken with its buttons.
+  useBackButton(() => {
+    if (overflow) return;
+    if (panel) closePanel();
+    else if (paused) setPaused(false);
+    else if (engineRef.current?.state.status === 'playing') setPaused(true);
+  });
 
   const changeTapToPlace = (value) => {
     setTapToPlace(value);
@@ -165,13 +181,7 @@ export function Game({ tutorial = false, specialty = null, trial = null, service
                 embedded
               />
             )}
-            <Button
-              onClick={() => {
-                setPanel(null);
-                if (panelFromHud) setPaused(false);
-                setPanelFromHud(false);
-              }}
-            >
+            <Button onClick={closePanel}>
               {t(panelFromHud ? 'pause.resume' : 'book.close')}
             </Button>
           </div>

@@ -1,0 +1,79 @@
+# Kitchen Loop test APK (phase 6). Every push that touches the game builds a debug APK; on main it is also
+# published as the "kitchen-loop-apk" prerelease, so the latest one is always at the same link:
+# https://github.com/DBMSystem/DBMSystem.github.io/releases/download/kitchen-loop-apk/KitchenLoop.apk
+name: Kitchen Loop APK
+
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths:
+      - 'kitchen-loop/**'
+      - '.github/workflows/kitchen-loop-android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kitchen-loop-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kitchen-loop
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: kitchen-loop/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Install
+        run: npm ci
+
+      - name: Tests
+        run: npm test
+
+      - name: Web build and Capacitor sync
+        run: npm run build:android
+
+      - name: Version
+        run: echo "KL_VERSION_NAME=$(node -p "require('./package.json').version")" >> "$GITHUB_ENV"
+
+      - name: Build APK
+        working-directory: kitchen-loop/android
+        env:
+          KL_VERSION_CODE: ${{ github.run_number }}
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk KitchenLoop.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KitchenLoop-${{ env.KL_VERSION_NAME }}-${{ github.run_number }}
+          path: kitchen-loop/KitchenLoop.apk
+
+      - name: Publish the latest test APK
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete kitchen-loop-apk --yes --cleanup-tag || true
+          gh release create kitchen-loop-apk KitchenLoop.apk \
+            --prerelease \
+            --target "${{ github.sha }}" \
+            --title "Kitchen Loop ${KL_VERSION_NAME} (build ${{ github.run_number }}, prueba)" \
+            --notes "APK de prueba de Kitchen Loop: se instala encima de la anterior y conserva la partida. Anuncios de prueba de Google; compras simuladas."

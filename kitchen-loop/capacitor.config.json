@@ -1,0 +1,15 @@
+{
+  "appId": "com.dbmsystem.kitchenloop",
+  "appName": "Kitchen Loop",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#2b1d14"
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "native",
+      "initialViewportFitValueHint": "cover",
+      "style": "DARK"
+    }
+  }
+}

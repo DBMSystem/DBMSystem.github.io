@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Menu } from './screens/Menu.jsx';
 import { Game } from './screens/Game.jsx';
 import { Results } from './screens/Results.jsx';
@@ -8,6 +8,8 @@ import { Album } from './screens/Album.jsx';
 import { Settings } from './screens/Settings.jsx';
 import { Warehouse } from './screens/Warehouse.jsx';
 import { SpecialtyPicker } from './components/SpecialtyPicker.jsx';
+import { ExitConfirm } from './components/ExitConfirm.jsx';
+import { setRootBackHandler, useBackButton } from './utils/backButton.js';
 import { pendingScenes, markSceneSeen } from './systems/story.js';
 import { availableSpecialties } from './systems/specialty.js';
 import { finalizeLoop } from './economy/rewards.js';
@@ -31,6 +33,7 @@ export function App({ services }) {
   const [picking, setPicking] = useState(false); // choosing the daily specialty before a loop
   const [scene, setScene] = useState(dueAtStart ? { id: dueAtStart, then: () => setScreen('menu') } : null); // { id, then }
   const [returnTo, setReturnTo] = useState(null); // where a replayed story or a rename goes back to
+  const [confirmExit, setConfirmExit] = useState(false);
   const [, setVersion] = useState(0);
 
   // `trial`: a utensil or pan lent for this one service by a rewarded ad (spec 7.2); never saved.
@@ -92,10 +95,30 @@ export function App({ services }) {
     setVersion((v) => v + 1);
   };
 
+  // Android Back on each screen (spec 8.9): the menu asks before closing, the others go back. The first
+  // session and chapter scenes ignore it (scenes are skipped with their own button). Overlays answer first.
+  const goBack = () => {
+    if (screen === 'menu') setConfirmExit(true);
+    else if (screen === 'album' || screen === 'settings') setScreen('menu');
+    else if (screen === 'warehouse' || screen === 'results') toMenu();
+    else if (['name', 'intro', 'premise'].includes(screen) && returnTo) {
+      setScreen(returnTo);
+      setReturnTo(null);
+    }
+  };
+  const backRef = useRef(goBack);
+  backRef.current = goBack;
+  useEffect(() => setRootBackHandler(() => backRef.current()), []);
+  useBackButton(() => {
+    setPicking(false);
+    if (screen === 'scene') setScreen('menu');
+  }, picking);
+
   const playerName = saveManager.get().player.name;
   return (
     <>
       {renderScreen()}
+      {confirmExit && <ExitConfirm onCancel={() => setConfirmExit(false)} />}
       {picking && (
         <SpecialtyPicker
           save={saveManager.get()}
