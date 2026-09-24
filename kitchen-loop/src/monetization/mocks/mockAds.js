@@ -15,7 +15,11 @@ export function createMockProvider() {
         const body = document.createElement('p');
         body.textContent = t('mock.body');
         panel.append(title, body);
-        for (const [key, status] of [['mock.complete', 'rewarded'], ['mock.dismiss', 'dismissed'], ['mock.error', 'error']]) {
+        for (const [key, status] of [
+          ['mock.complete', 'rewarded'],
+          ['mock.dismiss', 'dismissed'],
+          ['mock.error', 'error'],
+        ]) {
           const button = document.createElement('button');
           button.className = 'btn secondary';
           button.textContent = t(key);

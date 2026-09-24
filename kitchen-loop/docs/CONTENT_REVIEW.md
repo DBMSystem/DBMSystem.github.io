@@ -120,7 +120,7 @@ Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challe
 
 - **Escenas de capítulo** (`story.chapter2.*` … `story.chapter7.*`, `story.finale.*`): 3 bocadillos cada una. Frases de Brûlée de la especificación: "Así que por fin has encontrado a alguien que aguanta una cocina", "Si mi aprendiz tiene un aprendiz, es hora de desempolvar el baúl" y "Cada utensilio tiene una historia. Algunas terminan bien". El resto es inventado. El capítulo 7 y el epílogo revelan el secreto de la sección 6.5 (D-1).
 - **Almacén:** frases de Brûlée (`warehouse.brulee.*`, `warehouse.bruleeDone`); descripciones de utensilios (`utensil.*.desc`) y de la vitrina (`product.*.desc`).
-- **Decoración** (`decor.*.name`, `src/data/decor.js`): Macetas de Hierbas 150, Ristra de Ajos 250, Pizarra de Menú 400, Lámpara de Cobre 500, Estantería de Especias 650, Reloj de Pared 800, Tarro de Galletas 1.000, Guirnalda de Luces 1.300, Planta Grande 1.600 y Gato Dormido 2.000.
+- **Decoración** (`decor.*.name`, `src/data/decor.js`; arte recortado de la cocina del mega pack): Maceta de Hierbas 150, Bolsa del Mercado 250, Tabla de Cortar 400, Ristra de Ajos y Guindillas 500, Suculenta de la Ventana 650, Frutero 800, Estante de Tarros 1.000, Lámpara Colgante 1.300, Estante de Plantas 1.600 y Planta Grande 2.000.
 - **Especialidades:** descripciones cortas (`specialty.*.desc`).
 - **Avisos en partida:** "¡Cliente especial!", "¡Cliente legendario!", "¡Paciencia congelada!" y "Fuera". En resultados: "Alguien te observa desde la puerta de la cocina…".
 - **Clientes sin arte propio** (provisional): Coleccionista = chico de los cascos, Crítico legendario = crítico de traje negro, Visitante de la Cocina Nocturna = alien brócoli.

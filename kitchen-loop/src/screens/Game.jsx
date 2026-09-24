@@ -14,6 +14,7 @@ import { Challenges } from '../components/Challenges.jsx';
 import { calendarToday } from '../components/Calendar.jsx';
 import { todayChallenges, progressWith } from '../systems/challenges.js';
 import { unlockContext } from '../systems/unlocks.js';
+import { useAds } from '../monetization/useAds.js';
 
 const TIP_PREFIX = 'tip.';
 
@@ -35,6 +36,7 @@ export function Game({ tutorial = false, specialty = null, services, onEnd, onQu
   const [challenges] = useState(() => (tutorial ? [] : todayChallenges(saveManager.get(), calendarToday(saveManager.get()))));
   const loopLevel = tutorial ? tutorialScript.level : level;
   const [tapToPlace, setTapToPlace] = useState(saveManager.get().settings.tapToPlace);
+  useAds(adManager, tutorial ? [] : ['SECOND_CHANCE']);
 
   useEffect(() => {
     const save = saveManager.get();

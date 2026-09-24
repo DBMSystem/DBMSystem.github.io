@@ -1,6 +1,6 @@
 import { ingredientById } from '../../data/ingredients.js';
 import { t } from '../../utils/i18n.js';
-import { getSprite } from '../../assets/manifest.js';
+import { getSprite, spriteScale } from '../../assets/manifest.js';
 
 // Procedural placeholder art (D-2): a distinctive shape and colour per ingredient plus its initial.
 // Each sprite is drawn once per pixel size into an offscreen canvas and reused.
@@ -169,7 +169,8 @@ const CACHE_STEP = 16;
 export function drawIngredient(ctx, id, x, y, size, pixelScale) {
   const sprite = getSprite(`ingredients/${id}`);
   if (sprite) {
-    drawSmooth(ctx, sprite, x, y, size, size);
+    const s = size * spriteScale(`ingredients/${id}`);
+    drawSmooth(ctx, sprite, x + (size - s) / 2, y + (size - s) / 2, s, s);
     return;
   }
   const px = Math.max(CACHE_STEP, Math.ceil((size * pixelScale) / CACHE_STEP) * CACHE_STEP);

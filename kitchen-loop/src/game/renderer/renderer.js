@@ -6,7 +6,7 @@ import { computeLayout, cellRect, center } from './layout.js';
 import { drawIngredient, drawSmooth, clearPlaceholderCache } from './placeholders.js';
 import { createCanvasKit, COLORS, font, ease, clamp01 } from './canvasKit.js';
 import { createCharacters } from './characters.js';
-import { getSprite } from '../../assets/manifest.js';
+import { getSprite, spriteScale } from '../../assets/manifest.js';
 
 // View layer of a loop: draws the engine state on a canvas and turns engine events into feedback.
 // Presentation timings (s), all under the limits of spec 9.3.
@@ -538,7 +538,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       ctx.save();
       ctx.translate(x, y);
       if (f.id.startsWith('dish:')) {
-        const dishSize = DISH_FLYER * (1 + 0.3 * Math.sin(k * Math.PI));
+        const dishSize = DISH_FLYER * spriteScale(f.id.replace('dish:', 'dishes/')) * (1 + 0.3 * Math.sin(k * Math.PI));
         drawSmooth(ctx, getSprite(`dishes/${f.id.slice(5)}`), -dishSize / 2, -dishSize / 2, dishSize, dishSize);
       } else {
         ctx.rotate(k * Math.PI * 2 * motion);

@@ -1,11 +1,19 @@
-import { spriteUrl } from '../assets/manifest.js';
+import { spriteUrl, spriteScale } from '../assets/manifest.js';
 import { t } from '../utils/i18n.js';
 
 export function IngredientIcon({ id, size = 32 }) {
   const src = spriteUrl(`ingredients/${id}`);
   const name = t(`ingredient.${id}`);
   return src ? (
-    <img className="ingredient-icon" src={src} alt={name} title={name} width={size} height={size} />
+    <img
+      className="ingredient-icon"
+      src={src}
+      alt={name}
+      title={name}
+      width={size}
+      height={size}
+      style={{ transform: `scale(${spriteScale(`ingredients/${id}`)})` }}
+    />
   ) : (
     <span className="ingredient-icon placeholder" style={{ width: size, height: size }} title={name}>
       {name.charAt(0)}
