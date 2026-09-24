@@ -51,6 +51,11 @@
 20. **Nivel del jugador en la Fase 1**: todavía no hay XP (Fase 2), así que el jugador sería siempre nivel 1 (3 recetas). **Decisión**: el menú muestra un selector **"Nivel de prueba"** (1–7), solo para la Fase 1, que decide qué contenido de la tabla de desbloqueos está activo (ingredientes, recetas, secretas y clientes). No es un sistema del juego: desaparece en la Fase 2, cuando el nivel real venga de la XP.
 21. **"Bocadillo de Bacon"**: `line, ordered` con pan-bacon-pan es simétrico; el orden se comprueba en ambos sentidos como dice la sección 2.4.
 
+21b. **"Colocar tocando" sin pantalla de Ajustes**: la pantalla de Ajustes es de fases posteriores. En la Fase 1 el ajuste está en el menú y en los ajustes rápidos de la pausa, y se guarda.
+21c. **Pausa en navegador**: botón de pausa en el HUD, tecla Escape y paso a segundo plano (`visibilitychange`). El botón Atrás de Android llega en la Fase 6.
+21d. **FPS**: contador pequeño abajo a la derecha, solo en desarrollo/playtest.
+21e. **`CLAUDE.md`**: no se ha tocado la línea "Fase actual"; la actualiza Daniel al validar.
+
 ### Resto del documento (no afectan a la Fase 1; se revisarán en su fase)
 
 22. **Monedas por pedido** (2.14) usan "multiplicador de pago del cliente"; en la venta de mostrador no hay cliente → multiplicador 0 (no suma a `pedidos servidos`).
