@@ -294,6 +294,14 @@ export const es = {
   'rarity.epic': 'ÉPICA',
   'rarity.legendary': 'LEGENDARIA',
   'rarity.label': '{stars} {name}',
+  'rarity.one.common': 'común',
+  'rarity.one.rare': 'rara',
+  'rarity.one.epic': 'épica',
+  'rarity.one.legendary': 'legendaria',
+  'rarity.many.common': 'comunes',
+  'rarity.many.rare': 'raras',
+  'rarity.many.epic': 'épicas',
+  'rarity.many.legendary': 'legendarias',
 
   // Album
   'album.title': 'Álbum',
@@ -378,6 +386,8 @@ export const es = {
   // Menu (phase 2)
   'menu.album': 'ÁLBUM',
   'menu.warehouse': 'ALMACÉN',
+  'menu.warehouseLocked': '🔒 ALMACÉN',
+  'menu.calendar': 'CALENDARIO',
   'menu.settings': 'AJUSTES',
   'menu.locked': 'Se abre en el capítulo 3',
   'menu.coins': '{n}',

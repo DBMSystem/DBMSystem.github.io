@@ -55,27 +55,28 @@ export const balance = {
   xpPerOrder: 5,
 
   // Cards (phase 2)
-  loopCardBase: 0.15,
-  loopCardPerOrder: 0.03,
+  // Values tuned with scripts/simulateEconomy.js (docs/ECONOMY_REPORT.md); the spec's originals in comments.
+  loopCardBase: 0.1, // spec 0.15
+  loopCardPerOrder: 0.02, // spec 0.03
   loopCardPerComboStep: 0.01,
-  loopCardMax: 0.6,
+  loopCardMax: 0.4, // spec 0.6
   packRates: {
-    standard: { common: 0.75, rare: 0.195, epic: 0.05, legendary: 0.005 },
-    last: { common: 0, rare: 0.8, epic: 0.18, legendary: 0.02 },
+    standard: { common: 0.75, rare: 0.195, epic: 0.0535, legendary: 0.0015 }, // spec epic 0.05, legendary 0.005
+    last: { common: 0, rare: 0.82, epic: 0.174, legendary: 0.006 }, // spec rare 0.8, epic 0.18, legendary 0.02
     special: { common: 0, rare: 0, epic: 0.9, legendary: 0.1 },
   },
   packSize: 3,
   epicPity: 10,
-  legendaryPity: 40,
+  legendaryPity: 100, // spec 40
   legendaryMinPacks: 5,
-  newCardBias: 0.6,
+  newCardBias: 0.4, // spec 0.6
   duplicateFragments: { common: 5, rare: 15, epic: 40, legendary: 120 },
-  craftCost: { common: 40, rare: 120, epic: 320, legendary: 960 },
+  craftCost: { common: 60, rare: 250, epic: 1000, legendary: 6000 }, // spec 40 / 120 / 320 / 960
   shinyCost: { common: 60, rare: 150, epic: 400, legendary: 1000 },
 
   // Progression (phase 2)
   xpCurve: { base: 100, perLevel: 60 },
-  levelCoinReward: 20,
+  levelCoinReward: 6, // spec 20 (tree in 4–6 weeks, spec 5.4)
   packEveryNLevels: 3,
   maxLevel: 30,
   masteryThresholds: [0, 10, 50],

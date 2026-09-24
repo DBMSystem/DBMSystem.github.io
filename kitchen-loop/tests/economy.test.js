@@ -138,7 +138,7 @@ describe('loop rewards', () => {
     expect(comboStepsReached(3)).toBe(2);
     expect(comboStepsReached(10)).toBe(4);
     expect(loopCardChance({ ordersServed: 0, bestCombo: 1 })).toBeCloseTo(balance.loopCardBase);
-    expect(loopCardChance({ ordersServed: 6, bestCombo: 3 })).toBeCloseTo(0.15 + 0.18 + 0.02);
+    expect(loopCardChance({ ordersServed: 6, bestCombo: 3 })).toBeCloseTo(balance.loopCardBase + 6 * balance.loopCardPerOrder + 2 * balance.loopCardPerComboStep);
     expect(loopCardChance({ ordersServed: 40, bestCombo: 10 })).toBe(balance.loopCardMax);
   });
 
@@ -190,7 +190,7 @@ describe('progression', () => {
     const save = fresh();
     const levels = addXp(save, 100 + 160 + 220);
     expect(levels.map((l) => l.level)).toEqual([2, 3, 4]);
-    expect(save.coins).toBe(20 * 2 + 20 * 3 + 20 * 4);
+    expect(save.coins).toBe(balance.levelCoinReward * (2 + 3 + 4));
     expect(save.packs.standard).toBe(1);
     expect(save.player.xp).toBe(0);
   });

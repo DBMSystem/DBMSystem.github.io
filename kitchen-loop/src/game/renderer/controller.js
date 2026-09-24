@@ -11,7 +11,7 @@ const DRAG_START_DISTANCE = 8;
 
 // Runs a loop on a canvas: fixed-step engine updates, rendering, touch input (spec 10.3),
 // Pip's lines and, for the first loop, the tutorial.
-export function createGameController({ canvas, engine, balance, settings, showFps, tutorial, pipOptions, onPauseRequest }) {
+export function createGameController({ canvas, engine, balance, settings, showFps, tutorial, pipOptions, onPauseRequest, onEvents }) {
   const renderer = createRenderer(canvas, engine, { balance, reducedMotion: settings.reducedMotion, showFps });
   const { view } = renderer;
   const pip = createPip({ engine, balance, rng: createRng(), ...pipOptions });
@@ -50,6 +50,7 @@ export function createGameController({ canvas, engine, balance, settings, showFp
     if (runner?.handle(events)) syncTutorial();
     else if (!runner?.step?.until) pip.handle(events);
     renderer.handleEvents(events);
+    if (events.length > 0) onEvents?.(events);
     updatePipLine();
     renderer.draw(paused);
     requestAnimationFrame(frame);

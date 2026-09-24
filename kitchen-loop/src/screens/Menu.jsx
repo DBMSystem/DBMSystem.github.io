@@ -1,61 +1,70 @@
 import { useState } from 'react';
 import { Button } from '../components/Button.jsx';
-import { Toggle } from '../components/Toggle.jsx';
+import { Calendar, calendarToday } from '../components/Calendar.jsx';
+import { canClaimCalendar } from '../systems/calendar.js';
+import { xpToNext } from '../economy/progression.js';
+import { balance } from '../data/balance.js';
 import { t, formatNumber } from '../utils/i18n.js';
 import { DEV_TOOLS } from '../utils/platform.js';
-import { maxContentLevel } from '../data/unlocks.js';
 import { spriteUrl } from '../assets/manifest.js';
 
-export function Menu({ saveManager, level, onLevelChange, onPlay, onRecipes, onStory, onTutorial }) {
+// Main menu (spec 8.3): kitchen scene, PLAY, album, warehouse (locked until chapter 3) and settings.
+export function Menu({ services, onPlay, onAlbum, onSettings, onDevLevelUp }) {
+  const { saveManager, adManager } = services;
   const save = saveManager.get();
-  const [tapToPlace, setTapToPlace] = useState(save.settings.tapToPlace);
-
-  const changeTapToPlace = (value) => {
-    setTapToPlace(value);
-    saveManager.update((s) => {
-      s.settings.tapToPlace = value;
-    });
-  };
+  const calendarReady = canClaimCalendar(save, calendarToday(save));
+  const [showCalendar, setShowCalendar] = useState(calendarReady);
+  const { level, xp, name } = save.player;
+  const xpShare = level >= balance.maxLevel ? 1 : xp / xpToNext(level);
+  const albumDot = save.packs.standard + save.packs.special > 0 || (save.stats.loopsPlayed >= balance.adsMinLoops && adManager.freePackWait() === 0);
+  const warehouseOpen = save.story.chapter >= 3;
 
   return (
     <div className="screen menu">
+      <div className="status-bar">
+        <span className="level-chip">{t('hud.level', { n: level })}</span>
+        <span className="xp-bar">
+          <span style={{ width: `${Math.round(xpShare * 100)}%` }} />
+        </span>
+        <span className="coins">
+          <img src={spriteUrl('ui/icon_coin')} alt="" />
+          {formatNumber(save.coins)}
+        </span>
+      </div>
       <img className="menu-scene" src={spriteUrl('ui/menu_scene')} alt={t('game.title')} />
       <p className="slogan">{t('game.slogan')}</p>
-      <p className="greeting">{t('menu.greeting', { nombre: save.player.name })}</p>
+      <p className="greeting">{t('menu.greeting', { nombre: name })}</p>
       <Button icon="icon_cook" onClick={onPlay}>
         {t('menu.play')}
       </Button>
       <div className="menu-row">
-        <Button variant="secondary" icon="icon_recipe" onClick={onRecipes}>
-          {t('menu.recipes')}
+        <Button variant="secondary" icon="icon_rare" onClick={onAlbum}>
+          {t('menu.album')}
+          {albumDot && <span className="dot" />}
         </Button>
-        <Button variant="secondary" onClick={onStory}>
-          {t('menu.story')}
+        <Button variant="secondary" icon="icon_coin" disabled={!warehouseOpen} title={t('menu.locked')}>
+          {t(warehouseOpen ? 'menu.warehouse' : 'menu.warehouseLocked')}
         </Button>
-        <Button variant="secondary" onClick={onTutorial}>
-          {t('menu.tutorial')}
+        <Button variant="secondary" icon="icon_timer" onClick={() => setShowCalendar(true)}>
+          {t('menu.calendar')}
+          {calendarReady && <span className="dot" />}
         </Button>
       </div>
+      <Button variant="secondary" onClick={onSettings}>
+        {t('menu.settings')}
+      </Button>
       <div className="stats">
         <span>{t('menu.bestScore', { score: formatNumber(save.stats.bestScore) })}</span>
         <span>{t('menu.loopsPlayed', { n: save.stats.loopsPlayed })}</span>
       </div>
-      <Toggle label={t('menu.tapToPlace')} value={tapToPlace} onChange={changeTapToPlace} />
       {DEV_TOOLS && (
         <div className="dev-panel">
-          <div className="stepper">
-            <span>{t('menu.testLevel')}</span>
-            <button type="button" onClick={() => onLevelChange(Math.max(1, level - 1))} aria-label="-">
-              −
-            </button>
-            <strong>{level}</strong>
-            <button type="button" onClick={() => onLevelChange(Math.min(maxContentLevel, level + 1))} aria-label="+">
-              +
-            </button>
-          </div>
-          <p className="hint small">{t('menu.testLevelHint')}</p>
+          <Button variant="secondary" onClick={onDevLevelUp}>
+            {t('menu.devLevel')}
+          </Button>
         </div>
       )}
+      {showCalendar && <Calendar services={services} onClose={() => setShowCalendar(false)} />}
     </div>
   );
 }

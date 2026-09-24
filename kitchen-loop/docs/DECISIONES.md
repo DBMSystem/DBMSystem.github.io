@@ -208,3 +208,32 @@ Originales en `assets/ref/originals/21–24`.
 - Oficinista y Cliente tranquilo no tienen pose "contento": usan la de espera con un salto.
 
 **No usado**: la hoja de 7 expresiones de Pip de este lote es **otro personaje** (piel más oscura, bigote, sin pelo castaño), no el Pip del juego. Se guarda en `assets/ref/originals/23_pip_expressions_2.webp`.
+
+---
+
+## 11. Sonido, vibración y Fase 2 completa ("lo que queda, genéralo tú")
+
+Daniel pidió generar lo que faltaba respetando el diseño. Sus tres preguntas abiertas quedan con el valor por defecto: se mantiene la venta de mostrador, la segunda oportunidad aparece a partir del loop 4, y los textos de historia y tutorial siguen como `draft`.
+
+**Sonido y vibración (Fase 3):** efectos sintetizados con Web Audio en `src/audio/` (colocar, cocinar, servir, combo, ¡En su punto!, fiebre, desbordamiento, secreta, cartas por rareza, sobre, subir de nivel…), sin música (D-3). Vibración con la API del navegador; en Android se cambiará por Capacitor Haptics (Fase 6). Todo se puede desactivar en Ajustes.
+
+**Ajustes (sección 8.8):** efectos (volumen), vibración, reducir animaciones, colocar tocando, cambiar nombre, repetir tutorial, ver la historia, borrar partida (doble confirmación), créditos y versión. La música aparece como "Próximamente". Restaurar compras, privacidad y consentimiento de anuncios llegan con la monetización (Fases 5–7).
+
+**Fase 2:**
+- `inventory.js` es el único punto que cambia monedas, fragmentos, cartas y sobres pendientes.
+- El guardado añade `packs: { standard, special }`: sobres ganados (por nivel o calendario) que se abren en el álbum. La especificación no dice dónde guardarlos; es la opción más sencilla.
+- 48 cartas: los nombres de la especificación son definitivos; el resto, y todo el lore, son `draft`. Los nombres y el lore viven en `es.js` (decisión 16).
+- **Arte de las cartas:** no hay ilustraciones de cartas. Cada carta se compone con capas de los sprites existentes (ingredientes, platos, personajes, efectos) y un marco por rareza. El campo `art` de la carta pasa de una clave a una lista de capas. Cuando haya ilustraciones, basta con una capa.
+- **Diario:** los 12 fragmentos cuentan la sección 6.5 sin nombres ("el aprendiz", "el maestro"), 10 de ellos en comunes y raras.
+- **Primera carta del tutorial:** Tostada Dudosa, con el fragmento 1 de bienvenida.
+- **Sobre gratis por anuncio:** 6 h de espera, solo tras 3 loops completados, protegido contra el reloj atrasado. Con el mock en desarrollo/playtest; en producción, "Anuncio no disponible".
+- **Almacén:** botón con candado hasta el capítulo 3 (Fase 4).
+- **Especialidad del día:** desbloqueada en la tabla desde el nivel 4, pero se implementa en la Fase 4. Al llegar a ese nivel se anuncia como "próximamente".
+- **Selector "Nivel de prueba":** eliminado. El nivel real sale de la XP. En desarrollo/playtest hay un botón "Subir nivel (prueba)".
+- **Balance ajustado con el simulador** (sección 4.10): ver `docs/ECONOMY_REPORT.md`. Los valores originales de la especificación están comentados en `balance.js`.
+- **Forma de la colección:** con ~10 cartas al día, comunes, raras y épicas se completan en una semana; las 2 legendarias marcan las 6–8 semanas. **Decisión pendiente de Daniel:** ampliar el álbum o dar menos cartas al día (detalles en el informe).
+
+**Arte generado a partir de los sprites existentes** (`scripts/extract_sprites.py`, funciones `generate_*`):
+- 7 expresiones de Pip que faltaban (celebrando, asustado, orgulloso, confuso, llorando de emoción, guiño, avergonzado): son variantes de las 8 originales con confeti, gotas, lágrimas, rubor, "?" o destellos.
+- Platos Tostada Especial y Desayuno Completo.
+- Pose "contento" de la oficinista y de la abuela: su pose de espera con corazones.

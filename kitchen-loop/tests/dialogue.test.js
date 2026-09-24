@@ -52,7 +52,7 @@ describe('pip director', () => {
     expect(pip.current().key).toMatch(/^pip\.closeCall/);
     engine.state.time += balance.pipLineInterval + 1;
     pip.handle([{ type: 'overflow' }]);
-    expect(pip.current().expression).toBe('angry');
+    expect(pip.current().expression).toBe('scared');
   });
 
   it('lines disappear after pipLineDuration', () => {
