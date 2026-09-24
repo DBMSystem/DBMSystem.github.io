@@ -73,6 +73,7 @@ describe('data integrity', () => {
     for (const r of recipes) expect(hasKey(`recipe.${r.id}`)).toBe(true);
     for (const i of ingredients) expect(hasKey(`ingredient.${i.id}`)).toBe(true);
     for (const c of customers) expect(hasKey(`customer.${c.id}`)).toBe(true);
+    for (const c of customers) for (const n of [1, 2]) expect(hasKey(`react.${c.id}.${n}`), c.id).toBe(true); // served reactions
   });
 
   it('duplicate fragments are always below the craft cost', () => {

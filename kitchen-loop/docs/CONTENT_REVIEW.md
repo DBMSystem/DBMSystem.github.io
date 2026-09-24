@@ -138,3 +138,15 @@ Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challe
 - **Tutorial** (`tutorial.pan`, draft): "¡A la sartén! Se cocina en su sartén y se sirve sola. ¡Que no se acabe su paciencia!"
 - **Textos flotantes:** "¡A la sartén!" y "¡Se quemó!".
 
+## Reacciones de los clientes y cocina a tope (todo draft)
+
+- **Frases al servir** (`react.<cliente>.1–2`), por ejemplo:
+  - Crítico: "Mmm… Cinco estrellas."
+  - Chef rival: "Hmpf… No está mal."
+  - Oficinista: "¡A tiempo para la reunión!"
+  - Visitante nocturno: "Sabe a luna llena…"
+- **Pip:**
+  - Cocina a tope (`pip.fullStove.1–3`): "¡Todas las sartenes al fuego! ¡Esto es una cocina de verdad!"
+  - Justo a tiempo (`pip.closeCall.3–4`): "¡Justo a tiempo! Me late el corazón a mil."
+- **Textos flotantes:** "¡Justo a tiempo!" y "¡Cocina a tope!".
+

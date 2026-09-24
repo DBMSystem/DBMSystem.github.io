@@ -30,14 +30,16 @@ export function createPip({ engine, balance, rng, tips = new Set(), onTipSeen = 
           onTipSeen('counterSale');
           return 'counterSaleTip';
         }
-        if (event.patienceLeft !== null && event.patienceLeft < balance.closeCallPatience) return 'closeCall';
         return event.chain >= 3 ? 'combo' : 'cook';
+      case 'served':
+        return event.justInTime ? 'closeCall' : null;
       case 'place':
         return countOccupied(engine.state.grid) >= balance.gridNearlyFullCells ? 'gridNearlyFull' : null;
       case 'perfect':
       case 'fever':
       case 'customerLeft':
       case 'burnt':
+      case 'fullStove':
       case 'noRecipe':
       case 'overflow':
         return event.type;

@@ -112,6 +112,11 @@ Tamaño máximo de una receta: 4 ingredientes.
 - El plato chisporrotea `panCookTime` (2,5 s) con sonido, vapor y un anillo de progreso. Al terminar suena un "ding", el plato vuela al cliente y se cobra: puntos, monedas, fragmentos y pedido servido se suman **en ese momento**. Un cliente con su plato en la sartén ya no puede recibir otro.
 - **Se quema**: la paciencia del cliente sigue corriendo mientras se cocina (solo la paran las Pinzas de Escarcha). Si se agota antes de que el plato esté listo, el plato se quema: humo negro, un comentario de Pip y el cliente se va. No da puntos ni pago y cuenta como cliente perdido. El anillo se pone rojo y parpadea cuando ya no va a llegar a tiempo.
 - Si ningún cliente lo pidió: **venta de mostrador**, instantánea, con puntos base × `counterSaleMultiplier` (0,5). Pasa por una sartén libre camino del marcador. No cuenta como pedido, pero sí suma al combo.
+- **Reacciones (solo feedback, sin efecto en puntos)**:
+  - Mientras su plato se cocina a tiempo, el cliente se pone contento y da saltitos con un corazón. Si no va a llegar, se enfada.
+  - Al servir, el cliente dice una frase propia de su tipo en un bocadillo (`react.<cliente>.n`).
+  - **¡Justo a tiempo!**: si se sirve con menos del 15 % de paciencia (`closeCallPatience`), aparecen el texto, estrellas, un destello y un sonido propio, y Pip lo celebra.
+  - **¡Cocina a tope!**: cuando todas las sartenes cocinan a la vez, sale un aviso, el fogón brilla, suena un chisporroteo fuerte y Pip lo comenta.
 - **Fin del tiempo**: las sartenes que estaban cocinando terminan y sirven antes de la pantalla de resultados. En un desbordamiento, los platos que ya estaban en la sartén se sirven al terminar.
 
 ### 2.7 Clientes en partida

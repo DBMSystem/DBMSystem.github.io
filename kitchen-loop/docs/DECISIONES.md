@@ -404,3 +404,13 @@ Daniel: "una sartén por cliente […] se cocina junto unos pocos segundos y se 
 - **Tutorial:** tras cocinar el pedido, un paso nuevo "¡A la sartén!" espera a que se sirva. El reloj sigue parado, así que en el tutorial no se puede quemar.
 - **Arreglo de paso:** si llegaba el turno del crítico de "Crítico en Sala" con el mostrador lleno, el crítico se perdía. Ahora espera a que haya sitio.
 
+## 20. Más vida en la cocina (Daniel: "que haya más elementos activos… que sea muy agradable avanzar y estar dentro del juego")
+
+Tres mejoras de feedback sobre la sartén, sin mecánicas nuevas ni efecto en puntos. Daniel: "Dale caña".
+- **Clientes que reaccionan a su sartén:**
+  - Mientras el plato llega a tiempo, pose contenta, saltitos y un corazón.
+  - Si no va a llegar, pose enfadada. Ya no se enfadan solo por tener poca paciencia si su plato va a llegar.
+  - Al servir, cada tipo de cliente dice una de sus 2 frases (draft) en un bocadillo, medio segundo después de los puntos para no amontonar textos.
+- **¡Justo a tiempo!** al servir con menos del 15 % de paciencia (el mismo umbral que el "por los pelos" de Pip, que ahora salta al servir y no al cocinar). Sustituye a "¡Servido!", con estrellas, destello y sonido propio.
+- **¡Cocina a tope!** cuando todas las sartenes cocinan a la vez: aviso, fogón brillante, llamaradas, sonido y frase de Pip (3 frases draft). Evento `fullStove` en el motor.
+
