@@ -18,6 +18,8 @@ export function feedbackFor(event) {
       return ['overflow', 'medium'];
     case 'secondChance':
       return ['secondChance', null];
+    case 'challengeDone':
+      return ['levelUp', 'medium'];
     default:
       return null;
   }

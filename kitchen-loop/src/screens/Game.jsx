@@ -10,6 +10,9 @@ import { t } from '../utils/i18n.js';
 import { DEV_TOOLS } from '../utils/platform.js';
 import { tutorial as tutorialScript } from '../data/tutorial.js';
 import { RecipeBook } from './RecipeBook.jsx';
+import { Challenges } from '../components/Challenges.jsx';
+import { calendarToday } from '../components/Calendar.jsx';
+import { todayChallenges, progressWith } from '../systems/challenges.js';
 
 const TIP_PREFIX = 'tip.';
 
@@ -26,7 +29,9 @@ export function Game({ tutorial = false, services, onEnd, onQuit }) {
   const [paused, setPaused] = useState(false);
   const [overflow, setOverflow] = useState(null);
   const [adBusy, setAdBusy] = useState(false);
-  const [showRecipes, setShowRecipes] = useState(false);
+  const [panel, setPanel] = useState(null); // 'challenges' | 'recipes' | null
+  const [panelFromHud, setPanelFromHud] = useState(false);
+  const [challenges] = useState(() => (tutorial ? [] : todayChallenges(saveManager.get(), calendarToday(saveManager.get()))));
   const loopLevel = tutorial ? tutorialScript.level : level;
   const [tapToPlace, setTapToPlace] = useState(saveManager.get().settings.tapToPlace);
 
@@ -58,7 +63,13 @@ export function Game({ tutorial = false, services, onEnd, onQuit }) {
             s.story.seenScenes.push(TIP_PREFIX + tip);
           }),
       },
+      challenges,
       onPauseRequest: () => setPaused(true),
+      onQuickRequest: () => {
+        setPaused(true);
+        setPanel('challenges');
+        setPanelFromHud(true);
+      },
       onEvents: (events) => {
         for (const event of events) {
           const feedback = feedbackFor(event);
@@ -85,7 +96,7 @@ export function Game({ tutorial = false, services, onEnd, onQuit }) {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('keydown', onKey);
     };
-  }, [attempt, loopLevel, tutorial, saveManager, audio, haptics]);
+  }, [attempt, loopLevel, tutorial, saveManager, audio, haptics, challenges]);
 
   useEffect(() => {
     controllerRef.current?.setPaused(paused);
@@ -113,19 +124,41 @@ export function Game({ tutorial = false, services, onEnd, onQuit }) {
     <div className="game">
       <canvas ref={canvasRef} className="game-canvas" />
 
-      {paused && showRecipes && (
+      {paused && panel && (
         <div className="overlay scroll">
-          <RecipeBook level={loopLevel} discovered={discoveredSecrets(saveManager.get())} onClose={() => setShowRecipes(false)} />
+          <div className="panel quick-panel">
+            <div className="tabs" role="tablist">
+              {['challenges', 'recipes'].map((id) => (
+                <button key={id} type="button" role="tab" aria-selected={panel === id} className={panel === id ? 'on' : ''} onClick={() => setPanel(id)}>
+                  {t(`panel.${id}`)}
+                </button>
+              ))}
+            </div>
+            {panel === 'challenges' ? (
+              <Challenges list={challenges} live={(c) => (engineRef.current ? progressWith(c, engineRef.current.getResult()) : c.progress)} />
+            ) : (
+              <RecipeBook level={loopLevel} discovered={discoveredSecrets(saveManager.get())} saved={saveManager.get().recipes} embedded />
+            )}
+            <Button
+              onClick={() => {
+                setPanel(null);
+                if (panelFromHud) setPaused(false);
+                setPanelFromHud(false);
+              }}
+            >
+              {t(panelFromHud ? 'pause.resume' : 'book.close')}
+            </Button>
+          </div>
         </div>
       )}
 
-      {paused && !showRecipes && (
+      {paused && !panel && (
         <div className="overlay">
           <div className="panel">
             <h2>{t('pause.title')}</h2>
             <Button onClick={() => setPaused(false)}>{t('pause.resume')}</Button>
-            <Button variant="secondary" icon="icon_recipe" onClick={() => setShowRecipes(true)}>
-              {t('pause.recipes')}
+            <Button variant="secondary" icon="icon_recipe" onClick={() => setPanel(tutorial ? 'recipes' : 'challenges')}>
+              {t('pause.panel')}
             </Button>
             <Button variant="secondary" onClick={() => setAttempt((n) => n + 1)}>
               {t('pause.restart')}

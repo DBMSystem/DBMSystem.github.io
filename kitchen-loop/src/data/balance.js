@@ -74,6 +74,22 @@ export const balance = {
   craftCost: { common: 60, rare: 250, epic: 1000, legendary: 6000 }, // spec 40 / 120 / 320 / 960
   shinyCost: { common: 60, rare: 150, epic: 400, legendary: 1000 },
 
+  // Pip's daily orders: targets by tier (levels 1–2, 3–5, 6–9, 10+) and rewards per order.
+  challenges: {
+    perDay: 3,
+    bonusPacks: 1, // for completing all of the day's orders
+    templates: {
+      combo: { targets: [3, 4, 5, 7], reward: { coins: 40, fragments: 10 } },
+      orders: { targets: [4, 6, 8, 10], reward: { coins: 40, fragments: 10 } },
+      score: { targets: [800, 1200, 1600, 2200], reward: { coins: 50, fragments: 10 } },
+      noLoss: { targets: [1, 1, 1, 1], reward: { coins: 50, fragments: 15 } },
+      cook: { targets: [3, 5, 7, 10], reward: { coins: 30, fragments: 10 } },
+      perfect: { targets: [1, 2, 3, 4], reward: { coins: 40, fragments: 15 } },
+      fever: { targets: [1, 1, 2, 3], reward: { coins: 60, fragments: 20 } },
+      recipes: { targets: [8, 12, 18, 25], reward: { coins: 30, fragments: 5 } },
+    },
+  },
+
   // Progression (phase 2)
   xpCurve: { base: 100, perLevel: 60 },
   levelCoinReward: 6, // spec 20 (tree in 4–6 weeks, spec 5.4)

@@ -393,6 +393,29 @@ export const es = {
   'menu.coins': '{n}',
   'menu.devLevel': 'Subir nivel (prueba)',
 
+  // Pip's daily orders (proposed by Daniel)
+  'challenges.title': 'Encargos de Pip',
+  'challenges.hint': 'Tres encargos cada día. Cúmplelos todos y Pip te regala un sobre.',
+  'challenges.done': '¡Encargo cumplido!',
+  'challenges.allDone': '¡Todos los encargos de hoy cumplidos!',
+  'challenges.reward': '+{coins} monedas · +{fragments} fragmentos',
+  'challenges.bonus': '¡Sobre de regalo por cumplir los tres encargos!',
+  'challenges.progress': '{progress} / {target}',
+  'challenge.combo': 'Llega a combo x{n} en un servicio',
+  'challenge.orders': 'Sirve {n} pedidos en un servicio',
+  'challenge.score': 'Consigue {n} puntos en un servicio',
+  'challenge.noLoss': 'Termina un servicio sin que se vaya ningún cliente',
+  'challenge.cook': 'Cocina {recipe} {n} veces',
+  'challenge.perfect': 'Consigue ¡En su punto! {n} veces',
+  'challenge.perfect.one': 'Consigue un ¡En su punto!',
+  'challenge.fever': 'Enciende la fiebre {n} veces',
+  'challenge.fever.one': 'Enciende la fiebre en la cocina',
+  'challenge.recipes': 'Cocina {n} recetas',
+  'pause.panel': 'ENCARGOS Y RECETAS',
+  'panel.challenges': 'Encargos',
+  'panel.recipes': 'Recetas',
+  'results.challenges': 'Encargos cumplidos',
+
   // Menu
   'menu.play': 'JUGAR',
   'menu.bestScore': 'Récord: {score}',
@@ -427,7 +450,7 @@ export const es = {
   'results.orders': 'Pedidos servidos',
   'results.recipes': 'Recetas cocinadas',
   'results.discovered': 'Recetas secretas descubiertas',
-  'results.again': 'OTRA VEZ',
+  'results.again': 'SIGUIENTE SERVICIO',
   'results.menu': 'MENÚ',
 
   // Settings

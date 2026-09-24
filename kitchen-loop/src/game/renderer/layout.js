@@ -24,6 +24,7 @@ export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, trayS
   let y = 0;
   const hud = { x: ox, y, w: LOGICAL_WIDTH, h: HUD_HEIGHT };
   const pause = { x: ox + 4, y, w: 44, h: 44 };
+  const quick = { x: ox + 50, y, w: 44, h: 44 }; // Pip's orders and recipes during a service
   y += HUD_HEIGHT + gap;
 
   const slotW = (LOGICAL_WIDTH - 16) / maxCustomers;
@@ -51,7 +52,7 @@ export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, trayS
 
   const pip = { x: ox + 6, y, w: LOGICAL_WIDTH - 12, h: PIP_HEIGHT };
 
-  return { scale, width, height, ox, hud, pause, customers, board, grid, abilities, tray, preview, pip };
+  return { scale, width, height, ox, hud, pause, quick, customers, board, grid, abilities, tray, preview, pip };
 }
 
 export const inside = (r, x, y) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;

@@ -1378,3 +1378,110 @@ body {
   justify-content: flex-start;
   padding-top: 32px;
 }
+
+/* ---------- Pip's daily orders ---------- */
+.challenges {
+  width: 100%;
+  max-width: 340px;
+  text-align: left;
+}
+
+.challenges h3 {
+  margin: 0 0 4px;
+  color: var(--peach);
+  font-size: 16px;
+}
+
+.challenges ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.challenges li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255, 248, 231, 0.08);
+}
+
+.challenges li.done {
+  background: rgba(102, 187, 106, 0.2);
+}
+
+.challenges li.done .challenge-text {
+  color: var(--green);
+}
+
+.challenge-text {
+  font-weight: 700;
+}
+
+.challenge-bar {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 248, 231, 0.18);
+  overflow: hidden;
+}
+
+.challenge-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--orange), var(--peach));
+}
+
+.challenges.compact {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(58, 40, 29, 0.85);
+  box-shadow: 0 0 0 2px rgba(255, 204, 128, 0.25);
+}
+
+.challenges.compact h3 {
+  font-size: 14px;
+}
+
+.challenges.compact ul {
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.challenges.compact li {
+  padding: 5px 8px;
+  font-size: 13px;
+}
+
+.challenges.compact li > .hint {
+  display: none;
+}
+
+.quick-panel {
+  max-width: 400px;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.challenges-done {
+  width: 100%;
+  max-width: 320px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(102, 187, 106, 0.16);
+  text-align: left;
+}
+
+.challenges-done p {
+  margin: 4px 0 0;
+}
+
+.challenges-done .bonus {
+  color: var(--peach);
+  font-weight: 800;
+}
