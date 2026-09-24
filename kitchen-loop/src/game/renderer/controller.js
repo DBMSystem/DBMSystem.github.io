@@ -39,7 +39,7 @@ export function createGameController({
 
   // Checks Pip's orders after cooking events; completed ones show a toast and a sound.
   function checkChallenges(events) {
-    if (pending.length === 0 || !events.some((e) => e.type === 'cook' || e.type === 'perfect' || e.type === 'fever')) return;
+    if (pending.length === 0 || !events.some((e) => e.type === 'cook' || e.type === 'served' || e.type === 'perfect' || e.type === 'fever')) return;
     const live = engine.getResult();
     for (let i = pending.length - 1; i >= 0; i--) {
       if (progressWith(pending[i], live) >= pending[i].target) {

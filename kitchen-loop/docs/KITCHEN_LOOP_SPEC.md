@@ -65,7 +65,7 @@ Todo sistema secundario existe para reforzar este núcleo. Si no lo refuerza, no
 
 1. **HUD**: tiempo restante, puntuación, contador de combo.
 2. **Zona de clientes**: hasta 3 huecos (4 con la Encimera Rúnica). Cada cliente muestra su pedido (icono del plato) y una barra de paciencia.
-3. **Fogón**: entre los clientes y la encimera, con la sartén equipada siempre visible y centrada (sección 7.5). Cada receta hace el recorrido **encimera → sartén → cliente**. Nunca tapa la encimera ni los pedidos.
+3. **Fogón**: entre los clientes y la encimera, con **una sartén por cliente**, justo debajo de cada hueco y con el aspecto de la sartén equipada (sección 7.5). Cada pedido hace el recorrido **encimera → su sartén → cliente** (sección 2.6). Nunca tapa la encimera ni los pedidos.
 4. **Encimera (grid)**: 4x4 casillas.
 5. **Habilidades de utensilios**: fila de botones pequeños, solo visible si hay utensilios desbloqueados.
 6. **Bandeja**: 3 ingredientes disponibles + vista previa del siguiente (más pequeña y atenuada).
@@ -103,17 +103,21 @@ Tamaño máximo de una receta: 4 ingredientes.
 - Si una casilla pertenece a varias recetas posibles, se cocina según esta prioridad: 1) la receta más grande; 2) la que tiene un pedido activo; 3) la de más puntos.
 - **Recetas secretas**: no brillan hasta descubrirse. Pero si el jugador toca una casilla y la receta más grande que la contiene es una secreta con su requisito cumplido, **se cocina y se descubre**. Así se descubren jugando, por accidente o por experimentación. Tras descubrirse, brillan como las demás.
 - Tocar una casilla que no forma receta: pequeño temblor del ingrediente, sin castigo.
-- Al cocinar: animación de cocción (≤ 400 ms), partículas, pequeño shake, texto flotante con puntos y multiplicador. Las casillas se liberan al terminar la animación y no aceptan ingredientes mientras tanto.
+- Al cocinar: los ingredientes saltan a la sartén (≤ 400 ms), partículas, pequeño shake y texto flotante. Las casillas se liberan al terminar el salto y no aceptan ingredientes mientras tanto.
+- El combo, ¡En su punto! y la fiebre cuentan **en el momento de tocar**, no al servir.
 
-### 2.6 Servir
+### 2.6 Servir: la sartén de cada cliente
 
-- El plato cocinado se sirve automáticamente al cliente que lo pidió. Si varios lo pidieron, al de menor paciencia restante.
-- Si ningún cliente lo pidió: **venta de mostrador**, con puntos base × `counterSaleMultiplier` (0,5). No cuenta como pedido, pero sí suma al combo.
+- Cada cliente tiene su sartén en el fogón. Al cocinar un pedido, los ingredientes van a la sartén del cliente que lo pidió (si varios lo pidieron, al de menor paciencia restante que aún no tenga plato en la sartén).
+- El plato chisporrotea `panCookTime` (2,5 s) con sonido, vapor y un anillo de progreso. Al terminar suena un "ding", el plato vuela al cliente y se cobra: puntos, monedas, fragmentos y pedido servido se suman **en ese momento**. Un cliente con su plato en la sartén ya no puede recibir otro.
+- **Se quema**: la paciencia del cliente sigue corriendo mientras se cocina (solo la paran las Pinzas de Escarcha). Si se agota antes de que el plato esté listo, el plato se quema: humo negro, un comentario de Pip y el cliente se va. No da puntos ni pago y cuenta como cliente perdido. El anillo se pone rojo y parpadea cuando ya no va a llegar a tiempo.
+- Si ningún cliente lo pidió: **venta de mostrador**, instantánea, con puntos base × `counterSaleMultiplier` (0,5). Pasa por una sartén libre camino del marcador. No cuenta como pedido, pero sí suma al combo.
+- **Fin del tiempo**: las sartenes que estaban cocinando terminan y sirven antes de la pantalla de resultados. En un desbordamiento, los platos que ya estaban en la sartén se sirven al terminar.
 
 ### 2.7 Clientes en partida
 
 - Llega un cliente cada `customerInterval` (7 s); el primero al segundo 1. Máximo `maxCustomers` (3).
-- Paciencia base `customerPatience` (20 s), modificada por tipo de cliente (sección 3.3).
+- Paciencia base `customerPatience` (22 s: 20 + 2 por el tiempo de sartén), modificada por tipo de cliente (sección 3.3).
 - Los pedidos solo incluyen recetas **conocidas y desbloqueadas**, nunca secretas. Al principio se priorizan las recetas pequeñas.
 - Si la paciencia se agota, el cliente se va: se pierde el pedido y Pip reacciona. No hay más castigo.
 
@@ -622,9 +626,9 @@ Mientras Daniel no apruebe esta sección, todo el lore se escribe como `draft`.
 
 ### 7.5 Sartenes (solo cosméticas)
 
-- La sartén equipada está **siempre visible en el fogón** durante la partida (sección 2.1): es el objeto que más se mira después de la encimera.
+- La sartén equipada está **siempre visible en el fogón** durante la partida (sección 2.1): todas las sartenes del fogón (una por cliente) tienen su aspecto. Es el objeto que más se mira después de la encimera.
   - **En reposo**: echa un poco de vapor y se balancea levemente.
-  - **Al cocinar**: los ingredientes saltan de la encimera a la sartén, chisporrotean con las partículas propias de esa sartén y el plato sale de la sartén hacia el cliente.
+  - **Al cocinar**: los ingredientes saltan de la encimera a la sartén del cliente y chisporrotean con las partículas propias de esa sartén hasta que el plato sale hacia el cliente (sección 2.6).
   - **En ¡en su punto! y en la fiebre**: animación propia (la dorada resplandece, la oxidada suelta más chispas…), sin tapar nunca la encimera ni los pedidos.
   - **Fuera de la partida**: la sartén equipada aparece en la cocina del menú y todas se exponen en la vitrina del Almacén.
 - "PROBAR — VER ANUNCIO" presta una sartén durante un loop entero, para decidir si gusta antes de comprarla.

@@ -29,6 +29,10 @@ function fill(engine, ids) {
   engine.refreshMatches();
 }
 
+const wait = (engine, seconds) => {
+  for (let i = 0; i < Math.ceil(seconds / DT); i++) engine.step(DT);
+};
+
 function placeFromTray(engine, cell) {
   return engine.placeIngredient(0, cell);
 }
@@ -113,8 +117,12 @@ describe('engine — cooking and serving', () => {
       { uid: 1, typeId: 'calm', recipeId: 'bacon_egg', slot: 0, patience: 10, maxPatience: 20 },
       { uid: 2, typeId: 'calm', recipeId: 'bacon_egg', slot: 1, patience: 4, maxPatience: 20 },
     ];
+    engine.state.nextCustomerAt = Infinity;
     fill(engine, ['egg', 'bacon']);
     engine.cookAt(0);
+    expect(engine.state.customers.find((c) => c.cooking).uid).toBe(2); // into the pan of the most impatient
+    expect(engine.state.score).toBe(0);
+    wait(engine, balance.panCookTime + DT);
     expect(engine.state.customers.map((c) => c.uid)).toEqual([1]);
     expect(engine.state.score).toBe(75);
     expect(engine.state.ordersServed).toBe(1);
@@ -161,5 +169,82 @@ describe('engine — cooking and serving', () => {
     expect(engine.state.customers).toHaveLength(1);
     for (let i = 0; i < 60 * 30; i++) engine.step(DT);
     expect(engine.state.customers.length).toBeLessThanOrEqual(balance.maxCustomers);
+  });
+});
+
+describe('engine — cooking in the pan (spec 2.6)', () => {
+  const order = (engine, patience, recipeId = 'bacon_egg') => {
+    engine.state.nextCustomerAt = Infinity;
+    engine.state.customers = [{ uid: 1, typeId: 'calm', recipeId, slot: 0, patience, maxPatience: 20 }];
+  };
+
+  it('the order sizzles in its pan and is served when ready', () => {
+    const { engine } = setup({ level: 1 });
+    order(engine, 20);
+    fill(engine, ['egg', 'bacon']);
+    engine.cookAt(0);
+    const [cook] = engine.drainEvents();
+    expect(cook).toMatchObject({ type: 'cook', customerSlot: 0 });
+    expect(engine.state.grid.cells[0].ingredient).toBeNull(); // the board is free at once
+    wait(engine, balance.panCookTime - 0.1);
+    expect(engine.state.ordersServed).toBe(0);
+    wait(engine, 0.2);
+    expect(engine.drainEvents().find((e) => e.type === 'served')).toMatchObject({ slot: 0, recipeId: 'bacon_egg', points: 75 });
+    expect(engine.getResult()).toMatchObject({ ordersServed: 1, customersLost: 0, burntCount: 0 });
+  });
+
+  it('a customer with a dish in the pan cannot be cooked for twice', () => {
+    const { engine } = setup({ level: 1 });
+    order(engine, 20);
+    fill(engine, ['egg', 'bacon', 'egg', 'bacon']);
+    engine.cookAt(0);
+    engine.cookAt(2);
+    expect(engine.drainEvents().filter((e) => e.type === 'cook').map((e) => e.customerSlot)).toEqual([0, null]); // the second one is a counter sale
+  });
+
+  it('if patience runs out first, the dish burns: no points, no pay', () => {
+    const { engine } = setup({ level: 1 });
+    order(engine, 1);
+    fill(engine, ['egg', 'bacon']);
+    engine.cookAt(0);
+    wait(engine, balance.panCookTime + 0.1);
+    const events = engine.drainEvents();
+    expect(events.find((e) => e.type === 'burnt')).toMatchObject({ recipeId: 'bacon_egg' });
+    expect(events.some((e) => e.type === 'served' || e.type === 'customerLeft')).toBe(false);
+    expect(engine.getResult()).toMatchObject({ score: 0, ordersServed: 0, orderCoins: 0, customersLost: 1, burntCount: 1 });
+  });
+
+  it('combo counts when the recipe is tapped, not when it is served', () => {
+    const { engine } = setup({ level: 1 });
+    order(engine, 20);
+    fill(engine, ['egg', 'bacon', 'bread', 'tomato']);
+    engine.cookAt(0);
+    engine.cookAt(2);
+    expect(engine.state.combo.chain).toBe(2);
+  });
+
+  it('at time-up the pans still cooking finish and serve before the results', () => {
+    const { engine, calls } = setup({ level: 1 });
+    order(engine, 20);
+    engine.state.timeLeft = 1;
+    fill(engine, ['egg', 'bacon']);
+    engine.cookAt(0);
+    wait(engine, 1.1);
+    expect(engine.state.status).toBe('closing');
+    expect(engine.placeIngredient(0, 5)).toBe(false);
+    expect(calls.end).toHaveLength(0);
+    wait(engine, balance.panCookTime);
+    expect(calls.end).toHaveLength(1);
+    expect(calls.end[0]).toMatchObject({ ordersServed: 1, endReason: 'time' });
+  });
+
+  it('ending on an overflow still serves the dishes in the pans', () => {
+    const { engine, calls } = setup({ level: 1 });
+    order(engine, 20);
+    fill(engine, ['egg', 'bacon']);
+    engine.cookAt(0);
+    engine.state.status = 'overflow';
+    engine.finishOverflow();
+    expect(calls.end[0]).toMatchObject({ ordersServed: 1, endReason: 'overflow' });
   });
 });

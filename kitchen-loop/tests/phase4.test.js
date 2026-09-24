@@ -162,6 +162,8 @@ describe('special and legendary customers', () => {
     engine.orderFrom('collector', 'bacon_egg');
     fill(engine, ['egg', 'bacon']);
     engine.cookAt(0);
+    expect(engine.getResult().fragments).toBe(0); // paid when the dish leaves the pan
+    run(engine, balance.panCookTime + DT);
     expect(engine.getResult().fragments).toBe(customerById.collector.fragments);
     expect(engine.state.servedRecipes).toEqual(['bacon_egg']);
   });
@@ -214,6 +216,7 @@ describe('golden ingredients and specialties', () => {
     night.orderFrom('calm', 'bacon_egg');
     fill(night, ['egg', 'bacon']);
     night.cookAt(0);
+    run(night, balance.panCookTime + DT);
     expect(night.getResult().fragments).toBe(balance.specialties.bruleeNight.fragmentsPerOrder);
   });
 });

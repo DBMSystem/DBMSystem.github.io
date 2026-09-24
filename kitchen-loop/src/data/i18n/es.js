@@ -72,6 +72,8 @@ export const es = {
   'fx.served': '¡Servido!',
   'fx.counterSale': 'Venta de mostrador',
   'fx.customerLeft': 'Se ha ido…',
+  'fx.burnt': '¡Se quemó!',
+  'fx.toPan': '¡A la sartén!',
   'fx.secondChance': '+{s} s',
   'fx.specialArrived': '¡Cliente especial!',
   'fx.legendaryArrived': '¡Cliente legendario!',
@@ -109,6 +111,9 @@ export const es = {
   'pip.customerLeft.1': 'Vale... ese no vuelve.',
   'pip.customerLeft.2': 'Nota mental: la gente tiene prisa.',
   'pip.customerLeft.3': 'Se ha ido con hambre. Qué drama.',
+  'pip.burnt.1': '¡Huele a carbón! Ese plato ya es arte moderno.',
+  'pip.burnt.2': 'Se quemó… Lo llamaremos «estilo ahumado».',
+  'pip.burnt.3': 'Uy, demasiado tarde. ¡La sartén no espera!',
   'pip.gridNearlyFull.1': '¡Brûlée no puede ver esto!',
   'pip.gridNearlyFull.2': '¡Hay que hacer hueco, {nombre}!',
   'pip.noRecipe.1': 'Vale... eso no era tomate.',
@@ -191,6 +196,7 @@ export const es = {
   'tutorial.dragBacon': 'Ahora el bacon, justo al lado del huevo.',
   'tutorial.cook': '¡Brillan! Eso es una receta. Tócala para cocinarla.',
   'tutorial.order': '¡Un cliente! Quiere Tostada con Tomate: pan y tomate juntos.',
+  'tutorial.pan': '¡A la sartén! Se cocina en su sartén y se sirve sola. ¡Que no se acabe su paciencia!',
   'tutorial.free': '¡Ahora sin ayuda! Tienes 30 segundos. Cocina seguido para hacer combo.',
 
   // Secret recipe riddles (spec 3.2; draft except the spec example)

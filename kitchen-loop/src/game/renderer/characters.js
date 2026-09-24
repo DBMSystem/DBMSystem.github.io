@@ -159,6 +159,8 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
 
       const pop = ease((since - BUBBLE_DELAY) / 0.25) * (1 + 0.15 * Math.sin(clamp01((since - BUBBLE_DELAY) / 0.25) * Math.PI));
       if (pop > 0.01) drawOrderBubble(slot, recipe, ratio, pop, urgent);
+      // Their dish is already in the pan (spec 2.6).
+      if (customer.cooking && pop > 0.01) kit.roundRect(slot.x + 2, slot.y, slot.w - 4, BUBBLE_HEIGHT, 10, 'rgba(102, 187, 106, 0.22)', COLORS.ok, 2);
       if (frozen) kit.roundRect(slot.x + 2, slot.y, slot.w - 4, BUBBLE_HEIGHT, 10, 'rgba(129, 212, 250, 0.35)', '#81d4fa', 2);
     }
 

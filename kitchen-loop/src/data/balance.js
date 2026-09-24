@@ -5,7 +5,8 @@ export const balance = {
   timeBonusPerOrder: 0,
   gridSize: 4,
   maxRecipeSize: 4,
-  cookDuration: 0.4,
+  cookDuration: 0.4, // cells stay locked and the ingredients fly to the pan
+  panCookTime: 2.5, // an order sizzles in its customer's pan before it is served (spec 2.6)
 
   // Combos, ¡En su punto!, fiebre
   comboWindow: 3.0,
@@ -27,7 +28,7 @@ export const balance = {
   maxCustomers: 3,
   customerInterval: 7,
   firstCustomerAt: 1,
-  customerPatience: 20,
+  customerPatience: 22, // +2 s for the pan (spec 2.6)
   smallOrdersFirst: 2,
   smallRecipeMaxSize: 2,
   cheapRecipeMaxPoints: 100,

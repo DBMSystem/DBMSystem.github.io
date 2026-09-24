@@ -389,3 +389,18 @@ Daniel señaló que las sartenes apenas se veían y mandó el cambio de diseño 
 - **Menú:** la sartén equipada sustituye a la que hay dibujada en el alféizar de la cocina (la de Pip es la del dibujo).
 - Sigue siendo solo cosmética: nada del juego cambia con la sartén.
 - **Sartén de Pip (la inicial):** era el icono de cocinar, pequeño y visto de lado, distinto de las sartenes diseñadas, que se ven desde arriba. Ahora es la sartén negra de la referencia convertida en acero claro (`generate_default_pan`), en la misma perspectiva que las demás y distinta de la negra de pago. Los archivos de `assets/` no se tocan.
+
+## 19. Cocinar en la sartén de cada cliente (propuesta de Daniel, aprobada)
+
+Daniel: "una sartén por cliente […] se cocina junto unos pocos segundos y se sirve, si no llegas al objetivo antes de tiempo el producto que haya en la sartén se quema". Respuesta a mis preguntas: "Se quema con la paciencia del cliente, 2,5 está bien".
+- **Una sartén por hueco de cliente** (4 con la Encimera Rúnica), todas con el aspecto de la sartén equipada.
+- **Cocción:** `panCookTime` = 2,5 s en `balance.js`. La encimera se libera al momento (el salto a la sartén dura lo mismo que antes, 0,4 s).
+- **Cuándo cuenta cada cosa:** combo, ¡En su punto!, fiebre, recetas cocinadas y descubrimientos al tocar. Puntos, monedas, fragmentos y pedido servido al salir de la sartén.
+- **Se quema** si la paciencia del cliente se agota antes (la paciencia no se para mientras cocina; las Pinzas de Escarcha sí la paran). Sin puntos ni pago, cuenta como cliente perdido; Pip tiene 3 frases nuevas (draft). Nuevo dato `burntCount` en el resultado del loop.
+- **Paciencia base 20 → 22 s** para compensar los 2,5 s de sartén.
+- **Ventas de mostrador:** siguen siendo instantáneas; pasan por una sartén libre camino del marcador.
+- **Fin del tiempo:** estado `closing` en el motor. No se puede jugar, las sartenes terminan y sirven, y luego salen los resultados. En un desbordamiento, los platos que ya estaban en la sartén se sirven.
+- **Dentro de la sartén** se ven los ingredientes chisporroteando y dorándose, no el plato emplatado, que sale al servir (coherencia: no hay un plato dentro de la sartén).
+- **Tutorial:** tras cocinar el pedido, un paso nuevo "¡A la sartén!" espera a que se sirva. El reloj sigue parado, así que en el tutorial no se puede quemar.
+- **Arreglo de paso:** si llegaba el turno del crítico de "Crítico en Sala" con el mostrador lleno, el crítico se perdía. Ahora espera a que haya sitio.
+

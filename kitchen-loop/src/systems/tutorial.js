@@ -15,7 +15,8 @@ export function createTutorialRunner(engine, script, balance) {
   const completes = (event) =>
     (step.until === 'place' && event.type === 'place') ||
     (step.until === 'cook' && event.type === 'cook') ||
-    (step.until === 'serve' && event.type === 'cook' && event.customerSlot !== null);
+    (step.until === 'toPan' && event.type === 'cook' && event.customerSlot !== null) ||
+    (step.until === 'serve' && event.type === 'served');
 
   // Returns true when the step changed.
   function handle(events) {

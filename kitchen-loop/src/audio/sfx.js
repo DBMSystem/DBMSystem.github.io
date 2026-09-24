@@ -10,8 +10,11 @@ export const sfx = {
   place: [NOTE(520, 0, 0.08, 'sine', 260)],
   glow: [NOTE(880, 0, 0.12, 'triangle', null, 0.35), NOTE(1320, 0.06, 0.14, 'triangle', null, 0.3)],
   cook: [NOISE(0, 0.22, 2400, 0.6), NOTE(330, 0, 0.1, 'square', 520, 0.4)],
+  // A dish in the pan (spec 2.6): a sizzle as long as the cooking, with a few crackles.
+  sizzle: [NOISE(0, 2.5, 3800, 0.22), NOISE(0, 0.3, 1600, 0.35), ...[0.35, 0.8, 1.2, 1.55, 1.9, 2.25].map((at, i) => NOISE(at, 0.05, 5200 + i * 300, 0.4))],
+  burn: [NOISE(0, 0.6, 900, 0.6), NOTE(220, 0.05, 0.35, 'sawtooth', 110, 0.3)],
   noRecipe: [NOTE(140, 0, 0.09, 'sine', 90, 0.7)],
-  serve: [NOTE(1047, 0, 0.12), NOTE(1319, 0.1, 0.18)],
+  serve: [NOTE(1568, 0, 0.35, 'sine', null, 0.6), NOTE(2093, 0.02, 0.4, 'sine', null, 0.35), NOTE(1319, 0.12, 0.18)], // ding!
   customerLeft: [NOTE(392, 0, 0.18, 'triangle', 330), NOTE(311, 0.16, 0.3, 'triangle', 247)],
   perfect: arpeggio([523, 659, 784, 1047, 1319], 0.06, 0.14, 'square', 0.5),
   fever: [NOTE(200, 0, 0.45, 'sawtooth', 820, 0.35), NOISE(0.05, 0.4, 1200, 0.3), ...arpeggio([659, 784, 988], 0.08, 0.12, 'square', 0.4)],
