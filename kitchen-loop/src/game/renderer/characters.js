@@ -14,6 +14,10 @@ const BUBBLE_DELAY = 0.2;
 const LEAVE_TIME = 0.7;
 const PIP_SIZE = 70;
 const ANGRY_SCALE = 0.8; // the angry art is a bust, drawn a bit smaller so heads match the full-body poses
+// Special and legendary customers are full-body chibis: drawn bigger and sunk behind the counter so their
+// heads are the size of the common customers' heads (Daniel: consistent sizes).
+const PORTRAIT_SCALE = 1.25;
+const PORTRAIT_SINK = 0.2; // share of the sprite hidden behind the counter
 const TYPE_SPEED = 45; // characters per second
 
 export function createCharacters({ ctx, kit, view, state, getLayout, getPixelScale, reducedMotion }) {
@@ -23,14 +27,16 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
   const poseKey = (typeId, pose) =>
     [`customers/${typeId}_${pose}`, `customers/${typeId}_idle`, `customers/${typeId}`].find((key) => getSprite(key)) ?? `customers/${typeId}`;
 
-  // Draws a character sprite standing on (cx, feetY), with squash (sy) and horizontal stretch (sx).
+  // Draws a character sprite `size` tall standing on (cx, feetY), with squash (sy) and horizontal stretch (sx).
   function drawCharacter(spriteKey, fallbackColor, initial, cx, feetY, size, { sx = 1, sy = 1, alpha = 1, flip = false } = {}) {
     ctx.save();
     ctx.globalAlpha *= alpha;
     ctx.translate(cx, feetY);
     ctx.scale(sx * (flip ? -1 : 1), sy);
     const sprite = getSprite(spriteKey);
-    if (sprite) drawSmooth(ctx, sprite, -size / 2, -size, size, size);
+    // `size` is the height; wide sprites (poses with props) keep their proportions so heads match.
+    const width = sprite ? (size * sprite.width) / sprite.height : size;
+    if (sprite) drawSmooth(ctx, sprite, -width / 2, -size, width, size);
     else {
       ctx.fillStyle = fallbackColor;
       ctx.beginPath();
@@ -103,9 +109,23 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
     }
   }
 
+  // Height and extra depth (below the feet line) of a customer sprite.
+  function customerArt(typeId, key) {
+    if (key.endsWith('_angry')) return { size: CHARACTER * ANGRY_SCALE, sink: 0 };
+    if (key === `customers/${typeId}`) return { size: CHARACTER * PORTRAIT_SCALE, sink: CHARACTER * PORTRAIT_SCALE * PORTRAIT_SINK };
+    return { size: CHARACTER, sink: 0 };
+  }
+
   function drawCustomers() {
     const layout = getLayout();
     const frozen = state.time < state.frozenUntil;
+    const first = layout.customers[0];
+    const counterY = first.y + first.h - COUNTER_HEIGHT + 4;
+    // Nothing of the customers shows below the counter.
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, layout.width, counterY + COUNTER_HEIGHT);
+    ctx.clip();
     for (const customer of state.customers) {
       const slot = layout.customers[customer.slot];
       const type = customerById[customer.typeId];
@@ -123,7 +143,8 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
       const pose = urgent ? 'angry' : since < ARRIVE_TIME * 2 ? 'arrive' : 'idle';
       const key = poseKey(type.id, pose);
       const angryArt = key.endsWith('_angry');
-      drawCharacter(key, type.color, t(`customer.${type.id}`).charAt(0), cx, feetY, angryArt ? CHARACTER * ANGRY_SCALE : CHARACTER, {
+      const art = customerArt(type.id, key);
+      drawCharacter(key, type.color, t(`customer.${type.id}`).charAt(0), cx, feetY + art.sink, art.size, {
         sy: breathe,
         sx: 2 - breathe,
         alpha: arrive,
@@ -151,22 +172,26 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
       const feetY = slot.y + slot.h + 2;
       if (d.happy) {
         const hop = Math.sin(clamp01(k * 1.4) * Math.PI) * 18 * motion;
-        drawCharacter(poseKey(type.id, 'happy'), type.color, '', cx, feetY - hop, CHARACTER, {
+        const key = poseKey(type.id, 'happy');
+        const art = customerArt(type.id, key);
+        drawCharacter(key, type.color, '', cx, feetY - hop + art.sink, art.size, {
           alpha: 1 - clamp01((k - 0.5) * 2),
           sy: 1 + 0.08 * Math.sin(k * 20) * motion,
         });
       } else {
         const shake = k < 0.4 ? Math.sin(view.time * 50) * 3 * motion : 0;
         const key = poseKey(type.id, 'angry');
-        const size = key.endsWith('_angry') ? CHARACTER * ANGRY_SCALE : CHARACTER;
-        drawCharacter(key, type.color, '', cx + shake + ease((k - 0.4) / 0.6) * 60, feetY, size, { alpha: 1 - clamp01((k - 0.4) / 0.6), flip: k > 0.4 });
+        const art = customerArt(type.id, key);
+        drawCharacter(key, type.color, '', cx + shake + ease((k - 0.4) / 0.6) * 60, feetY + art.sink, art.size, {
+          alpha: 1 - clamp01((k - 0.4) / 0.6),
+          flip: k > 0.4,
+        });
       }
     }
     view.departures = view.departures.filter((d) => view.time - d.at < LEAVE_TIME);
+    ctx.restore();
 
     // Service counter in front of the customers' legs.
-    const first = layout.customers[0];
-    const counterY = first.y + first.h - COUNTER_HEIGHT + 4;
     ctx.fillStyle = '#6d4530';
     ctx.fillRect(0, counterY, layout.width, COUNTER_HEIGHT);
     ctx.fillStyle = '#a0694a';

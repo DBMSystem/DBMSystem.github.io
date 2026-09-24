@@ -569,7 +569,7 @@ export const es = {
   'decor.hint': 'Solo decoración: se verá en la cocina del menú.',
   'specialty.title': 'Especialidad del día',
   'specialty.hint': 'Elige cómo será este servicio.',
-  'specialty.none': 'Servicio normal',
+  'specialty.back': 'VOLVER',
   'specialty.breakfast.name': 'Hora del Desayuno',
   'specialty.breakfast.desc': 'Sale el doble de huevo. Recetas con huevo: +25 % de puntos.',
   'specialty.baconFest.name': 'Bacon Fest',

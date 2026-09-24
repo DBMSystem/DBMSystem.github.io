@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1 — Tamaños coherentes
+
+- Ingredientes y platos con el mismo tamaño visual; los clientes especiales y la turista, con la cabeza del mismo tamaño que el resto.
+- La decoración usa el mismo tamaño de píxel que la cocina del menú; Brûlée y Pip del mismo tamaño en todas las pantallas.
+- Botón VOLVER en el selector de especialidad.
+
 ## 0.5.0 — Fase 4: historia y Brûlée
 
 - Capítulos 2–7 y epílogo con escenas de Pip y Brûlée. Brûlée aparece en los resultados (loop 3 con 1.200 puntos o seguro en el loop 6).

@@ -380,6 +380,8 @@ if __name__ == "__main__":
     extract_utensils()
     generate_decor()
     generate_phase4_art()
+    normalize_visual_size()
+    boost_poses()
 
 
 # ---------- Kitchen decoration (spec 5.6), drawn as pixel maps ----------
@@ -589,3 +591,39 @@ def generate_phase4_art():
                 img.putpixel((x, y), DECOR_PALETTE[ch] + (255,))
     img = img.resize((img.width * 12, img.height * 12), Image.NEAREST)
     save(fit(img, INGREDIENT_SIZE, upscale_nearest=True, fill=INGREDIENT_FILL), SPRITES / "ingredients" / "flame.png")
+
+
+# ---------- Consistent sizes (Daniel: "ten en cuenta los tamaños… para que sea coherente") ----------
+# Round and long objects must look equally big: scale each sprite so the square root of its content
+# area is `target` of the canvas, but never let its longest side pass `max_side`.
+VISUAL_SIZE = {"ingredients": (0.74, 0.92), "dishes": (0.80, 0.96)}
+# Customer poses drawn smaller in the reference (their props made them fit a square): scale up and widen
+# the canvas so every customer's head is about the same size. Height stays CUSTOMER_SIZE.
+POSE_BOOST = {"tourist_idle": 1.3, "tourist_happy": 1.3}
+
+
+def normalize_visual_size():
+    for group, (target, max_side) in VISUAL_SIZE.items():
+        for path in sorted((SPRITES / group).glob("*.png")):
+            img = Image.open(path).convert("RGBA")
+            size = img.width
+            content = img.crop(img.getchannel("A").point(lambda a: 255 if a > 24 else 0).getbbox())
+            w, h = content.size
+            scale = min(target * size / (w * h) ** 0.5, max_side * size / max(w, h))
+            content = content.resize((max(1, round(w * scale)), max(1, round(h * scale))), Image.LANCZOS)
+            out = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+            out.paste(content, ((size - content.width) // 2, (size - content.height) // 2), content)
+            save(out, path)
+
+
+def boost_poses():
+    for name, boost in POSE_BOOST.items():
+        path = SPRITES / "customers" / f"{name}.png"
+        img = Image.open(path).convert("RGBA")
+        content = img.crop(img.getchannel("A").point(lambda a: 255 if a > 24 else 0).getbbox())
+        content = content.resize((round(content.width * boost), round(content.height * boost)), Image.LANCZOS)
+        height = CUSTOMER_SIZE
+        width = max(height, content.width + 8)
+        out = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+        out.paste(content, ((width - content.width) // 2, height - content.height - round(height * 0.03)), content)
+        save(out, path)

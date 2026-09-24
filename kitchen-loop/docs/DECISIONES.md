@@ -306,3 +306,15 @@ Daniel pidió seguir. Sobre Brûlée en las cartas: "da igual, al principio no e
 **Pruebas (solo desarrollo y playtest):** botón "+1000 monedas (prueba)" en el menú, para probar el Almacén sin jugar semanas. Pasa por el inventario, como todo.
 
 **Pendiente para después de la Fase 4:** repetir escenas de capítulos desde Ajustes, equipar sartenes (Fase 5) y el efecto visual de maestría 3.
+
+## 14. Tamaños coherentes (Daniel: "ten en cuenta los tamaños de los items, iconos, personajes")
+
+Medí lo que ocupa de verdad cada dibujo dentro de su sprite y unifiqué por categorías. Las reglas están en `scripts/extract_sprites.py`, así que se mantienen si se regenera el arte.
+- **Ingredientes y platos:** antes se ajustaban por el lado más largo, y los alargados (pescado, patata, platos ovalados) parecían más pequeños que los redondos. Ahora todos tienen el mismo "tamaño visual" (raíz del área): ingredientes 0,74 y platos 0,80 del sprite, con un tope en el lado largo (0,92 y 0,96). Los especiales (Reloj, Especia) siguen la misma regla y ya no pesan más que un tomate.
+- **Clientes:** en todas las poses, la cabeza mide lo mismo.
+  - La turista (poses de esperar y contenta) tenía la cabeza pequeña porque el vinilo y los brazos la obligaban a encoger en un cuadrado. Ahora su sprite es más ancho y el juego dibuja los personajes respetando su proporción.
+  - Las poses enfadadas son bustos y siguen dibujándose al 80 %.
+  - Los clientes especiales y legendarios son chibis de cuerpo entero: se dibujan un 25 % más grandes y con los pies escondidos tras el mostrador (con recorte), para que su cabeza tenga el tamaño de las demás.
+- **Decoración:** todos los objetos usan el mismo tamaño de píxel que el dibujo de la cocina del menú (0,55 % del ancho por píxel), así que parecen dibujados con los mismos píxeles.
+- **Pip y Brûlée:** tienen la misma altura en las escenas (190 px) y 84 px en resultados y en el Almacén.
+- El selector de especialidad tiene ahora un botón VOLVER (también hace falta para el botón Atrás de Android).

@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
+import { Button } from './Button.jsx';
 import { rollSpecialties } from '../systems/specialty.js';
 import { createRng } from '../utils/rng.js';
 import { spriteUrl } from '../assets/manifest.js';
 import { t } from '../utils/i18n.js';
 
 // Before a loop, from level 4: choose 1 of 3 specialties (spec 2.12, 8.4).
-export function SpecialtyPicker({ save, onPick }) {
+export function SpecialtyPicker({ save, onPick, onCancel }) {
   const choices = useMemo(() => rollSpecialties(createRng(), save), [save]);
   return (
     <div className="overlay">
@@ -21,6 +22,9 @@ export function SpecialtyPicker({ save, onPick }) {
             </span>
           </button>
         ))}
+        <Button variant="secondary" onClick={onCancel}>
+          {t('specialty.back')}
+        </Button>
       </div>
     </div>
   );
