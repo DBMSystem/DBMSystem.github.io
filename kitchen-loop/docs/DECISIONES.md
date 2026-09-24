@@ -318,3 +318,24 @@ Medí lo que ocupa de verdad cada dibujo dentro de su sprite y unifiqué por cat
 - **Decoración:** todos los objetos usan el mismo tamaño de píxel que el dibujo de la cocina del menú (0,55 % del ancho por píxel), así que parecen dibujados con los mismos píxeles.
 - **Pip y Brûlée:** tienen la misma altura en las escenas (190 px) y 84 px en resultados y en el Almacén.
 - El selector de especialidad tiene ahora un botón VOLVER (también hace falta para el botón Atrás de Android).
+
+## 15. Iconos de comida, coherencia del pixel art y AdMob
+
+**Iconos de comida:** a Daniel le parecían más feos tras el PR #6.
+- **Lo más probable** es que viera los dibujos provisionales por código. GitHub Pages guarda las páginas unos minutos en caché, y una página cargada justo antes de publicar seguía pidiendo las imágenes con los nombres antiguos, que el nuevo build ya había borrado. En el recetario salían como "imagen rota" y en partida se dibujaba el sustituto provisional.
+  - **Arreglo:** `npm run build:playtest` ahora usa `scripts/buildPlaytest.js`, que conserva los archivos del build anterior (dos generaciones).
+- **Además**, los sprites de ingredientes y platos vuelven a ser exactamente los originales, píxel a píxel. La coherencia de tamaño de la §14 ya no reescala las imágenes: el script calcula un factor por sprite (`src/assets/spriteScales.json`) y el juego lo aplica al dibujar (canvas, iconos, recetario y cartas).
+
+**Mismo pixel art en todo (Daniel: "diséñalo tú, respetando la temática"):**
+- **Decoración:** 10 objetos recortados de la cocina de día del mega pack, con un recorte que sigue los contornos oscuros del pixel art: lámpara colgante, ristra de ajos y guindillas, estante de tarros, estante de plantas, frutero, maceta de hierbas, suculenta, planta grande, tabla de cortar y bolsa del mercado. Sustituyen a los dibujos simples anteriores (el gato, la pizarra, el reloj…).
+  - Cada objeto se coloca sobre uno parecido de la cocina del menú y a su misma escala de píxel.
+  - Guardados antiguos: los objetos que ya no existen se descartan al cargar (solo existían en pruebas).
+- **Platos que faltaban (9):** Tortilla Francesa, Huevos Rotos y Crema de Champiñones salen de platos del mega pack que no se usaban. Las 6 secretas se montan con platos existentes más un toque (corona, brillo, color morado…).
+- **Especia:** el tarro recortado de su medallón, sin el disco.
+- **Llama:** diseñada en el estilo de los ingredientes (contorno oscuro, tres tonos y núcleo claro, a la misma densidad de píxel).
+
+**AdMob:** ver `docs/ADMOB.md`.
+- Solo anuncios recompensados, con un bloque por punto de anuncio, precarga bajo demanda, reintentos y consentimiento UMP desde el menú.
+- En Ajustes, "Privacidad de los anuncios" cuando Google lo exige.
+- Anuncios de prueba hasta que se pongan los IDs reales.
+- Se instalan `@capacitor/core` y `@capacitor-community/admob` 8. El proyecto Android (Capacitor) se crea en la Fase 6.

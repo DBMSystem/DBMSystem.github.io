@@ -51,6 +51,8 @@ export const balance = {
   freePackCooldown: 6 * 60 * 60,
   adsMinLoops: 3,
   interstitialEnabled: false,
+  adRetrySeconds: 30, // after a failed ad load; doubles on each failure
+  adRetryMaxSeconds: 600,
 
   // Loop rewards (spec 2.14)
   coinsPerOrder: 5,

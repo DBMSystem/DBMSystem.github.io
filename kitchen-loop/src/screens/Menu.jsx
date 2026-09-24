@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useAds } from '../monetization/useAds.js';
 import { Button } from '../components/Button.jsx';
 import { Calendar, calendarToday } from '../components/Calendar.jsx';
 import { canClaimCalendar } from '../systems/calendar.js';
@@ -22,6 +23,8 @@ export function Menu({ services, onPlay, onAlbum, onWarehouse, onSettings, onDev
   const { level, xp, name } = save.player;
   const xpShare = level >= balance.maxLevel ? 1 : xp / xpToNext(level);
   const albumDot = save.packs.standard + save.packs.special > 0 || (save.stats.loopsPlayed >= balance.adsMinLoops && adManager.freePackWait() === 0);
+  useAds(adManager);
+  useEffect(() => adManager.start(), [adManager]);
   const warehouseOpen = contentFor(save).features.includes('warehouse');
 
   return (

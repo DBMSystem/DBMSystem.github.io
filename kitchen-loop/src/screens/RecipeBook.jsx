@@ -4,7 +4,7 @@ import { getUnlockedContent, unlockLevelOf } from '../systems/unlocks.js';
 import { RecipeIngredients } from '../components/IngredientIcon.jsx';
 import { Button } from '../components/Button.jsx';
 import { t, formatNumber } from '../utils/i18n.js';
-import { spriteUrl } from '../assets/manifest.js';
+import { spriteUrl, spriteScale } from '../assets/manifest.js';
 import { masteryLevel } from '../cards/album.js';
 
 const patternKey = (recipe) => (recipe.pattern === 'line' && recipe.ordered ? 'book.pattern.lineOrdered' : `book.pattern.${recipe.pattern}`);
@@ -13,7 +13,7 @@ function RecipeRow({ recipe, locked, timesCooked = 0 }) {
   const dish = spriteUrl(`dishes/${recipe.id}`);
   return (
     <li className={`recipe-row ${locked ? 'locked' : ''}`}>
-      {dish && <img className="dish" src={dish} alt="" />}
+      {dish && <img className="dish" src={dish} alt="" style={{ transform: `scale(${spriteScale(`dishes/${recipe.id}`)})` }} />}
       <div className="recipe-head">
         <strong>{t(`recipe.${recipe.id}`)}</strong>
         <span className="points">{t('book.points', { n: formatNumber(recipe.points) })}</span>

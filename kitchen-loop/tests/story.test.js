@@ -120,14 +120,14 @@ describe('Brûlée’s warehouse (spec 5.4, 5.6)', () => {
     expect(decorItems).toHaveLength(10);
     const save = fresh();
     rich(save);
-    expect(buyDecor(save, 'sleeping_cat')).toBe(true);
-    expect(buyDecor(save, 'sleeping_cat')).toBe(false);
-    expect(save.decor.floor).toBe('sleeping_cat');
+    expect(buyDecor(save, 'big_plant')).toBe(true);
+    expect(buyDecor(save, 'big_plant')).toBe(false);
+    expect(save.decor.floor).toBe('big_plant');
     save.unlockedItems.push('hacked_item');
-    save.decor.wall = 'sleeping_cat';
+    save.decor.salt = 'big_plant';
     const clean = validateSave(save);
-    expect(clean.unlockedItems).toEqual(['sleeping_cat']);
-    expect(clean.decor).toEqual({ floor: 'sleeping_cat' });
+    expect(clean.unlockedItems).toEqual(['big_plant']);
+    expect(clean.decor).toEqual({ floor: 'big_plant' });
   });
 });
 

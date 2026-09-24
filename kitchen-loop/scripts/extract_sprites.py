@@ -378,196 +378,105 @@ if __name__ == "__main__":
     generate_dishes()
     generate_happy_poses()
     extract_utensils()
-    generate_decor()
+    extract_decor()
+    generate_extra_dishes()
     generate_phase4_art()
-    normalize_visual_size()
+    write_visual_scales()
     boost_poses()
 
 
-# ---------- Kitchen decoration (spec 5.6), drawn as pixel maps ----------
-# Each map is a list of rows; every character is a palette colour ('.' = transparent).
-DECOR_PALETTE = {
-    "k": (59, 42, 32), "w": (255, 248, 231), "b": (141, 90, 59), "B": (93, 58, 38), "l": (193, 132, 88),
-    "t": (205, 110, 70), "T": (160, 80, 50), "g": (102, 187, 106), "G": (46, 125, 50), "y": (255, 213, 79),
-    "o": (255, 140, 60), "O": (214, 96, 40), "c": (205, 127, 50), "C": (150, 85, 35), "s": (40, 44, 48),
-    "S": (70, 76, 82), "r": (229, 57, 53), "p": (167, 139, 250), "a": (129, 212, 250), "e": (230, 220, 200),
-    "n": (190, 160, 120), "m": (120, 85, 60), "h": (255, 236, 179), "v": (240, 98, 146), "q": (200, 200, 200),
+# ---------- Kitchen decoration (spec 5.6), cut out of the day kitchen of the mega pack ----------
+# Same pixel art as the rest of the game (Daniel: coherent universe). Boxes in the mega pack; `erase` are
+# boxes (relative to the crop) with leftovers of the scene to clear.
+DECOR_CROPS = {
+    "pendant_lamp": ((475, 21, 531, 73), []),
+    "garlic_string": ((411, 114, 547, 171), []),
+    "jar_shelf": ((262, 103, 398, 163), []),
+    "plant_shelf": ((407, 65, 565, 118), []),
+    "fruit_bowl": ((335, 168, 413, 229), []),
+    "herb_pot": ((294, 169, 334, 233), []),
+    "window_plant": ((727, 152, 777, 206), []),
+    "big_plant": ((855, 182, 920, 259), []),
+    "cutting_board": ((109, 177, 191, 260), [(36, 0, 54, 21), (54, 0, 82, 47)]),
+    "veggie_bag": ((508, 173, 562, 233), []),
 }
-DECOR_MAPS = {
-    "herb_pots": [
-        "....g.......g.....",
-        "...gGg..g..gGg....",
-        "..gGgGg.Gg.gGgg...",
-        "...gGg.gGgGgG.....",
-        "....G...G..G......",
-        ".tttttt...tttttt..",
-        ".TtttT....TttttT..",
-        "..tttt.....tttt...",
-        "..TttT.....TttT...",
-        "...TT.......TT....",
-    ],
-    "garlic_string": [
-        "....n....",
-        "....n....",
-        "...wew...",
-        "..wewew..",
-        "...wqw...",
-        "....n....",
-        "...wew...",
-        "..wewew..",
-        "...wqw...",
-        "....n....",
-        "...wew...",
-        "..wewew..",
-        "...wqw...",
-        "....n....",
-        "...wew...",
-        "..wewew..",
-        "...wqw...",
-        "....n....",
-    ],
-    "menu_board": [
-        "bbbbbbbbbbbbbbbb",
-        "bsssssssssssssSb",
-        "bswwwwsswwwsssSb",
-        "bsssssssssssssSb",
-        "bswwsswwwwsssySb",
-        "bsssssssssssyysb",
-        "bswwwsswwsssssSb",
-        "bsssssssssssssSb",
-        "bswwsswwwsswwsSb",
-        "bsssssssssssssSb",
-        "bbbbbbbbbbbbbbbb",
-        ".B............B.",
-        ".B............B.",
-    ],
-    "copper_lamp": [
-        ".....k.....",
-        ".....k.....",
-        ".....k.....",
-        ".....k.....",
-        "....ccc....",
-        "...cccCc...",
-        "..ccccccC..",
-        ".cccccccCC.",
-        "cccccccccCC",
-        "..hhyyyhh..",
-        "...hyyyh...",
-        "....hhh....",
-    ],
-    "spice_rack": [
-        ".r..o..y..g..",
-        "rrroooyyyggg.",
-        "rrroooyyyggg.",
-        "bbbbbbbbbbbbb",
-        "BBBBBBBBBBBBB",
-        ".p..v..a..O..",
-        "pppvvvaaaOOO.",
-        "pppvvvaaaOOO.",
-        "bbbbbbbbbbbbb",
-        "BBBBBBBBBBBBB",
-    ],
-    "wall_clock": [
-        "....bbbbb....",
-        "..bbwwwwwbb..",
-        ".bwwwwkwwwwb.",
-        ".bwwwwkwwwwb.",
-        "bwkwwwkwwwkwb",
-        "bwwwwwkwwwwwb",
-        "bwwwwwkkkwwwb",
-        "bwkwwwwwwwkwb",
-        ".bwwwwwwwwwb.",
-        ".bwwwwkwwwwb.",
-        "..bbwwwwwbb..",
-        "....bbbbb....",
-    ],
-    "cookie_jar": [
-        "...bbbbb...",
-        "..bBBBBBb..",
-        "..aaaaaaa..",
-        ".aawwwwwaa.",
-        ".awlmllmwa.",
-        ".awllmllwa.",
-        ".awmllllwa.",
-        ".awllmlmwa.",
-        ".awlllmlwa.",
-        ".aawwwwwaa.",
-        "..aaaaaaa..",
-    ],
-    "fairy_lights": [
-        "k.............................................k",
-        ".k....r.............y.............p..........k.",
-        "..k..rrr....g......yyy.....a.....ppp....v...k..",
-        "...kk.r....ggg..kk..y.....aaa..kk.p....vvv.k...",
-        ".....kkk....g.kk..kkk..kk..a.kk..kkkk...vkk....",
-        "........kkkkkk........kk..kkk.........kkkk.....",
-    ],
-    "big_plant": [
-        "......g.....g.....",
-        "....gGGg..gGGg....",
-        "...gGgGGggGGgGg...",
-        "..gGgg.GGGG.ggGg..",
-        ".gGg..gGGGGg..gGg.",
-        ".Gg..gGg.GgGg..gG.",
-        "....gG...G..Gg....",
-        "........GG........",
-        "........G.........",
-        "....tttttttttt....",
-        "....TttttttttT....",
-        ".....tttttttt.....",
-        ".....TttttttT.....",
-        "......TTTTTT......",
-    ],
-    "sleeping_cat": [
-        "............................",
-        "..........................w.",
-        ".......................ww...",
-        "..o.o.............w.........",
-        "..ooo..........oooooo.......",
-        ".oookoo......ooooOoooo......",
-        ".ooooooo...oooOooooOooo.....",
-        ".kooooko..ooooooOooooooo....",
-        "..oooooooooOoooooooOoooo....",
-        "...ooooooooooooooooooooo....",
-        "....ooooooooooooooooooOo.oo.",
-        ".....OoooooooooooooooooooOo.",
-        "......OOOOOOOOOOOOOOOOOOOO..",
-    ],
-}
-DECOR_SIZE = 192
+DECOR_SCALE = 3  # nearest-neighbour, keeps the pixels crisp
 
 
-def generate_decor():
-    for decor_id, rows in DECOR_MAPS.items():
-        w, h = max(len(r) for r in rows), len(rows)
-        img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-        for y, row in enumerate(rows):
-            for x, ch in enumerate(row):
-                if ch != ".":
-                    img.putpixel((x, y), DECOR_PALETTE[ch] + (255,))
-        scale = max(1, DECOR_SIZE // max(w, h))
-        img = img.resize((w * scale, h * scale), Image.NEAREST)
-        save(img, SPRITES / "decor" / f"{decor_id}.png")
+def outline_cut(img, dark=80, step=38):
+    """Background removal for objects cut out of a scene: flood from the border through light pixels that
+    change little from their neighbour, stopping at the dark pixel-art outlines. Keeps the largest island."""
+    rgb = np.asarray(img.convert("RGB")).astype(int)
+    h, w, _ = rgb.shape
+    passable = rgb @ np.array([0.3, 0.59, 0.11]) > dark
+    seen = np.zeros((h, w), bool)
+    queue = deque()
+    for y, x in [(y, x) for y in range(h) for x in (0, w - 1)] + [(y, x) for x in range(w) for y in (0, h - 1)]:
+        if passable[y, x] and not seen[y, x]:
+            seen[y, x] = True
+            queue.append((y, x))
+    while queue:
+        y, x = queue.popleft()
+        for ny, nx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)):
+            if 0 <= ny < h and 0 <= nx < w and not seen[ny, nx] and passable[ny, nx] and np.abs(rgb[ny, nx] - rgb[y, x]).sum() < step:
+                seen[ny, nx] = True
+                queue.append((ny, nx))
+    alpha = np.where(seen, 0, 255).astype(np.uint8)
+    drop_specks(alpha, 1)
+    return Image.fromarray(np.dstack([rgb.astype(np.uint8), alpha]), "RGBA")
+
+
+def extract_decor():
+    mega = Image.open(ORIGINALS / "20_mega_pack.jpg").convert("RGB")
+    for decor_id, (box, erase) in DECOR_CROPS.items():
+        crop = mega.crop(box)
+        for x0, y0, x1, y1 in erase:
+            crop.paste((0, 0, 0), (x0, y0, x1, y1))  # dark = never flooded, so clear it after the cut
+        img = outline_cut(crop)
+        alpha = img.getchannel("A")
+        for x0, y0, x1, y1 in erase:
+            alpha.paste(0, (x0, y0, x1, y1))
+        img.putalpha(alpha)
+        img = img.crop(img.getbbox())
+        save(img.resize((img.width * DECOR_SCALE, img.height * DECOR_SCALE), Image.NEAREST), SPRITES / "decor" / f"{decor_id}.png")
 
 
 # ---------- Phase 4: special customers and special ingredients ----------
-FLAME_MAP = [
-    "......y.....",
-    ".....yy.....",
-    "....yoy..y..",
-    "...yoo..yy..",
-    "..yooo.yoy..",
-    "..yoooyooy..",
-    ".yoOoooOooy.",
-    ".yoOOoOOooy.",
-    "yooOOOOOOooy",
-    "yoOOrrrrOOoy",
-    "yoOrrhhrrOoy",
-    ".yOrhhhhrOy.",
-    ".yoOrhhrOoy.",
-    "..yoOOOOoy..",
-    "...yyyyyy...",
-]
+def draw_flame(w=40, h=48):
+    """A flame in the game's pixel-art style: dark outline, three shades and a light core (Daniel: design new art
+    yourself, same style). Built from a teardrop and two side tongues, at the ingredients' pixel density."""
+    import math
+    cx, cy, r, top = w * 0.5, h * 0.66, w * 0.4, h * 0.04
+    fx, fy = cx, h * 0.8  # inner layers shrink towards the flame's base
+
+    def base(x, y):
+        if y >= cy:
+            return (x - cx) ** 2 + (y - cy) ** 2 < r * r
+        if y < top:
+            return False
+        t = (y - top) / (cy - top)
+        centre = cx + (1 - t) * w * 0.12 + math.sin(t * 7) * w * 0.02  # the tip leans and waves
+        tongues = any(((x - tx) / (w * 0.09)) ** 2 + ((y - ty) / (h * 0.14)) ** 2 < 1 for tx, ty in ((w * 0.2, h * 0.5), (w * 0.8, h * 0.44)))
+        return abs(x - centre) < r * t ** 0.75 or tongues
+
+    def inside(x, y, shrink=0.0):
+        return base(fx + (x - fx) / (1 - shrink), fy + (y - fy) / (1 - shrink))
+
+    colors = [(66, 26, 20), (229, 57, 53), (255, 112, 40), (255, 190, 60), (255, 244, 190)]
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    for y in range(h):
+        for x in range(w):
+            if not inside(x + 0.5, y + 0.5):
+                continue
+            level = 1 + sum(inside(x + 0.5, y + 0.5, s) for s in (0.25, 0.5, 0.72))
+            img.putpixel((x, y), colors[level] + (255,))
+    # dark outline around the shape
+    alpha = np.asarray(img.getchannel("A")) > 0
+    edge = np.zeros_like(alpha)
+    edge[1:] |= alpha[:-1]; edge[:-1] |= alpha[1:]; edge[:, 1:] |= alpha[:, :-1]; edge[:, :-1] |= alpha[:, 1:]
+    for y, x in zip(*np.nonzero(edge & ~alpha)):
+        img.putpixel((int(x), int(y)), colors[0] + (255,))
+    return img
 
 
 def generate_phase4_art():
@@ -582,38 +491,49 @@ def generate_phase4_art():
     save(Image.fromarray(critic.clip(0, 255).astype("uint8")), SPRITES / "customers" / "legendary_critic.png")
 
     # Special ingredients: the kitchen clock icon, the spice medallion and a pixel flame.
-    for ing_id, key in (("clock", "ui/icon_timer"), ("spice", "utensils/ancient_spice")):
-        save(fit(sprite(key), INGREDIENT_SIZE, fill=INGREDIENT_FILL), SPRITES / "ingredients" / f"{ing_id}.png")
-    img = Image.new("RGBA", (len(FLAME_MAP[0]), len(FLAME_MAP)), (0, 0, 0, 0))
-    for y, row in enumerate(FLAME_MAP):
-        for x, ch in enumerate(row):
-            if ch != ".":
-                img.putpixel((x, y), DECOR_PALETTE[ch] + (255,))
-    img = img.resize((img.width * 12, img.height * 12), Image.NEAREST)
+    save(fit(sprite("ui/icon_timer"), INGREDIENT_SIZE, fill=INGREDIENT_FILL), SPRITES / "ingredients" / "clock.png")
+    # The spice jar, cut out of its medallion: everything outside the frame becomes light background first.
+    from PIL import ImageDraw
+    x, y = UTENSILS["ancient_spice"]
+    r = UTENSIL_RADIUS - 6
+    jar = Image.open(REF / "skill_tree_ref.jpg").convert("RGB").crop((x - r, y - r, x + r, y + r))
+    outside = Image.new("L", jar.size, 255)
+    ImageDraw.Draw(outside).ellipse((0, 0, 2 * r - 1, 2 * r - 1), fill=0)
+    jar.paste((245, 235, 215), (0, 0), outside)
+    spice = outline_cut(jar, dark=55, step=45)
+    alpha = spice.getchannel("A")
+    alpha.paste(0, (round(r * 1.62), round(r * 1.05), 2 * r, 2 * r))  # the vines that the frame cuts off
+    spice.putalpha(alpha)
+    save(fit(spice, INGREDIENT_SIZE, fill=INGREDIENT_FILL), SPRITES / "ingredients" / "spice.png")
+    img = draw_flame()
+    img = img.resize((img.width * 4, img.height * 4), Image.NEAREST)
     save(fit(img, INGREDIENT_SIZE, upscale_nearest=True, fill=INGREDIENT_FILL), SPRITES / "ingredients" / "flame.png")
 
 
 # ---------- Consistent sizes (Daniel: "ten en cuenta los tamaños… para que sea coherente") ----------
-# Round and long objects must look equally big: scale each sprite so the square root of its content
-# area is `target` of the canvas, but never let its longest side pass `max_side`.
+# Round and long objects must look equally big. The art itself is never resampled again (Daniel liked the
+# original pixels): the script only measures each sprite and writes a draw scale to src/assets/spriteScales.json,
+# so the square root of the content area becomes `target` of the box and the longest side stays under `max_side`.
 VISUAL_SIZE = {"ingredients": (0.74, 0.92), "dishes": (0.80, 0.96)}
 # Customer poses drawn smaller in the reference (their props made them fit a square): scale up and widen
 # the canvas so every customer's head is about the same size. Height stays CUSTOMER_SIZE.
 POSE_BOOST = {"tourist_idle": 1.3, "tourist_happy": 1.3}
 
 
-def normalize_visual_size():
+def write_visual_scales():
+    import json
+    scales = {}
     for group, (target, max_side) in VISUAL_SIZE.items():
         for path in sorted((SPRITES / group).glob("*.png")):
             img = Image.open(path).convert("RGBA")
-            size = img.width
-            content = img.crop(img.getchannel("A").point(lambda a: 255 if a > 24 else 0).getbbox())
-            w, h = content.size
-            scale = min(target * size / (w * h) ** 0.5, max_side * size / max(w, h))
-            content = content.resize((max(1, round(w * scale)), max(1, round(h * scale))), Image.LANCZOS)
-            out = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-            out.paste(content, ((size - content.width) // 2, (size - content.height) // 2), content)
-            save(out, path)
+            box = img.getchannel("A").point(lambda a: 255 if a > 24 else 0).getbbox()
+            w, h = (box[2] - box[0]) / img.width, (box[3] - box[1]) / img.height
+            scale = min(target / (w * h) ** 0.5, max_side / max(w, h))
+            if abs(scale - 1) > 0.02:
+                scales[f"{group}/{path.stem}"] = round(scale, 3)
+    out = ROOT / "src" / "assets" / "spriteScales.json"
+    out.write_text(json.dumps(scales, indent=2, sort_keys=True) + "\n")
+    print("✓", out.relative_to(ROOT))
 
 
 def boost_poses():
@@ -627,3 +547,45 @@ def boost_poses():
         out = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         out.paste(content, ((width - content.width) // 2, height - content.height - round(height * 0.03)), content)
         save(out, path)
+
+
+# ---------- Dishes of utensil and secret recipes, made from the same dish art ----------
+MEGA_DISHES_EXTRA = {"omelette": (4, 0), "noodle_bowl": (1, 0), "egg_rice": (3, 2)}
+
+
+def hue_shift(img, degrees):
+    hsv = np.asarray(img.convert("RGB").convert("HSV")).copy()
+    hsv[..., 0] = (hsv[..., 0].astype(int) + round(degrees * 255 / 360)) % 256
+    out = Image.fromarray(hsv, "HSV").convert("RGBA")
+    out.putalpha(img.getchannel("A"))
+    return out
+
+
+def generate_extra_dishes():
+    mega = Image.open(ORIGINALS / "20_mega_pack.jpg")
+    base = {}
+    for name, (col, row) in MEGA_DISHES_EXTRA.items():
+        crop = mega.crop((DISH_COLS[col][0] - 4, DISH_ROWS[row][0], DISH_COLS[col][1] + 4, DISH_ROWS[row][1]))
+        base[name] = fit(remove_background(crop, tolerance=40), DISH_SIZE, upscale_nearest=True)
+    dishes = SPRITES / "dishes"
+
+    # Tortilla Francesa: the rolled omelette without its mushrooms (its left half, mirrored).
+    omelette = base["omelette"]
+    half = omelette.crop((0, 0, DISH_SIZE // 2, DISH_SIZE))
+    french = Image.new("RGBA", (DISH_SIZE, DISH_SIZE))
+    french.paste(half, (0, 0))
+    french.paste(half.transpose(Image.FLIP_LEFT_RIGHT), (DISH_SIZE // 2, 0))
+    save(french, dishes / "french_omelette.png")
+    save(overlay(base["egg_rice"].copy(), "ingredients/bacon", 0.3, 92, 70), dishes / "broken_eggs.png")
+    save(overlay(base["noodle_bowl"].copy(), "ingredients/mushroom", 0.26, 98, 52), dishes / "mushroom_cream.png")
+
+    # Secret dishes: a known dish with a touch of magic.
+    save(overlay(overlay(sprite("dishes/triple_bacon"), "ui/icon_legendary", 0.62, 50, 4), "vfx/sparkle", 0.22, 104, 2), dishes / "bacon_crown.png")
+    save(overlay(overlay(overlay(french.copy(), "ingredients/egg", 0.24, 8, 96), "ingredients/egg", 0.24, 108, 96), "vfx/sparkle", 0.3, 58, 0), dishes / "impossible_omelette.png")
+    save(overlay(hue_shift(sprite("dishes/cheesy_scramble"), 235), "vfx/sparkle", 0.3, 96, 0), dishes / "mystic_scramble.png")
+    save(overlay(overlay(sprite("dishes/fish_stew"), "ingredients/herbs", 0.22, 104, 34), "vfx/sparkle", 0.3, 0, 0), dishes / "master_soup.png")
+    boom = Image.new("RGBA", (DISH_SIZE, DISH_SIZE))
+    overlay(boom, "vfx/star", 0.62, 1, 1)
+    overlay(boom, "ingredients/tomato", 0.5, 32, 34)
+    save(overlay(boom, "ingredients/cheese", 0.26, 94, 92), dishes / "exploding_tomato.png")
+    save(overlay(overlay(overlay(sprite("dishes/special_toast"), "ingredients/truffle", 0.3, 4, 88), "ingredients/egg", 0.3, 100, 86), "vfx/sparkle", 0.3, 56, 0), dishes / "lost_recipe.png")

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.2 — Pixel art coherente y AdMob
+
+- Iconos de comida originales (sin reescalar); coherencia de tamaño aplicada al dibujar.
+- Build de pruebas que conserva los archivos del anterior: nada de imágenes rotas por la caché de GitHub Pages.
+- Decoración recortada de la cocina de referencia (10 objetos nuevos), 9 platos para las recetas de utensilio y secretas, tarro de especias y llama en el mismo estilo.
+- AdMob: solo recompensados, un bloque por punto de anuncio, precarga bajo demanda, reintentos, consentimiento UMP y "Privacidad de los anuncios" en Ajustes (`docs/ADMOB.md`).
+
 ## 0.5.1 — Tamaños coherentes
 
 - Ingredientes y platos con el mismo tamaño visual; los clientes especiales y la turista, con la cabeza del mismo tamaño que el resto.

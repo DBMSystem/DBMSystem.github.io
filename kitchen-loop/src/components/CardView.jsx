@@ -1,5 +1,5 @@
 import { cardById, STARS } from '../data/cards.js';
-import { spriteUrl } from '../assets/manifest.js';
+import { spriteUrl, spriteScale } from '../assets/manifest.js';
 import { t } from '../utils/i18n.js';
 
 // A card (spec 4.1, 4.9): frame shape per rarity (never colour alone), stars, number and name.
@@ -15,7 +15,7 @@ export function CardArt({ card, silhouette = false }) {
           alt=""
           draggable={false}
           style={{
-            width: `${(o.scale ?? 0.9) * 100}%`,
+            width: `${(o.scale ?? 0.9) * spriteScale(sprite) * 100}%`,
             left: `${50 + (o.x ?? 0)}%`,
             top: `${50 + (o.y ?? 0)}%`,
             transform: `translate(-50%, -50%) rotate(${o.rotate ?? 0}deg)`,

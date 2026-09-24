@@ -12,6 +12,7 @@ import { Button } from '../components/Button.jsx';
 import { RecipeBook } from './RecipeBook.jsx';
 import { createRng } from '../utils/rng.js';
 import { unlockContext } from '../systems/unlocks.js';
+import { useAds } from '../monetization/useAds.js';
 import { t, formatNumber } from '../utils/i18n.js';
 
 const TABS = ['cards', 'recipes', 'diary'];
@@ -63,6 +64,7 @@ function CardDetail({ cardId, save, onCraft, onShiny, onClose }) {
 // Album (spec 4.9, 8.6): cards, recipes and the kitchen diary; packs, crafting and shiny variants.
 export function Album({ services, onClose }) {
   const { saveManager, adManager, audio, haptics } = services;
+  useAds(adManager, ['CARD_PACK']);
   const [tab, setTab] = useState('cards');
   const [rarity, setRarity] = useState('all');
   const [detail, setDetail] = useState(null);

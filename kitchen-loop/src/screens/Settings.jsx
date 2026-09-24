@@ -2,21 +2,28 @@ import { useReducer, useState } from 'react';
 import { Button } from '../components/Button.jsx';
 import { Toggle } from '../components/Toggle.jsx';
 import { t } from '../utils/i18n.js';
+import { useAds } from '../monetization/useAds.js';
 
-const VERSION = '0.3.0';
+const VERSION = '0.5.2';
 
 function Slider({ label, value, onChange, disabled, note }) {
   return (
     <label className="toggle slider">
       <span>{label}</span>
-      {note ? <span className="hint small">{note}</span> : <input type="range" min="0" max="1" step="0.1" value={value} disabled={disabled} onChange={(e) => onChange(Number(e.target.value))} />}
+      {note ? (
+        <span className="hint small">{note}</span>
+      ) : (
+        <input type="range" min="0" max="1" step="0.1" value={value} disabled={disabled} onChange={(e) => onChange(Number(e.target.value))} />
+      )}
     </label>
   );
 }
 
-// Settings (spec 8.8). Store purchases, privacy and ad consent arrive with monetisation (phases 5–7).
+// Settings (spec 8.8). Ad privacy options appear where Google's consent requires them (spec 7.7);
+// store purchases and the privacy policy arrive with monetisation (phases 5–7).
 export function Settings({ services, onClose, onRename, onTutorial, onStory, onDeleted }) {
-  const { saveManager, audio } = services;
+  const { saveManager, audio, adManager } = services;
+  useAds(adManager);
   const [, refresh] = useReducer((n) => n + 1, 0);
   const [deleteStep, setDeleteStep] = useState(0);
   const { settings } = saveManager.get();
@@ -55,6 +62,11 @@ export function Settings({ services, onClose, onRename, onTutorial, onStory, onD
       <Button variant="secondary" onClick={onStory}>
         {t('settings.story')}
       </Button>
+      {adManager.privacyOptionsRequired() && (
+        <Button variant="secondary" onClick={() => adManager.showPrivacyOptions()}>
+          {t('settings.adPrivacy')}
+        </Button>
+      )}
       <Button variant="secondary" className="btn danger" onClick={remove}>
         {deleteStep === 0 ? t('settings.delete') : deleteStep === 1 ? t('settings.deleteConfirm1') : t('settings.deleteConfirm2')}
       </Button>
