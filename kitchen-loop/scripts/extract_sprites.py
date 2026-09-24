@@ -11,7 +11,7 @@ from collections import deque
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
 REF = ROOT / "assets" / "ref"
@@ -328,20 +328,6 @@ def generate_pip():
         save(img, SPRITES / "pip" / f"{name}.png")
 
 
-def generate_dishes():
-    size = DISH_SIZE
-    full = sprite("dishes/bacon_egg")
-    overlay(full, "ingredients/bread", 0.32, 88, 78)
-    overlay(full, "ingredients/tomato", 0.24, 18, 86)
-    save(full, SPRITES / "dishes" / "full_breakfast.png")
-
-    special = sprite("dishes/tomato_toast")
-    overlay(special, "ingredients/cheese", 0.36, 52, 30)
-    overlay(special, "ingredients/tomato", 0.22, 98, 70)
-    save(special, SPRITES / "dishes" / "special_toast.png")
-    assert full.size == (size, size)
-
-
 def generate_happy_poses():
     """Customers without a happy pose: their idle pose with hearts."""
     for customer_id in ("office", "calm"):
@@ -375,12 +361,11 @@ if __name__ == "__main__":
     (SPRITES / "ui").mkdir(parents=True, exist_ok=True)
     main()
     generate_pip()
-    generate_dishes()
     generate_happy_poses()
     extract_utensils()
     extract_decor()
-    generate_extra_dishes()
     generate_phase4_art()
+    generate_dish_art()
     write_visual_scales()
     boost_poses()
 
@@ -479,6 +464,33 @@ def draw_flame(w=40, h=48):
     return img
 
 
+def draw_potato(w=44, h=34):
+    """A potato in the ingredients' pixel-art style (the reference one looked like a sausage): lumpy oval,
+    dark outline, light from the top left, shadow at the bottom and a few eyes."""
+    import math
+    colours = {"outline": (74, 46, 26), "shadow": (158, 102, 52), "base": (200, 144, 82), "light": (228, 184, 118), "shine": (244, 214, 160), "eye": (122, 78, 40)}
+    cx, cy, rx, ry = w / 2, h / 2, w * 0.46, h * 0.42
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    inside = lambda x, y: ((x - cx) / (rx * (1 + 0.05 * math.sin(3 * math.atan2(y - cy, x - cx))))) ** 2 + ((y - cy) / ry) ** 2 < 1
+    for y in range(h):
+        for x in range(w):
+            if not inside(x + 0.5, y + 0.5):
+                continue
+            light = ((cx - x) / rx * 0.5 + (cy - y) / ry * 0.8)
+            tone = "shine" if light > 0.75 else "light" if light > 0.25 else "shadow" if light < -0.55 else "base"
+            img.putpixel((x, y), colours[tone] + (255,))
+    for ex, ey in ((0.3, 0.45), (0.62, 0.35), (0.72, 0.62), (0.45, 0.7)):
+        x, y = round(w * ex), round(h * ey)
+        img.putpixel((x, y), colours["eye"] + (255,))
+        img.putpixel((x + 1, y), colours["shadow"] + (255,))
+    alpha = np.asarray(img.getchannel("A")) > 0
+    edge = np.zeros_like(alpha)
+    edge[1:] |= alpha[:-1]; edge[:-1] |= alpha[1:]; edge[:, 1:] |= alpha[:, :-1]; edge[:, :-1] |= alpha[:, 1:]
+    for y, x in zip(*np.nonzero(edge & ~alpha)):
+        img.putpixel((int(x), int(y)), colours["outline"] + (255,))
+    return img
+
+
 def generate_phase4_art():
     import numpy as np
     # Customers without their own art reuse the big portraits kept for special customers (docs/DECISIONES.md).
@@ -492,6 +504,8 @@ def generate_phase4_art():
 
     # Special ingredients: the kitchen clock icon, the spice medallion and a pixel flame.
     save(fit(sprite("ui/icon_timer"), INGREDIENT_SIZE, fill=INGREDIENT_FILL), SPRITES / "ingredients" / "clock.png")
+    potato = draw_potato()
+    save(fit(potato.resize((potato.width * 4, potato.height * 4), Image.NEAREST), INGREDIENT_SIZE, upscale_nearest=True, fill=INGREDIENT_FILL), SPRITES / "ingredients" / "potato.png")
     # The spice jar, cut out of its medallion: everything outside the frame becomes light background first.
     from PIL import ImageDraw
     x, y = UTENSILS["ancient_spice"]
@@ -550,9 +564,6 @@ def boost_poses():
 
 
 # ---------- Dishes of utensil and secret recipes, made from the same dish art ----------
-MEGA_DISHES_EXTRA = {"omelette": (4, 0), "noodle_bowl": (1, 0), "egg_rice": (3, 2)}
-
-
 def hue_shift(img, degrees):
     hsv = np.asarray(img.convert("RGB").convert("HSV")).copy()
     hsv[..., 0] = (hsv[..., 0].astype(int) + round(degrees * 255 / 360)) % 256
@@ -561,31 +572,205 @@ def hue_shift(img, degrees):
     return out
 
 
-def generate_extra_dishes():
-    mega = Image.open(ORIGINALS / "20_mega_pack.jpg")
-    base = {}
-    for name, (col, row) in MEGA_DISHES_EXTRA.items():
-        crop = mega.crop((DISH_COLS[col][0] - 4, DISH_ROWS[row][0], DISH_COLS[col][1] + 4, DISH_ROWS[row][1]))
-        base[name] = fit(remove_background(crop, tolerance=40), DISH_SIZE, upscale_nearest=True)
+# ---------- Toppings painted into the dish art (Daniel: tomato and cheese spread on the bread, not stuck on) ----------
+# The dish sheets are AI pixel art with ~7 source pixels per art pixel: toppings are painted on that grid.
+BLOCK = 7
+TOMATO = ((206, 58, 46), (232, 92, 70), (160, 36, 30), (244, 132, 98))  # base, light, seeds, highlight
+CHEESE = ((255, 212, 78), (255, 236, 150), (226, 168, 44), (190, 118, 24))  # base, light, holes, rim
+
+
+def dishes8_cell(name):
+    col, row = DISHES_8[name]
+    sheet = Image.open(ORIGINALS / "22_dishes_8.jpg").convert("RGB")
+    return sheet.crop((DISHES_8_COLS[col][0] - 6, DISHES_8_ROWS[row][0] - 6, DISHES_8_COLS[col][1] + 6, DISHES_8_ROWS[row][1] + 6))
+
+
+def bread_faces(img):
+    """Block mask of the toasts' crumb (inside the crust): light bread colours, holes closed, crust kept."""
+    import colorsys
+    rgb = np.asarray(img).astype(float) / 255
+    hsv = np.vectorize(colorsys.rgb_to_hsv)(rgb[..., 0], rgb[..., 1], rgb[..., 2])
+    face = (hsv[0] * 360 > 22) & (hsv[0] * 360 < 48) & (hsv[1] > 0.2) & (hsv[2] > 0.78)
+    mask = Image.fromarray((face * 255).astype("uint8"))
+    mask = mask.filter(ImageFilter.MaxFilter(9)).filter(ImageFilter.MinFilter(9))  # close the crumb speckles
+    mask = mask.filter(ImageFilter.MinFilter(2 * BLOCK + 1))  # keep a crust border
+    m = np.asarray(mask) > 0
+    rows, cols = m.shape[0] // BLOCK, m.shape[1] // BLOCK
+    return np.array([[m[r * BLOCK:(r + 1) * BLOCK, c * BLOCK:(c + 1) * BLOCK].mean() > 0.6 for c in range(cols)] for r in range(rows)])
+
+
+def block_components(blocks):
+    """Connected groups of blocks (one per toast), as lists of (row, col)."""
+    seen, groups = set(), []
+    for start in zip(*np.nonzero(blocks)):
+        if start in seen:
+            continue
+        group, stack = [], [start]
+        seen.add(start)
+        while stack:
+            r, c = stack.pop()
+            group.append((r, c))
+            for nr, nc in ((r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)):
+                if 0 <= nr < blocks.shape[0] and 0 <= nc < blocks.shape[1] and blocks[nr, nc] and (nr, nc) not in seen:
+                    seen.add((nr, nc))
+                    stack.append((nr, nc))
+        groups.append(group)
+    return [g for g in groups if len(g) > 20]
+
+
+def paint_blocks(img, cells, colour_of):
+    px = img.load()
+    for r, c in cells:
+        colour = colour_of(r, c)
+        if colour is None:
+            continue
+        for y in range(r * BLOCK, (r + 1) * BLOCK):
+            for x in range(c * BLOCK, (c + 1) * BLOCK):
+                px[x, y] = colour
+
+
+def spread_tomato(img, toasts, rng):
+    """Grated tomato over each toast: irregular edge, lighter bits and a few seeds."""
+    for group in toasts:
+        cells = set(group)
+        edge = {cell for cell in cells if any(n not in cells for n in ((cell[0] + 1, cell[1]), (cell[0] - 1, cell[1]), (cell[0], cell[1] + 1), (cell[0], cell[1] - 1)))}
+        def colour(r, c):
+            if (r, c) in edge and rng.random() < 0.45:
+                return None  # bread shows at the edge
+            roll = rng.random()
+            return TOMATO[2] if roll < 0.1 else TOMATO[1] if roll < 0.35 else TOMATO[3] if roll < 0.42 else TOMATO[0]
+        paint_blocks(img, group, colour)
+
+
+def melt_cheese(img, toasts, rng):
+    """A slice of melted cheese on each toast, slightly slanted, with a darker rim and a few holes."""
+    for group in toasts:
+        rows = [r for r, _ in group]
+        cols = [c for _, c in group]
+        top, bottom, left, right = min(rows), max(rows), min(cols), max(cols)
+        height = bottom - top
+        width = right - left
+        slice_ = {
+            (r, c)
+            for r, c in group
+            if top + 0.1 * height + (c - left) * 0.15 <= r <= top + 0.6 * height + (c - left) * 0.15 and left + 0.12 * width <= c <= right - 0.1 * width
+        }
+        rim = {cell for cell in slice_ if any(n not in slice_ for n in ((cell[0] + 1, cell[1]), (cell[0] - 1, cell[1]), (cell[0], cell[1] + 1), (cell[0], cell[1] - 1)))}
+        def colour(r, c):
+            if (r, c) in rim:
+                return CHEESE[3]
+            roll = rng.random()
+            return CHEESE[2] if roll < 0.07 else CHEESE[1] if roll < 0.3 else CHEESE[0]
+        paint_blocks(img, sorted(slice_), colour)
+
+
+def painted_toasts(cheese=False, seed=7):
+    import random
+    rng = random.Random(seed)
+    img = dishes8_cell("tomato_toast")
+    toasts = block_components(bread_faces(img))
+    spread_tomato(img, toasts, rng)
+    if cheese:
+        melt_cheese(img, toasts, rng)
+    return img
+
+
+def recolour(img, select, palette):
+    """Repaints the pixels chosen by select(h, s, v) with a palette by brightness (dark → light), keeping shading."""
+    import colorsys
+    rgb = np.asarray(img.convert("RGB")).astype(float) / 255
+    out = np.asarray(img.convert("RGBA")).copy()
+    for y in range(rgb.shape[0]):
+        for x in range(rgb.shape[1]):
+            h, s, v = colorsys.rgb_to_hsv(*rgb[y, x])
+            if select(h * 360, s, v):
+                out[y, x, :3] = palette[min(len(palette) - 1, int(v * len(palette)))]
+    return Image.fromarray(out, "RGBA").copy()
+
+
+def cut_out(img, box):
+    """An object of the dish art, cut along its dark outline (the plate around it goes)."""
+    return outline_cut(img.crop(box)).crop(outline_cut(img.crop(box)).getbbox())
+
+
+def glints(img, spots, block=2):
+    """Small pixel-art sparkles (white core, gold arms) instead of a big pasted effect."""
+    px = img.load()
+    gold, white = (255, 213, 79, 255), (255, 255, 240, 255)
+    for cx, cy, arm in spots:
+        for k in range(-arm, arm + 1):
+            for dx, dy in ((k, 0), (0, k)):
+                colour = white if k == 0 else gold
+                for yy in range(block):
+                    for xx in range(block):
+                        x, y = cx + dx * block + xx, cy + dy * block + yy
+                        if 0 <= x < img.width and 0 <= y < img.height:
+                            px[x, y] = colour
+    return img
+
+
+def generate_dish_art():
+    """Dishes whose recipe needs toppings or a special touch, all painted in the dishes' own pixel art."""
+    import random
     dishes = SPRITES / "dishes"
+    plate = lambda img: fit(remove_background(img, tolerance=40), DISH_SIZE)
+    plain = lambda img: fit(img, DISH_SIZE)
+
+    tomato_toast = painted_toasts(cheese=False)
+    save(plate(tomato_toast), dishes / "tomato_toast.png")
+    special = painted_toasts(cheese=True)
+    save(plate(special), dishes / "special_toast.png")
+
+    # Desayuno Completo: bacon and egg with a toast with tomato, all from the same sheet (same pixel size).
+    breakfast = dishes8_cell("bacon_egg").convert("RGBA")
+    slice_ = cut_out(tomato_toast, (40, 120, 238, 372))
+    slice_ = slice_.resize((round(slice_.width * 0.8), round(slice_.height * 0.8)), Image.NEAREST)
+    breakfast.alpha_composite(slice_, (236, 250))
+    save(plate(breakfast.convert("RGB")), dishes / "full_breakfast.png")
+
+    # Huevos Rotos: the bravas' potatoes without sauce, an egg broken on top and a strip of bacon.
+    egg = cut_out(dishes8_cell("bacon_egg"), (236, 150, 456, 380))
+    bacon = cut_out(dishes8_cell("bacon_egg"), (40, 80, 250, 410))
+    potatoes = recolour(dishes8_cell("bravas"), lambda h, s, v: (h < 18 or h > 330) and s > 0.35, [(160, 104, 48), (196, 140, 70), (226, 176, 96), (244, 206, 130)])
+    potatoes.alpha_composite(bacon.resize((round(bacon.width * 0.55), round(bacon.height * 0.55)), Image.NEAREST), (70, 170))
+    potatoes.alpha_composite(egg.resize((round(egg.width * 0.8), round(egg.height * 0.8)), Image.NEAREST), (160, 130))
+    save(plate(potatoes.convert("RGB")), dishes / "broken_eggs.png")
+
+    mega = Image.open(ORIGINALS / "20_mega_pack.jpg").convert("RGB")
+    mega_dish = lambda col, row: mega.crop((DISH_COLS[col][0] - 4, DISH_ROWS[row][0], DISH_COLS[col][1] + 4, DISH_ROWS[row][1]))
+    # Crema de Champiñones: the noodle bowl turned into a cream with mushroom pieces.
+    cream = recolour(mega_dish(1, 0), lambda h, s, v: 25 <= h <= 60 and s > 0.3 and v > 0.45, [(196, 160, 118), (222, 192, 150), (238, 214, 178), (250, 234, 206)])
+    cream = recolour(cream, lambda h, s, v: (h < 18 or h > 330) and s > 0.4, [(96, 64, 40), (128, 88, 56), (158, 114, 76), (184, 142, 102)])
+    save(fit(remove_background(cream, tolerance=40), DISH_SIZE, upscale_nearest=True), dishes / "mushroom_cream.png")
 
     # Tortilla Francesa: the rolled omelette without its mushrooms (its left half, mirrored).
-    omelette = base["omelette"]
+    omelette = fit(remove_background(mega_dish(4, 0), tolerance=40), DISH_SIZE, upscale_nearest=True)
     half = omelette.crop((0, 0, DISH_SIZE // 2, DISH_SIZE))
     french = Image.new("RGBA", (DISH_SIZE, DISH_SIZE))
     french.paste(half, (0, 0))
     french.paste(half.transpose(Image.FLIP_LEFT_RIGHT), (DISH_SIZE // 2, 0))
     save(french, dishes / "french_omelette.png")
-    save(overlay(base["egg_rice"].copy(), "ingredients/bacon", 0.3, 92, 70), dishes / "broken_eggs.png")
-    save(overlay(base["noodle_bowl"].copy(), "ingredients/mushroom", 0.26, 98, 52), dishes / "mushroom_cream.png")
 
-    # Secret dishes: a known dish with a touch of magic.
-    save(overlay(overlay(sprite("dishes/triple_bacon"), "ui/icon_legendary", 0.62, 50, 4), "vfx/sparkle", 0.22, 104, 2), dishes / "bacon_crown.png")
-    save(overlay(overlay(overlay(french.copy(), "ingredients/egg", 0.24, 8, 96), "ingredients/egg", 0.24, 108, 96), "vfx/sparkle", 0.3, 58, 0), dishes / "impossible_omelette.png")
-    save(overlay(hue_shift(sprite("dishes/cheesy_scramble"), 235), "vfx/sparkle", 0.3, 96, 0), dishes / "mystic_scramble.png")
-    save(overlay(overlay(sprite("dishes/fish_stew"), "ingredients/herbs", 0.22, 104, 34), "vfx/sparkle", 0.3, 0, 0), dishes / "master_soup.png")
-    boom = Image.new("RGBA", (DISH_SIZE, DISH_SIZE))
-    overlay(boom, "vfx/star", 0.62, 1, 1)
-    overlay(boom, "ingredients/tomato", 0.5, 32, 34)
-    save(overlay(boom, "ingredients/cheese", 0.26, 94, 92), dishes / "exploding_tomato.png")
-    save(overlay(overlay(overlay(sprite("dishes/special_toast"), "ingredients/truffle", 0.3, 4, 88), "ingredients/egg", 0.3, 100, 86), "vfx/sparkle", 0.3, 56, 0), dishes / "lost_recipe.png")
+    # Secret dishes: a known dish with a touch of magic, marked with small pixel sparkles.
+    crown = overlay(sprite("dishes/triple_bacon"), "ui/icon_legendary", 0.5, 56, 8)
+    save(glints(crown, [(28, 30, 2), (132, 40, 2), (120, 118, 1)]), dishes / "bacon_crown.png")
+    impossible = recolour(french.copy(), lambda h, s, v: 35 <= h <= 60 and s > 0.55, [(214, 150, 20), (240, 186, 40), (255, 214, 70), (255, 236, 130)])
+    save(glints(impossible, [(40, 50, 2), (124, 44, 2), (84, 34, 1)]), dishes / "impossible_omelette.png")
+    save(glints(hue_shift(sprite("dishes/cheesy_scramble"), 235), [(34, 34, 2), (126, 40, 2), (116, 122, 1)]), dishes / "mystic_scramble.png")
+    soup = recolour(sprite("dishes/fish_stew"), lambda h, s, v: 30 <= h <= 70 and s > 0.25 and v > 0.5, [(200, 150, 40), (226, 180, 60), (246, 206, 90), (255, 230, 140)])
+    save(glints(soup, [(40, 36, 2), (122, 38, 2), (82, 30, 1)]), dishes / "master_soup.png")
+
+    # Tomate Explosivo: a tomato on fire on an empty plate (the scramble plate, emptied).
+    empty = recolour(dishes8_cell("cheesy_scramble"), lambda h, s, v: 20 <= h <= 65 and s > 0.2, [(236, 236, 236), (242, 242, 242), (246, 246, 246), (250, 250, 250)])
+    empty = plate(empty)
+    overlay(empty, "ingredients/tomato", 0.6, 22, 30)
+    overlay(empty, "ingredients/flame", 0.32, 70, 6)
+    save(glints(empty, [(26, 40, 2), (134, 60, 2)]), dishes / "exploding_tomato.png")
+
+    # La Receta Perdida: toast with cheese, an egg and truffle shavings.
+    rng = random.Random(3)
+    lost = painted_toasts(cheese=True, seed=11).convert("RGBA")
+    lost.alpha_composite(egg.resize((round(egg.width * 0.75), round(egg.height * 0.75)), Image.NEAREST), (150, 150))
+    shavings = [(rng.randrange(80, 380), rng.randrange(150, 330)) for _ in range(14)]
+    paint_blocks(lost, [(y // BLOCK, x // BLOCK) for x, y in shavings], lambda r, c: (92, 62, 44, 255))
+    save(glints(plate(lost.convert("RGB")), [(30, 34, 2), (130, 36, 2), (82, 22, 1)]), dishes / "lost_recipe.png")

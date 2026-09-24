@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.3 — Platos coherentes
+
+- Tomate rallado y queso fundido pintados sobre el pan; desayuno completo, huevos rotos, crema de champiñones y recetas secretas repintados en su pixel art.
+- Patata nueva (antes parecía una salchicha).
+
 ## 0.5.2 — Pixel art coherente y AdMob
 
 - Iconos de comida originales (sin reescalar); coherencia de tamaño aplicada al dibujar.

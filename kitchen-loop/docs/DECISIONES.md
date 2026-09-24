@@ -339,3 +339,14 @@ Medí lo que ocupa de verdad cada dibujo dentro de su sprite y unifiqué por cat
 - En Ajustes, "Privacidad de los anuncios" cuando Google lo exige.
 - Anuncios de prueba hasta que se pongan los IDs reales.
 - Se instalan `@capacitor/core` y `@capacitor-community/admob` 8. El proyecto Android (Capacitor) se crea en la Fase 6.
+
+## 16. Coherencia de platos e ingredientes (Daniel: "el queso y el tomate tendrían que estar esparcidos o cortados encima del pan")
+
+Revisé todos los platos e ingredientes. Los que no casaban con su receta se pintan ahora dentro del propio pixel art, sobre la cuadrícula del dibujo original (unos 7 píxeles de la hoja por píxel de arte), en vez de pegar sprites encima (`generate_dish_art` en `scripts/extract_sprites.py`):
+- **Tostada con Tomate:** antes eran tostadas solas; ahora llevan tomate rallado (borde irregular, trocitos claros y pepitas).
+- **Tostada Especial:** tomate rallado y una loncha de queso fundido con su borde en cada tostada.
+- **Desayuno Completo:** bacon, huevo y una tostada con tomate del mismo dibujo.
+- **Huevos Rotos:** las patatas de las bravas sin salsa, el huevo roto encima y bacon (antes era arroz).
+- **Crema de Champiñones:** el bol con crema clara y trozos de champiñón (antes, fideos con tomate).
+- **Recetas secretas:** en lugar del destello grande pegado, destellos pequeños de pixel art. La Tortilla Imposible es dorada y sin huevos sueltos; la Sopa del Maestro, un caldo dorado; el Tomate Explosivo, un tomate en llamas en su plato; la Receta Perdida, tostada con queso, huevo y trufa rallada.
+- **Patata:** el icono de la referencia parecía una salchicha (y las Bravas se leían "salchicha + tomate"). La he rediseñado en el estilo de los ingredientes: óvalo con bultos, contorno oscuro, luz, sombra y ojos.
