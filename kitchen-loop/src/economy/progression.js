@@ -1,3 +1,4 @@
+import { recipeById } from '../data/recipes.js';
 import { balance } from '../data/balance.js';
 import { getUnlockedContent } from '../systems/unlocks.js';
 import { addCoins, addPack } from '../inventory/inventory.js';
@@ -22,13 +23,13 @@ export function addXp(save, xp) {
   return levelsGained;
 }
 
-// What a level-up unlocks, from the single unlock table (spec 5.2).
-export function unlocksBetween(fromLevel, toLevel) {
-  const before = getUnlockedContent(fromLevel);
-  const after = getUnlockedContent(toLevel);
+// What a level-up unlocks, from the single unlock table (spec 5.2). Secret recipes stay hidden until discovered.
+export function unlocksBetween(fromLevel, toLevel, context = {}) {
+  const before = getUnlockedContent(fromLevel, context);
+  const after = getUnlockedContent(toLevel, context);
   const news = [];
   for (const kind of ['ingredients', 'recipes', 'customers', 'features']) {
-    for (const id of after[kind]) if (!before[kind].includes(id)) news.push({ kind, id });
+    for (const id of after[kind]) if (!before[kind].includes(id) && !(kind === 'recipes' && recipeById[id].kind === 'secret')) news.push({ kind, id });
   }
   return news;
 }

@@ -269,3 +269,40 @@ Daniel pidió generar lo que faltaba respetando el diseño. Sus tres preguntas a
 - `newCardBias` vuelve al valor de la especificación (0,6). `legendaryPity` 60 (especificación: 40 con 48 cartas). `craftCost` 40 / 150 / 600 / 3000.
 - Recompensas de los encargos en 15–30 monedas para que el árbol de Brûlée siga en 4 semanas.
 - Resultado: jugador constante con anuncios → álbum de sobres en 6,7 semanas (objetivo 6–8) y árbol en 4 semanas (objetivo 4–6). Sin anuncios ni Pase: 13 semanas; ocasional: 4–6 meses.
+
+## 13. Fase 4 — Historia y Brûlée ("continúa")
+
+Daniel pidió seguir. Sobre Brûlée en las cartas: "da igual, al principio no entenderán el contexto y luego ¡boom!". Las 4 cartas épicas de Brûlée se quedan como están.
+
+**Desbloqueos:** la tabla única (`src/data/unlocks.js`) tiene filas por nivel, por capítulo (capítulo 3: Almacén, Visitante de la Cocina Nocturna, Noche de Brûlée), por utensilio y para el árbol completo (Trufa y La Receta Perdida). `getUnlockedContent(nivel, { chapter, utensils })` es la única forma de saber qué hay desbloqueado.
+- **Corregido:** al subir de nivel, los resultados anunciaban recetas secretas ("Receta: Corona de Bacon"). Ahora las secretas no se anuncian nunca.
+
+**Historia (sección 6.3):**
+- Capítulo 2 al llegar al nivel 3. Capítulo 3 (Brûlée) al terminar un loop con 1.200 puntos o más desde el loop 3, o seguro al terminar el loop 6. Capítulo 4 al comprar la Encimera Rúnica. Capítulo 5 con nivel 12 y 3 utensilios. Capítulo 6 con nivel 16 y 3 secretas descubiertas. Capítulo 7 con el árbol completo. Epílogo al cocinar La Receta Perdida.
+- Los capítulos se abren en orden: si se cumplen dos a la vez, se ven los dos seguidos.
+- **Dónde se ven:** nunca durante un loop. En resultados aparece "¡Nuevo capítulo!" (y, en el 3, Brûlée asomando por la puerta); la escena se ve al pulsar SIGUIENTE SERVICIO o MENÚ. Los capítulos que abre una compra se ven al salir del Almacén. Si la app se cierra antes, la escena sale al volver a abrirla.
+- Escenas de 3 bocadillos como máximo, con título del capítulo, Pip o Brûlée hablando (Brûlée a la derecha) y cocina de noche en los capítulos 5 y 7. Todo el texto es `draft` (D-1 sigue pendiente). Cuenta la sección 6.5 poco a poco: el aprendiz, el hechizo de la cocina, la noche en que Pip no se presentó y el perdón.
+
+**Almacén de Brûlée (sección 8.7):** una habitación con Brûlée comentando (toca su bocadillo para otra frase) y tres pestañas:
+- **Utensilios:** el árbol de 9 por niveles, con el medallón de la referencia `skill_tree_ref.jpg` (recortado en círculo, sin candados), coste, requisito y estado. Total: 13.500 monedas.
+- **Decoración:** 10 objetos (150–2.000 monedas, `draft`) que aparecen sobre la cocina del menú. Dibujos simples generados por código (petición de arte en `ASSET_REQUESTS.md`).
+- **Vitrina:** sartenes, Pase del Maestro y Pack de Inicio con su precio en € y el botón "Próximamente". Las compras con dinero real llegan en las Fases 5 y 7.
+- Las compras pasan por `inventory.js` (`buyUtensil`, `buyDecor`). El guardado valida `unlockedItems` y `decor`.
+
+**Utensilios en partida (sección 5.4):**
+- Encimera Rúnica: grid 5x5, hasta 4 clientes, uno cada 6 s. Con 4 clientes, los nombres largos del bocadillo usan una letra más pequeña.
+- Habilidades en una fila bajo el grid, con los usos que quedan. **Mover:** arrastra un ingrediente del grid a una casilla libre. **Descartar:** mantén pulsado 0,5 s (se ve un aro rojo que se llena). **Congelar:** toca el botón; los bocadillos se ponen azules 5 s.
+- **Decisión:** tocar una casilla que forma receta sigue cocinando al instante (lo más importante es que cocinar responda rápido). Solo se pueden mover o descartar los ingredientes que no forman receta. Tocar el botón Mover o Descartar muestra cómo se usa.
+- **Decisión:** si la cocina se desborda y queda algún Descartar, la ventana de desbordamiento ofrece "USAR EL CUCHILLO MÍSTICO", que retira el ingrediente más antiguo y la partida sigue. Es la opción más sencilla.
+- Ingredientes especiales: salen con un 5 % de probabilidad por ingrediente, entre los desbloqueados (Reloj y Especia, máximo 2 por loop). Reloj: +4 s y no ocupa casilla. Especia: comodín en recetas de 3 o más (también en líneas ordenadas; nunca sola). Llama: ingrediente normal de las recetas de fuego. Trufa: como mucho 1 por loop, con un 15 % de probabilidad.
+
+**Clientes especiales y legendarios (sección 3.3):** probabilidad por llegada, como mucho 1 especial o legendario a la vez y 1 legendario por loop. Llevan una estrella (especial) o una corona (legendario) y se anuncian con un aviso. El Cliente misterioso pide algo que no hayas servido en ese loop. El Coleccionista da +10 fragmentos. Ya se pueden conseguir las cartas de descubrimiento de clientes.
+
+**Ingrediente dorado (sección 2.13):** 1 % por ingrediente normal, con brillo dorado. El plato que lo lleva da ×2 puntos y +5 % de probabilidad de carta al final del loop.
+
+**Especialidad del día (sección 2.12):** desde el nivel 4, antes de cada loop se elige 1 de 3 al azar entre las disponibles. Crítico en Sala necesita el crítico (nivel 5) y Noche de Brûlée el capítulo 3. No hay opción de "servicio normal", porque la especificación dice "elige 1 de 3". Se puede apagar con `loopModifiersEnabled`.
+- Visita de Pip coloca cada 15 s un ingrediente que falte para algún pedido. La Cocina se Vuelve Loca pone cada 10 s un especial en "Siguiente" o, si no hay ninguno, lo vuelve dorado. Crítico en Sala trae al crítico hacia el segundo 20. Noche de Brûlée: la mitad de los pedidos son de recetas de utensilio (si tienes alguna) y cada pedido da +1 fragmento.
+
+**Pruebas (solo desarrollo y playtest):** botón "+1000 monedas (prueba)" en el menú, para probar el Almacén sin jugar semanas. Pasa por el inventario, como todo.
+
+**Pendiente para después de la Fase 4:** repetir escenas de capítulos desde Ajustes, equipar sartenes (Fase 5) y el efecto visual de maestría 3.

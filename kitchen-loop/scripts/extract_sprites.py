@@ -349,9 +349,243 @@ def generate_happy_poses():
         save(overlay(img, "vfx/hearts", 0.3, 100, 4), SPRITES / "customers" / f"{customer_id}_happy.png")
 
 
+# Brûlée's tree: the 9 utensil medallions of the skill tree reference, cut round inside their frames
+# (the padlocks and badges stay outside the circle).
+UTENSILS = {"runic_counter": (610, 639), "crystal_spatula": (368, 953), "time_ladle": (850, 953),
+            "ancient_spice": (249, 1338), "mystic_knife": (610, 1332), "golden_whisk": (964, 1338),
+            "enchanted_pot": (260, 1744), "frost_tongs": (610, 1744), "ember_skewers": (959, 1744)}
+UTENSIL_RADIUS = 93
+UTENSIL_SIZE = 160
+
+
+def extract_utensils():
+    from PIL import ImageDraw, ImageFilter
+    tree = Image.open(REF / "skill_tree_ref.jpg").convert("RGBA")
+    r = UTENSIL_RADIUS
+    mask = Image.new("L", (r * 8, r * 8), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, r * 8 - 1, r * 8 - 1), fill=255)
+    mask = mask.resize((r * 2, r * 2), Image.LANCZOS).filter(ImageFilter.GaussianBlur(0.6))
+    for utensil_id, (x, y) in UTENSILS.items():
+        crop = tree.crop((x - r, y - r, x + r, y + r))
+        crop.putalpha(mask)
+        save(crop.resize((UTENSIL_SIZE, UTENSIL_SIZE), Image.LANCZOS), SPRITES / "utensils" / f"{utensil_id}.png")
+
+
 if __name__ == "__main__":
     (SPRITES / "ui").mkdir(parents=True, exist_ok=True)
     main()
     generate_pip()
     generate_dishes()
     generate_happy_poses()
+    extract_utensils()
+    generate_decor()
+    generate_phase4_art()
+
+
+# ---------- Kitchen decoration (spec 5.6), drawn as pixel maps ----------
+# Each map is a list of rows; every character is a palette colour ('.' = transparent).
+DECOR_PALETTE = {
+    "k": (59, 42, 32), "w": (255, 248, 231), "b": (141, 90, 59), "B": (93, 58, 38), "l": (193, 132, 88),
+    "t": (205, 110, 70), "T": (160, 80, 50), "g": (102, 187, 106), "G": (46, 125, 50), "y": (255, 213, 79),
+    "o": (255, 140, 60), "O": (214, 96, 40), "c": (205, 127, 50), "C": (150, 85, 35), "s": (40, 44, 48),
+    "S": (70, 76, 82), "r": (229, 57, 53), "p": (167, 139, 250), "a": (129, 212, 250), "e": (230, 220, 200),
+    "n": (190, 160, 120), "m": (120, 85, 60), "h": (255, 236, 179), "v": (240, 98, 146), "q": (200, 200, 200),
+}
+DECOR_MAPS = {
+    "herb_pots": [
+        "....g.......g.....",
+        "...gGg..g..gGg....",
+        "..gGgGg.Gg.gGgg...",
+        "...gGg.gGgGgG.....",
+        "....G...G..G......",
+        ".tttttt...tttttt..",
+        ".TtttT....TttttT..",
+        "..tttt.....tttt...",
+        "..TttT.....TttT...",
+        "...TT.......TT....",
+    ],
+    "garlic_string": [
+        "....n....",
+        "....n....",
+        "...wew...",
+        "..wewew..",
+        "...wqw...",
+        "....n....",
+        "...wew...",
+        "..wewew..",
+        "...wqw...",
+        "....n....",
+        "...wew...",
+        "..wewew..",
+        "...wqw...",
+        "....n....",
+        "...wew...",
+        "..wewew..",
+        "...wqw...",
+        "....n....",
+    ],
+    "menu_board": [
+        "bbbbbbbbbbbbbbbb",
+        "bsssssssssssssSb",
+        "bswwwwsswwwsssSb",
+        "bsssssssssssssSb",
+        "bswwsswwwwsssySb",
+        "bsssssssssssyysb",
+        "bswwwsswwsssssSb",
+        "bsssssssssssssSb",
+        "bswwsswwwsswwsSb",
+        "bsssssssssssssSb",
+        "bbbbbbbbbbbbbbbb",
+        ".B............B.",
+        ".B............B.",
+    ],
+    "copper_lamp": [
+        ".....k.....",
+        ".....k.....",
+        ".....k.....",
+        ".....k.....",
+        "....ccc....",
+        "...cccCc...",
+        "..ccccccC..",
+        ".cccccccCC.",
+        "cccccccccCC",
+        "..hhyyyhh..",
+        "...hyyyh...",
+        "....hhh....",
+    ],
+    "spice_rack": [
+        ".r..o..y..g..",
+        "rrroooyyyggg.",
+        "rrroooyyyggg.",
+        "bbbbbbbbbbbbb",
+        "BBBBBBBBBBBBB",
+        ".p..v..a..O..",
+        "pppvvvaaaOOO.",
+        "pppvvvaaaOOO.",
+        "bbbbbbbbbbbbb",
+        "BBBBBBBBBBBBB",
+    ],
+    "wall_clock": [
+        "....bbbbb....",
+        "..bbwwwwwbb..",
+        ".bwwwwkwwwwb.",
+        ".bwwwwkwwwwb.",
+        "bwkwwwkwwwkwb",
+        "bwwwwwkwwwwwb",
+        "bwwwwwkkkwwwb",
+        "bwkwwwwwwwkwb",
+        ".bwwwwwwwwwb.",
+        ".bwwwwkwwwwb.",
+        "..bbwwwwwbb..",
+        "....bbbbb....",
+    ],
+    "cookie_jar": [
+        "...bbbbb...",
+        "..bBBBBBb..",
+        "..aaaaaaa..",
+        ".aawwwwwaa.",
+        ".awlmllmwa.",
+        ".awllmllwa.",
+        ".awmllllwa.",
+        ".awllmlmwa.",
+        ".awlllmlwa.",
+        ".aawwwwwaa.",
+        "..aaaaaaa..",
+    ],
+    "fairy_lights": [
+        "k.............................................k",
+        ".k....r.............y.............p..........k.",
+        "..k..rrr....g......yyy.....a.....ppp....v...k..",
+        "...kk.r....ggg..kk..y.....aaa..kk.p....vvv.k...",
+        ".....kkk....g.kk..kkk..kk..a.kk..kkkk...vkk....",
+        "........kkkkkk........kk..kkk.........kkkk.....",
+    ],
+    "big_plant": [
+        "......g.....g.....",
+        "....gGGg..gGGg....",
+        "...gGgGGggGGgGg...",
+        "..gGgg.GGGG.ggGg..",
+        ".gGg..gGGGGg..gGg.",
+        ".Gg..gGg.GgGg..gG.",
+        "....gG...G..Gg....",
+        "........GG........",
+        "........G.........",
+        "....tttttttttt....",
+        "....TttttttttT....",
+        ".....tttttttt.....",
+        ".....TttttttT.....",
+        "......TTTTTT......",
+    ],
+    "sleeping_cat": [
+        "............................",
+        "..........................w.",
+        ".......................ww...",
+        "..o.o.............w.........",
+        "..ooo..........oooooo.......",
+        ".oookoo......ooooOoooo......",
+        ".ooooooo...oooOooooOooo.....",
+        ".kooooko..ooooooOooooooo....",
+        "..oooooooooOoooooooOoooo....",
+        "...ooooooooooooooooooooo....",
+        "....ooooooooooooooooooOo.oo.",
+        ".....OoooooooooooooooooooOo.",
+        "......OOOOOOOOOOOOOOOOOOOO..",
+    ],
+}
+DECOR_SIZE = 192
+
+
+def generate_decor():
+    for decor_id, rows in DECOR_MAPS.items():
+        w, h = max(len(r) for r in rows), len(rows)
+        img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        for y, row in enumerate(rows):
+            for x, ch in enumerate(row):
+                if ch != ".":
+                    img.putpixel((x, y), DECOR_PALETTE[ch] + (255,))
+        scale = max(1, DECOR_SIZE // max(w, h))
+        img = img.resize((w * scale, h * scale), Image.NEAREST)
+        save(img, SPRITES / "decor" / f"{decor_id}.png")
+
+
+# ---------- Phase 4: special customers and special ingredients ----------
+FLAME_MAP = [
+    "......y.....",
+    ".....yy.....",
+    "....yoy..y..",
+    "...yoo..yy..",
+    "..yooo.yoy..",
+    "..yoooyooy..",
+    ".yoOoooOooy.",
+    ".yoOOoOOooy.",
+    "yooOOOOOOooy",
+    "yoOOrrrrOOoy",
+    "yoOrrhhrrOoy",
+    ".yOrhhhhrOy.",
+    ".yoOrhhrOoy.",
+    "..yoOOOOoy..",
+    "...yyyyyy...",
+]
+
+
+def generate_phase4_art():
+    import numpy as np
+    # Customers without their own art reuse the big portraits kept for special customers (docs/DECISIONES.md).
+    save(sprite("customers/student"), SPRITES / "customers" / "collector.png")
+    save(sprite("customers/tourist"), SPRITES / "customers" / "night_visitor.png")
+    critic = np.array(sprite("customers/critic").convert("RGBA")).astype(float)
+    r, g, b = critic[..., 0], critic[..., 1], critic[..., 2]
+    purple = (b > r * 0.9) & (b > g * 1.15) & (critic[..., 3] > 0)
+    critic[purple, :3] = critic[purple, :3] * 0.35 + 12  # the purple suit turns black
+    save(Image.fromarray(critic.clip(0, 255).astype("uint8")), SPRITES / "customers" / "legendary_critic.png")
+
+    # Special ingredients: the kitchen clock icon, the spice medallion and a pixel flame.
+    for ing_id, key in (("clock", "ui/icon_timer"), ("spice", "utensils/ancient_spice")):
+        save(fit(sprite(key), INGREDIENT_SIZE, fill=INGREDIENT_FILL), SPRITES / "ingredients" / f"{ing_id}.png")
+    img = Image.new("RGBA", (len(FLAME_MAP[0]), len(FLAME_MAP)), (0, 0, 0, 0))
+    for y, row in enumerate(FLAME_MAP):
+        for x, ch in enumerate(row):
+            if ch != ".":
+                img.putpixel((x, y), DECOR_PALETTE[ch] + (255,))
+    img = img.resize((img.width * 12, img.height * 12), Image.NEAREST)
+    save(fit(img, INGREDIENT_SIZE, upscale_nearest=True, fill=INGREDIENT_FILL), SPRITES / "ingredients" / "flame.png")

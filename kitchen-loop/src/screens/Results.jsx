@@ -93,6 +93,24 @@ export function Results({ result, playerName, services, onAgain, onMenu }) {
         </p>
       ))}
 
+      {result.chapters.includes(3) && (
+        <div className="brulee-peek pop-in">
+          <img src={spriteUrl('brulee/surprised')} alt={t('story.brulee')} />
+          <span className="speech small">{t('results.bruleeTeaser')}</span>
+        </div>
+      )}
+      {result.chapters.map((n) => (
+        <p key={n} className="chapter-news pop-in">
+          {t('results.chapter', { name: t(`chapter.${n}`) })}
+        </p>
+      ))}
+      {(result.fragments > 0 || result.goldenCooked > 0) && (
+        <p className="hint small pop-in">
+          {[result.fragments > 0 && t('results.fragments', { n: result.fragments }), result.goldenCooked > 0 && t('results.golden', { n: result.goldenCooked })]
+            .filter(Boolean)
+            .join(' · ')}
+        </p>
+      )}
       {result.challenges.completed.length > 0 && (
         <div className="challenges-done pop-in">
           <span className="label">{t('results.challenges')}</span>

@@ -2,9 +2,22 @@
 export function feedbackFor(event) {
   switch (event.type) {
     case 'place':
+    case 'move':
+    case 'pipPlaced':
       return ['place', null];
+    case 'clock':
+      return ['coin', 'light'];
+    case 'discard':
+      return ['discard', 'light'];
+    case 'freeze':
+      return ['freeze', 'medium'];
+    case 'crazyKitchen':
+      return ['glow', null];
+    case 'customerArrived':
+      return event.category === 'common' ? null : ['specialCustomer', 'light'];
     case 'cook':
       if (event.secretFound) return ['secret', 'medium'];
+      if (event.golden) return ['coin', 'medium'];
       return [event.customerSlot !== null ? 'serve' : 'cook', 'light'];
     case 'noRecipe':
       return ['noRecipe', null];

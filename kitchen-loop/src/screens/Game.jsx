@@ -13,11 +13,12 @@ import { RecipeBook } from './RecipeBook.jsx';
 import { Challenges } from '../components/Challenges.jsx';
 import { calendarToday } from '../components/Calendar.jsx';
 import { todayChallenges, progressWith } from '../systems/challenges.js';
+import { unlockContext } from '../systems/unlocks.js';
 
 const TIP_PREFIX = 'tip.';
 
 // Mounts the canvas and the engine. React only hears onOverflow / onLoopEnd / pause (spec 10.3).
-export function Game({ tutorial = false, services, onEnd, onQuit }) {
+export function Game({ tutorial = false, specialty = null, services, onEnd, onQuit }) {
   const { saveManager, adManager, audio, haptics } = services;
   const level = saveManager.get().player.level;
   const canvasRef = useRef(null);
@@ -41,6 +42,8 @@ export function Game({ tutorial = false, services, onEnd, onQuit }) {
     const engine = createEngine({
       balance,
       level: loopLevel,
+      unlocks: tutorial ? {} : unlockContext(save),
+      specialty: tutorial ? null : specialty,
       discoveredSecrets: discoveredSecrets(save),
       seed: Date.now(),
       onOverflow: setOverflow,
@@ -96,7 +99,7 @@ export function Game({ tutorial = false, services, onEnd, onQuit }) {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('keydown', onKey);
     };
-  }, [attempt, loopLevel, tutorial, saveManager, audio, haptics, challenges]);
+  }, [attempt, loopLevel, tutorial, specialty, saveManager, audio, haptics, challenges]);
 
   useEffect(() => {
     controllerRef.current?.setPaused(paused);
@@ -115,6 +118,13 @@ export function Game({ tutorial = false, services, onEnd, onQuit }) {
     const { status } = await adManager.showRewarded('SECOND_CHANCE', () => engineRef.current.applySecondChance());
     setAdBusy(false);
     if (status === 'rewarded') setOverflow(null);
+  }
+
+  // Mystic Knife on an overflowing kitchen: the oldest ingredient goes away and play goes on.
+  function knifeOldest() {
+    const { cells } = engineRef.current.state.grid;
+    const oldest = cells.reduce((best, cell, i) => (cell.ingredient && (best === -1 || cell.placedSeq < cells[best].placedSeq) ? i : best), -1);
+    if (engineRef.current.discardAt(oldest)) setOverflow(null);
   }
 
   const offerSecondChance = overflow?.secondChanceAvailable && adManager.canOffer('SECOND_CHANCE');
@@ -137,7 +147,7 @@ export function Game({ tutorial = false, services, onEnd, onQuit }) {
             {panel === 'challenges' ? (
               <Challenges list={challenges} live={(c) => (engineRef.current ? progressWith(c, engineRef.current.getResult()) : c.progress)} />
             ) : (
-              <RecipeBook level={loopLevel} discovered={discoveredSecrets(saveManager.get())} saved={saveManager.get().recipes} embedded />
+              <RecipeBook level={loopLevel} unlocks={tutorial ? {} : unlockContext(saveManager.get())} discovered={discoveredSecrets(saveManager.get())} saved={saveManager.get().recipes} embedded />
             )}
             <Button
               onClick={() => {
@@ -177,14 +187,20 @@ export function Game({ tutorial = false, services, onEnd, onQuit }) {
         <div className="overlay">
           <div className="panel">
             <h2>{t('overflow.title')}</h2>
+            {overflow.canDiscard && (
+              <>
+                <Button disabled={adBusy} onClick={knifeOldest}>
+                  {t('overflow.knife')}
+                </Button>
+                <p className="hint small">{t('overflow.knifeHint')}</p>
+              </>
+            )}
             {offerSecondChance ? (
               <>
                 <Button variant="ad" icon="icon_ad" disabled={!adReady || adBusy} onClick={watchSecondChance}>
                   {adReady ? t('overflow.secondChance') : t('ad.unavailable')}
                 </Button>
-                <p className="hint small">
-                  {t('overflow.secondChanceReward', { cells: balance.secondChanceCells, s: balance.secondChanceTime })}
-                </p>
+                <p className="hint small">{t('overflow.secondChanceReward', { cells: balance.secondChanceCells, s: balance.secondChanceTime })}</p>
                 <Button variant="secondary" disabled={adBusy} onClick={() => engineRef.current.finishOverflow()}>
                   {t('overflow.noThanks')}
                 </Button>

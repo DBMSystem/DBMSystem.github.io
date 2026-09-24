@@ -1,8 +1,11 @@
 import { cardById } from '../data/cards.js';
 import { balance } from '../data/balance.js';
 import { track } from '../analytics/analytics.js';
+import { utensilById } from '../data/utensils.js';
+import { decorById } from '../data/decor.js';
+import { utensilState, utensilCost } from '../systems/utensils.js';
 
-// The only place that changes coins, fragments, cards and unopened packs (spec 11.3).
+// The only place that changes coins, fragments, cards, unopened packs and bought items (spec 11.3).
 // Every function validates, changes `save` in place and reports what happened.
 const isAmount = (n) => Number.isInteger(n) && n > 0;
 
@@ -76,5 +79,24 @@ export function addPack(save, kind = 'standard') {
 export function takePack(save, kind = 'standard') {
   if (!(save.packs[kind] > 0)) return false;
   save.packs[kind] -= 1;
+  return true;
+}
+
+// Brûlée's warehouse (spec 5.4, 5.6, 8.7): utensils and decoration bought with coins.
+export function buyUtensil(save, id) {
+  if (!utensilById[id] || utensilState(save, id) !== 'available') return false;
+  if (!spendCoins(save, utensilCost(id), 'utensil')) return false;
+  save.unlockedItems.push(id);
+  track('utensil_bought', { id });
+  return true;
+}
+
+export function buyDecor(save, id) {
+  const item = decorById[id];
+  if (!item || save.unlockedItems.includes(id)) return false;
+  if (!spendCoins(save, item.cost, 'decor')) return false;
+  save.unlockedItems.push(id);
+  save.decor[item.slot] = id;
+  track('decor_bought', { id });
   return true;
 }

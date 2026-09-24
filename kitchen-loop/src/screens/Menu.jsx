@@ -9,9 +9,11 @@ import { balance } from '../data/balance.js';
 import { t, formatNumber } from '../utils/i18n.js';
 import { DEV_TOOLS } from '../utils/platform.js';
 import { spriteUrl } from '../assets/manifest.js';
+import { contentFor } from '../systems/unlocks.js';
+import { decorById } from '../data/decor.js';
 
 // Main menu (spec 8.3): kitchen scene, PLAY, album, warehouse (locked until chapter 3) and settings.
-export function Menu({ services, onPlay, onAlbum, onSettings, onDevLevelUp }) {
+export function Menu({ services, onPlay, onAlbum, onWarehouse, onSettings, onDevLevelUp, onDevCoins }) {
   const { saveManager, adManager } = services;
   const save = saveManager.get();
   const today = calendarToday(save);
@@ -20,7 +22,7 @@ export function Menu({ services, onPlay, onAlbum, onSettings, onDevLevelUp }) {
   const { level, xp, name } = save.player;
   const xpShare = level >= balance.maxLevel ? 1 : xp / xpToNext(level);
   const albumDot = save.packs.standard + save.packs.special > 0 || (save.stats.loopsPlayed >= balance.adsMinLoops && adManager.freePackWait() === 0);
-  const warehouseOpen = save.story.chapter >= 3;
+  const warehouseOpen = contentFor(save).features.includes('warehouse');
 
   return (
     <div className="screen menu">
@@ -34,7 +36,21 @@ export function Menu({ services, onPlay, onAlbum, onSettings, onDevLevelUp }) {
           {formatNumber(save.coins)}
         </span>
       </div>
-      <img className="menu-scene" src={spriteUrl('ui/menu_scene')} alt={t('game.title')} />
+      <div className="menu-scene-wrap">
+        <img className="menu-scene" src={spriteUrl('ui/menu_scene')} alt={t('game.title')} />
+        {Object.values(save.decor).map((id) => {
+          const d = decorById[id];
+          return (
+            <img
+              key={id}
+              className="decor-placed"
+              src={spriteUrl(`decor/${id}`)}
+              alt={t(`decor.${id}.name`)}
+              style={{ left: `${d.x}%`, top: `calc(${d.y} * var(--scene-ratio) * 1cqw)`, width: `${d.size}%` }}
+            />
+          );
+        })}
+      </div>
       <p className="slogan">{t('game.slogan')}</p>
       <p className="greeting">{t('menu.greeting', { nombre: name })}</p>
       <Button icon="icon_cook" onClick={onPlay}>
@@ -46,7 +62,7 @@ export function Menu({ services, onPlay, onAlbum, onSettings, onDevLevelUp }) {
           {t('menu.album')}
           {albumDot && <span className="dot" />}
         </Button>
-        <Button variant="secondary" icon="icon_coin" disabled={!warehouseOpen} title={t('menu.locked')}>
+        <Button variant="secondary" icon="icon_coin" disabled={!warehouseOpen} title={t('menu.locked')} onClick={onWarehouse}>
           {t(warehouseOpen ? 'menu.warehouse' : 'menu.warehouseLocked')}
         </Button>
         <Button variant="secondary" icon="icon_timer" onClick={() => setShowCalendar(true)}>
@@ -65,6 +81,9 @@ export function Menu({ services, onPlay, onAlbum, onSettings, onDevLevelUp }) {
         <div className="dev-panel">
           <Button variant="secondary" onClick={onDevLevelUp}>
             {t('menu.devLevel')}
+          </Button>
+          <Button variant="secondary" onClick={onDevCoins}>
+            {t('menu.devCoins')}
           </Button>
         </div>
       )}

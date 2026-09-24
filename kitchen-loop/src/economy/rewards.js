@@ -6,6 +6,8 @@ import { rollLoopCard } from '../cards/drops.js';
 import { discoveriesFor, masteryLevel, albumProgress } from '../cards/album.js';
 import { track } from '../analytics/analytics.js';
 import { applyChallenges } from '../systems/challenges.js';
+import { unlockContext } from '../systems/unlocks.js';
+import { advanceStory } from '../systems/story.js';
 
 export const TUTORIAL_CARD = 'dubious_toast';
 
@@ -52,11 +54,13 @@ export function finalizeLoop(save, result, { rng, now, today }) {
   }
 
   const coins = addCoins(save, loopCoins(result), 'loop');
+  if (result.fragments > 0) addFragments(save, result.fragments, 'customers');
   const xp = loopXp(result);
   const levelBefore = save.player.level;
   const xpBefore = save.player.xp;
   const levels = addXp(save, xp);
 
+  const chapters = result.tutorial ? [] : advanceStory(save, result);
   const challenges = result.tutorial || !today ? { completed: [], bonus: null } : applyChallenges(save, result, today);
 
   const cards = [];
@@ -76,9 +80,10 @@ export function finalizeLoop(save, result, { rng, now, today }) {
     levelAfter: save.player.level,
     xpAfter: save.player.xp,
     levels,
-    unlocks: unlocksBetween(levelBefore, save.player.level),
+    unlocks: unlocksBetween(levelBefore, save.player.level, unlockContext(save)),
     mastery,
     challenges,
+    chapters,
     cards: cards.map((c) => ({ ...c, rarity: cardById[c.cardId].rarity })),
     album: albumProgress(save),
   };

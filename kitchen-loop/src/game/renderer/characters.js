@@ -75,8 +75,11 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
     ctx.translate(-tailX, -tailY);
     const stroke = ratio > 0.6 ? COLORS.ink : ratio > 0.3 ? '#c98a00' : COLORS.bad;
     kit.bubble(x, y, w, BUBBLE_HEIGHT, tailX, tailY, { stroke, lineWidth: urgent ? 3 : 2 });
-    const lines = kit.wrap(t(`recipe.${recipe.id}`), w - 12, 10, 800).slice(0, 2);
-    lines.forEach((line, k) => kit.text(line, x + w / 2, y + 9 + k * 11, { size: 10, weight: 800, color: COLORS.ink }));
+    // Narrow bubbles (4 customers on the Runic Counter) use a smaller font before cutting the name.
+    const name = t(`recipe.${recipe.id}`);
+    const size = kit.wrap(name, w - 12, 10, 800).length > 2 ? 8 : 10;
+    const lines = kit.wrap(name, w - 12, size, 800).slice(0, 2);
+    lines.forEach((line, k) => kit.text(line, x + w / 2, y + 9 + k * (size + 1), { size, weight: 800, color: COLORS.ink }));
     drawOrderIcons(recipe, x + w / 2, y + 37, w - 14);
     kit.roundRect(x + 8, y + BUBBLE_HEIGHT - 8, w - 16, 4, 2, '#eadbc4');
     kit.roundRect(x + 8, y + BUBBLE_HEIGHT - 8, (w - 16) * ratio, 4, 2, ratio > 0.6 ? COLORS.ok : ratio > 0.3 ? COLORS.warn : COLORS.bad);
@@ -88,7 +91,12 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
     ctx.strokeStyle = COLORS.bad;
     ctx.lineWidth = 2.5;
     const r = 5 + Math.sin(view.time * 12) * 1.2;
-    for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    for (const [dx, dy] of [
+      [-1, -1],
+      [1, -1],
+      [-1, 1],
+      [1, 1],
+    ]) {
       ctx.beginPath();
       ctx.arc(x + dx * r, y + dy * r, r * 0.8, 0, Math.PI * 2 * 0.3);
       ctx.stroke();
@@ -97,6 +105,7 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
 
   function drawCustomers() {
     const layout = getLayout();
+    const frozen = state.time < state.frozenUntil;
     for (const customer of state.customers) {
       const slot = layout.customers[customer.slot];
       const type = customerById[customer.typeId];
@@ -104,7 +113,7 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
       const since = view.time - (view.customerSeen.get(customer.uid) ?? -10);
       const arrive = ease(since / ARRIVE_TIME);
       const ratio = clamp01(customer.patience / customer.maxPatience);
-      const urgent = ratio < 0.3;
+      const urgent = ratio < 0.3 && !frozen;
       const phase = customer.uid * 1.7;
 
       const cx = slot.x + slot.w / 2 + (1 - arrive) * 70 + (urgent ? Math.sin(view.time * 40) * 1.5 * motion : 0);
@@ -120,9 +129,16 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
         alpha: arrive,
       });
       if (urgent && !angryArt) drawAngerMark(cx + CHARACTER * 0.32, feetY - CHARACTER * 0.85);
+      // Special customers wear a star, legendary ones a crown (spec 3.3: own visual personality).
+      const badge = getSprite(type.category === 'legendary' ? 'ui/icon_legendary' : type.category === 'special' ? 'ui/icon_rare' : '');
+      if (badge) {
+        const s = 22 + Math.sin(view.time * 4 + phase) * 2 * motion;
+        drawSmooth(ctx, badge, cx - CHARACTER * 0.42 - s / 2, feetY - CHARACTER * 0.9 - s / 2, s, s);
+      }
 
       const pop = ease((since - BUBBLE_DELAY) / 0.25) * (1 + 0.15 * Math.sin(clamp01((since - BUBBLE_DELAY) / 0.25) * Math.PI));
       if (pop > 0.01) drawOrderBubble(slot, recipe, ratio, pop, urgent);
+      if (frozen) kit.roundRect(slot.x + 2, slot.y, slot.w - 4, BUBBLE_HEIGHT, 10, 'rgba(129, 212, 250, 0.35)', '#81d4fa', 2);
     }
 
     // Customers leaving: happy hop when served, grumpy shake when they gave up.
@@ -135,7 +151,10 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
       const feetY = slot.y + slot.h + 2;
       if (d.happy) {
         const hop = Math.sin(clamp01(k * 1.4) * Math.PI) * 18 * motion;
-        drawCharacter(poseKey(type.id, 'happy'), type.color, '', cx, feetY - hop, CHARACTER, { alpha: 1 - clamp01((k - 0.5) * 2), sy: 1 + 0.08 * Math.sin(k * 20) * motion });
+        drawCharacter(poseKey(type.id, 'happy'), type.color, '', cx, feetY - hop, CHARACTER, {
+          alpha: 1 - clamp01((k - 0.5) * 2),
+          sy: 1 + 0.08 * Math.sin(k * 20) * motion,
+        });
       } else {
         const shake = k < 0.4 ? Math.sin(view.time * 50) * 3 * motion : 0;
         const key = poseKey(type.id, 'angry');

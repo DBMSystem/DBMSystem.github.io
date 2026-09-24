@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.0 — Fase 4: historia y Brûlée
+
+- Capítulos 2–7 y epílogo con escenas de Pip y Brûlée. Brûlée aparece en los resultados (loop 3 con 1.200 puntos o seguro en el loop 6).
+- Almacén de Brûlée: árbol de 9 utensilios (13.500 monedas), 10 objetos de decoración que se ven en la cocina del menú y vitrina (próximamente).
+- Encimera Rúnica (5x5 y 4 clientes), habilidades Mover, Descartar y Congelar, e ingredientes Reloj, Especia comodín, Llama y Trufa.
+- Recetas de utensilio en el recetario; La Receta Perdida con el árbol completo.
+- Clientes especiales y legendarios con estrella o corona; el coleccionista da fragmentos.
+- Ingrediente dorado (×2 puntos y más probabilidad de carta).
+- Especialidad del día desde el nivel 4 (6 especialidades).
+- Corregido: las recetas secretas ya no se anuncian al subir de nivel.
+- Arte: medallones de utensilios de la referencia, decoración en pixel art, clientes e ingredientes especiales.
+- 136 tests.
+
 ## 0.4.0 — Encargos de Pip y álbum de 120 cartas
 
 - Encargos de Pip: 3 retos diarios (combo, pedidos, puntos, sin perder clientes, receta concreta, ¡En su punto!, fiebre, recetas) con monedas y fragmentos; sobre de regalo al cumplir los tres.

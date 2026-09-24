@@ -73,3 +73,12 @@ Una pared de cocina o comedor detrás del mostrador donde esperan los clientes.
 
 ### 9. Clientes especiales que faltan
 Coleccionista, Crítico legendario y Visitante de la Cocina Nocturna (un personaje misterioso con capa y farolillo), mismo formato que el punto 1.
+*Fase 4: de momento se usan el chico de los cascos (coleccionista), el crítico con el traje ennegrecido (crítico legendario) y el alien brócoli (visitante). Si llegan retratos propios, basta con sustituir los archivos.*
+
+### 10. Decoración de la cocina (10 objetos)
+Ahora son dibujos simples en pixel art generados por código (`decor/*.png`). Mejor en el estilo del resto:
+> Pixel art cozy kitchen decoration items, 10 separate objects in a 5×2 grid on a white plain background, no text: two small herb pots, a string of garlic, a chalk menu board, a copper pendant lamp, a small spice rack with colorful jars, a round wall clock, a glass cookie jar, a string of fairy lights, a big potted plant, an orange cat sleeping curled up.
+
+### 11. Ingrediente Llama
+La llama es un dibujo generado; el Reloj usa el icono del temporizador y la Especia, el medallón del árbol.
+> Pixel art magic cooking flame as a food ingredient icon, orange and yellow, cute, white plain background, no text.

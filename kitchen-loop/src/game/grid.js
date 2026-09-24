@@ -2,7 +2,7 @@
 export function createGrid(size) {
   return {
     size,
-    cells: Array.from({ length: size * size }, () => ({ ingredient: null, placedSeq: 0, lockedUntil: 0 })),
+    cells: Array.from({ length: size * size }, () => ({ ingredient: null, golden: false, placedSeq: 0, lockedUntil: 0 })),
   };
 }
 
@@ -21,8 +21,7 @@ export function neighbors(grid, index) {
   return result;
 }
 
-export const isCellFree = (grid, index, time) =>
-  grid.cells[index].ingredient === null && grid.cells[index].lockedUntil <= time;
+export const isCellFree = (grid, index, time) => grid.cells[index].ingredient === null && grid.cells[index].lockedUntil <= time;
 
 // Full = every cell holds an ingredient. Cells that are cooking are about to be freed.
 export const isFull = (grid) => grid.cells.every((cell) => cell.ingredient !== null);
