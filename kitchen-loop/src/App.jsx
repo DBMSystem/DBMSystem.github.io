@@ -95,7 +95,16 @@ export function App({ services }) {
   return (
     <>
       {renderScreen()}
-      {picking && <SpecialtyPicker save={saveManager.get()} onPick={(id) => startLoop(false, id)} />}
+      {picking && (
+        <SpecialtyPicker
+          save={saveManager.get()}
+          onPick={(id) => startLoop(false, id)}
+          onCancel={() => {
+            setPicking(false);
+            if (screen === 'scene') setScreen('menu'); // results and menu stay where they are
+          }}
+        />
+      )}
     </>
   );
 
