@@ -4,7 +4,8 @@ import { join } from 'node:path';
 import { ingredients, ingredientById } from '../src/data/ingredients.js';
 import { recipes } from '../src/data/recipes.js';
 import { customers, customerById } from '../src/data/customers.js';
-import { levelUnlocks, utensilUnlocks } from '../src/data/unlocks.js';
+import { levelUnlocks, utensilUnlocks, treeUnlocks } from '../src/data/unlocks.js';
+import { utensils } from '../src/data/utensils.js';
 import { balance } from '../src/data/balance.js';
 import { hasKey } from '../src/utils/i18n.js';
 
@@ -38,11 +39,22 @@ describe('data integrity', () => {
     }
   });
 
-  it('every recipe is unlocked exactly once (level or utensil) except tree-complete ones', () => {
-    const sources = [...levelUnlocks.flatMap((r) => r.recipes ?? []), ...Object.values(utensilUnlocks).flatMap((u) => u.recipes)];
+  it('every recipe is unlocked exactly once (level, utensil or complete tree)', () => {
+    const sources = [...levelUnlocks.flatMap((r) => r.recipes ?? []), ...Object.values(utensilUnlocks).flatMap((u) => u.recipes ?? []), ...treeUnlocks.recipes];
     expect(unique(sources)).toBe(true);
-    const missing = recipes.filter((r) => !sources.includes(r.id)).map((r) => r.id);
-    expect(missing).toEqual(['lost_recipe']); // unlocked by the complete tree (phase 4)
+    expect(recipes.filter((r) => !sources.includes(r.id)).map((r) => r.id)).toEqual([]);
+  });
+
+  it('every utensil has an unlock row and the tree needs chapter 3', () => {
+    for (const u of utensils) expect(utensilUnlocks[u.id], u.id).toBeDefined();
+    expect(Object.keys(utensilUnlocks).sort()).toEqual(utensils.map((u) => u.id).sort());
+    expect(utensils.filter((u) => u.tier === 1).every((u) => u.requires.chapter === 3)).toBe(true);
+  });
+
+  it('es.js has no duplicate keys (a repeated key silently replaces the first)', () => {
+    const text = readFileSync(join(import.meta.dirname, '../src/data/i18n/es.js'), 'utf8');
+    const keys = [...text.matchAll(/^\s*'([^']+)':/gm)].map((m) => m[1]);
+    expect(keys.filter((k, i) => keys.indexOf(k) !== i)).toEqual([]);
   });
 
   it('every t() key used in the code exists in es.js', () => {

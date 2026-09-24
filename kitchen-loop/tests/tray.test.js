@@ -33,9 +33,9 @@ describe('ingredient generation', () => {
   });
 
   it('takeFromTray moves the preview into the slot', () => {
-    const tray = { slots: ['egg', 'bacon', 'bread'], preview: 'tomato' };
+    const tray = { slots: ['egg', 'bacon', 'bread'], golden: [false, false, false], preview: 'tomato', previewGolden: true, rollGolden: () => false };
     expect(takeFromTray(tray, 1, () => 'cheese')).toBe('bacon');
-    expect(tray).toEqual({ slots: ['egg', 'tomato', 'bread'], preview: 'cheese' });
+    expect(tray).toMatchObject({ slots: ['egg', 'tomato', 'bread'], golden: [false, true, false], preview: 'cheese', previewGolden: false });
   });
 
   it('missing ingredients discount what is on the grid and tray', () => {

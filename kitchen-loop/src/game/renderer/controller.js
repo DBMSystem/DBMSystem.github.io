@@ -14,7 +14,19 @@ const DRAG_START_DISTANCE = 8;
 // Runs a loop on a canvas: fixed-step engine updates, rendering, touch input (spec 10.3),
 // Pip's lines and, for the first loop, the tutorial.
 // `challenges`: today's Pip orders; a toast appears the moment one is completed during the service.
-export function createGameController({ canvas, engine, balance, settings, showFps, tutorial, pipOptions, challenges = [], onPauseRequest, onQuickRequest, onEvents }) {
+export function createGameController({
+  canvas,
+  engine,
+  balance,
+  settings,
+  showFps,
+  tutorial,
+  pipOptions,
+  challenges = [],
+  onPauseRequest,
+  onQuickRequest,
+  onEvents,
+}) {
   const renderer = createRenderer(canvas, engine, { balance, reducedMotion: settings.reducedMotion, showFps });
   const { view } = renderer;
   const pip = createPip({ engine, balance, rng: createRng(), ...pipOptions });
@@ -63,6 +75,7 @@ export function createGameController({ canvas, engine, balance, settings, showFp
       }
       renderer.update(dt);
     }
+    checkHold(now);
     const events = engine.drainEvents();
     if (runner?.handle(events)) syncTutorial();
     else if (!runner?.step?.until) pip.handle(events);
@@ -80,6 +93,25 @@ export function createGameController({ canvas, engine, balance, settings, showFp
     return { x: (e.clientX - rect.left) / scale, y: (e.clientY - rect.top) / scale };
   };
   const canAct = () => !paused && engine.state.status === 'playing';
+  const hasUses = (ability) => (engine.state.abilities[ability] ?? 0) > 0;
+
+  // Mystic Knife (spec 5.4): holding an ingredient that is not part of a recipe discards it.
+  function checkHold(now) {
+    const d = view.drag;
+    view.holdProgress = 0;
+    if (!d || d.fromCell === undefined || d.active || paused || !hasUses('discard')) return;
+    view.holdProgress = Math.min(1, (now - d.downAt) / 1000 / balance.discardHold);
+    if (view.holdProgress >= 1) {
+      engine.discardAt(d.fromCell);
+      view.drag = null;
+      view.holdProgress = 0;
+    }
+  }
+
+  function onAbility(ability) {
+    if (ability === 'freeze') engine.freeze();
+    else renderer.showToast(t(`ability.${ability}.title`), t(`ability.${ability}.how`));
+  }
 
   function onPointerDown(e) {
     const p = toLogical(e);
@@ -93,6 +125,11 @@ export function createGameController({ canvas, engine, balance, settings, showFp
       return;
     }
     if (!canAct() || view.drag) return;
+    const ability = renderer.abilityList().find((_, i) => inside(layout.abilities[i], p.x, p.y));
+    if (ability) {
+      onAbility(ability);
+      return;
+    }
     const slot = layout.tray.findIndex((r) => inside(r, p.x, p.y));
     if (slot !== -1 && engine.state.tray.slots[slot]) {
       canvas.setPointerCapture?.(e.pointerId);
@@ -101,8 +138,14 @@ export function createGameController({ canvas, engine, balance, settings, showFp
     }
     const cell = cellAt(layout, p.x, p.y);
     if (cell === -1) return;
-    if (engine.state.grid.cells[cell].ingredient) engine.cookAt(cell);
-    else if (settings.tapToPlace && view.selectedSlot !== null && engine.placeIngredient(view.selectedSlot, cell)) view.selectedSlot = null;
+    if (engine.state.grid.cells[cell].ingredient) {
+      // A cell that is part of a recipe cooks at once; any other can be moved or held to discard.
+      const cookable = engine.state.matches.some((m) => m.cells.includes(cell));
+      if (!cookable && (hasUses('move') || hasUses('discard'))) {
+        canvas.setPointerCapture?.(e.pointerId);
+        view.drag = { fromCell: cell, pointerId: e.pointerId, startX: p.x, startY: p.y, x: p.x, y: p.y, active: false, downAt: performance.now() };
+      } else engine.cookAt(cell);
+    } else if (settings.tapToPlace && view.selectedSlot !== null && engine.placeIngredient(view.selectedSlot, cell)) view.selectedSlot = null;
   }
 
   function onPointerMove(e) {
@@ -112,6 +155,7 @@ export function createGameController({ canvas, engine, balance, settings, showFp
     d.x = p.x;
     d.y = p.y;
     if (!d.active && Math.hypot(p.x - d.startX, p.y - d.startY) > DRAG_START_DISTANCE) {
+      if (d.fromCell !== undefined && !hasUses('move')) return;
       d.active = true;
       view.selectedSlot = null;
     }
@@ -126,7 +170,10 @@ export function createGameController({ canvas, engine, balance, settings, showFp
     const d = view.drag;
     if (!d || d.pointerId !== e.pointerId) return;
     view.drag = null;
-    if (d.active) {
+    if (d.fromCell !== undefined) {
+      if (d.active && view.targetCell !== -1 && canAct()) engine.moveIngredient(d.fromCell, view.targetCell);
+      else if (!d.active) engine.cookAt(d.fromCell); // a short tap: "no recipe here" feedback
+    } else if (d.active) {
       const placed = view.targetCell !== -1 && canAct() && engine.placeIngredient(d.slot, view.targetCell);
       if (!placed) renderer.returnDragged(d.slot, d.x, d.y);
     } else if (settings.tapToPlace) {

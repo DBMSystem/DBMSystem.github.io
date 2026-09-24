@@ -4,6 +4,8 @@ import { calendarDays } from '../data/calendar.js';
 import { balance } from '../data/balance.js';
 import { xpToNext } from '../economy/progression.js';
 import { challengeTemplates } from '../data/challenges.js';
+import { utensilById } from '../data/utensils.js';
+import { decorById } from '../data/decor.js';
 
 export const SAVE_VERSION = 1;
 
@@ -72,7 +74,10 @@ export function validateSave(raw) {
   clean.cards = Object.fromEntries(
     Object.entries(isPlainObject(clean.cards) ? clean.cards : {})
       .filter(([id, entry]) => cardById[id] && isPlainObject(entry) && Number.isInteger(entry.count) && entry.count >= 1)
-      .map(([id, entry]) => [id, { count: entry.count, firstObtainedAt: isCount(entry.firstObtainedAt) ? entry.firstObtainedAt : 0, shiny: Boolean(entry.shiny) }]),
+      .map(([id, entry]) => [
+        id,
+        { count: entry.count, firstObtainedAt: isCount(entry.firstObtainedAt) ? entry.firstObtainedAt : 0, shiny: Boolean(entry.shiny) },
+      ]),
   );
   clean.recipes = Object.fromEntries(
     Object.entries(isPlainObject(clean.recipes) ? clean.recipes : {})
@@ -80,7 +85,10 @@ export function validateSave(raw) {
       .map(([id, entry]) => [id, { discovered: Boolean(entry.discovered), timesCooked: count(entry.timesCooked) }]),
   );
 
-  clean.cooldowns = { lastFreePackTime: isCount(clean.cooldowns.lastFreePackTime) ? clean.cooldowns.lastFreePackTime : 0, lastPassPackDate: dateOrNull(clean.cooldowns.lastPassPackDate) };
+  clean.cooldowns = {
+    lastFreePackTime: isCount(clean.cooldowns.lastFreePackTime) ? clean.cooldowns.lastFreePackTime : 0,
+    lastPassPackDate: dateOrNull(clean.cooldowns.lastPassPackDate),
+  };
   clean.dailyCaps = { date: dateOrNull(clean.dailyCaps.date), secondChances: count(clean.dailyCaps.secondChances), trials: count(clean.dailyCaps.trials) };
   const dayIndex = count(clean.calendar.dayIndex);
   clean.calendar = { dayIndex: dayIndex < calendarDays.length ? dayIndex : 0, lastClaimDate: dateOrNull(clean.calendar.lastClaimDate) };
@@ -92,16 +100,28 @@ export function validateSave(raw) {
     bonusClaimed: Boolean(clean.challenges.bonusClaimed),
     list: list
       .filter((c) => isPlainObject(c) && challengeIds.has(c.id) && Number.isInteger(c.target) && c.target > 0)
-      .map((c) => ({ id: c.id, target: c.target, recipeId: recipeById[c.recipeId] ? c.recipeId : null, progress: Math.min(count(c.progress), c.target), done: Boolean(c.done) })),
+      .map((c) => ({
+        id: c.id,
+        target: c.target,
+        recipeId: recipeById[c.recipeId] ? c.recipeId : null,
+        progress: Math.min(count(c.progress), c.target),
+        done: Boolean(c.done),
+      })),
   };
 
   const { story } = clean;
-  story.chapter = Number.isInteger(story.chapter) && story.chapter >= 1 ? story.chapter : 1;
+  story.chapter = Number.isInteger(story.chapter) ? Math.min(7, Math.max(1, story.chapter)) : 1;
   story.seenScenes = Array.isArray(story.seenScenes) ? story.seenScenes.filter((id) => typeof id === 'string') : [];
   story.bruleeMet = Boolean(story.bruleeMet);
 
-  clean.unlockedItems = Array.isArray(clean.unlockedItems) ? clean.unlockedItems.filter((id) => typeof id === 'string') : [];
-  clean.grantedRewards = Array.isArray(clean.grantedRewards) ? clean.grantedRewards.filter((id) => typeof id === 'string').slice(-balance.grantedRewardsKept) : [];
+  const known = (id) => Boolean(utensilById[id] || decorById[id]);
+  clean.unlockedItems = Array.isArray(clean.unlockedItems) ? [...new Set(clean.unlockedItems.filter(known))] : [];
+  clean.decor = Object.fromEntries(
+    Object.entries(isPlainObject(clean.decor) ? clean.decor : {}).filter(([slot, id]) => decorById[id]?.slot === slot && clean.unlockedItems.includes(id)),
+  );
+  clean.grantedRewards = Array.isArray(clean.grantedRewards)
+    ? clean.grantedRewards.filter((id) => typeof id === 'string').slice(-balance.grantedRewardsKept)
+    : [];
   clean.equippedPan = PANS.includes(clean.equippedPan) ? clean.equippedPan : 'default';
 
   const { settings } = clean;

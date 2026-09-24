@@ -1,6 +1,8 @@
 // Customers during a loop: arrival, orders and patience (spec 2.7, 3.3).
-export function orderFilterFor(type, balance) {
+export function orderFilterFor(type, balance, servedRecipes = []) {
   switch (type.orderFilter) {
+    case 'unserved':
+      return (r) => !servedRecipes.includes(r.id);
     case 'small':
       return (r) => r.ingredients.length <= balance.smallRecipeMaxSize;
     case 'cheap':
@@ -14,13 +16,13 @@ export function orderFilterFor(type, balance) {
   }
 }
 
-export function chooseOrder(rng, type, orderable, { ordersIssued, activeRecipeIds }, balance) {
+export function chooseOrder(rng, type, orderable, { ordersIssued, activeRecipeIds, servedRecipes = [] }, balance) {
   let options = orderable;
   if (ordersIssued < balance.smallOrdersFirst) {
     const smallest = Math.min(...orderable.map((r) => r.ingredients.length));
     options = orderable.filter((r) => r.ingredients.length === smallest);
   }
-  const filtered = options.filter(orderFilterFor(type, balance));
+  const filtered = options.filter(orderFilterFor(type, balance, servedRecipes));
   if (filtered.length > 0) options = filtered;
   const fresh = options.filter((r) => !activeRecipeIds.has(r.id));
   if (fresh.length > 0) options = fresh;

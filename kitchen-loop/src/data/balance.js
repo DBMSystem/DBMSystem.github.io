@@ -36,8 +36,12 @@ export const balance = {
   counterSaleMultiplier: 0.5,
   gridNearlyFullCells: 13,
 
-  // Surprises
+  // Surprises (spec 2.13) and special / legendary customers (spec 3.3)
   goldenIngredientChance: 0.01,
+  goldenPointsMultiplier: 2,
+  goldenCardBonus: 0.05, // per golden dish, on top of the end-of-loop card chance
+  maxSpecialCustomers: 1, // special or legendary at the same time
+  legendaryPerLoop: 1,
 
   // Second chance and ads
   secondChanceTime: 10,
@@ -102,6 +106,27 @@ export const balance = {
   loopModifiersEnabled: true,
   loopModifiersFromLevel: 4,
 
+  // Utensils in play (spec 3.1, 5.4)
+  specialIngredientChance: 0.05, // per generated ingredient, among the unlocked special ones
+  specialIngredientCaps: { clock: 2, spice: 2 }, // per loop
+  clockTime: 4,
+  truffleChance: 0.15, // once per loop at most
+  spiceMinRecipeSize: 3,
+  abilityUses: { move: 3, discard: 2, freeze: 1 }, // per loop
+  discardHold: 0.5,
+  freezeDuration: 5,
+
+  // Daily specialty (spec 2.12)
+  specialtyChoices: 3,
+  specialties: {
+    breakfast: { ingredient: 'egg', weight: 2, pointsBonus: 0.25 },
+    baconFest: { ingredient: 'bacon', weight: 2, recipe: 'triple_bacon', orderChance: 0.3 },
+    pipVisit: { interval: 15 },
+    crazyKitchen: { interval: 10 },
+    criticInRoom: { customer: 'critic', arrivalAt: 20 },
+    bruleeNight: { orderChance: 0.5, fragmentsPerOrder: 1 },
+  },
+
   // Save protections (spec 11.4)
   clockRollbackTolerance: 5 * 60,
   grantedRewardsKept: 50,
@@ -119,6 +144,7 @@ export const balance = {
   bruleeScoreThreshold: 1200,
   bruleeFromLoop: 3,
   bruleeGuaranteedLoop: 6,
+  chapterTriggers: { 5: { level: 12, utensils: 3 }, 6: { level: 16, secrets: 3 } },
 
   // Presentation
   maxParticles: 300,

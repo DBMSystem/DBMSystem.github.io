@@ -30,7 +30,21 @@ export function maskToCells(mask) {
   return cells;
 }
 
-function fitsPattern(grid, cells, recipe) {
+const same = (id, wanted, wildcard) => id === wanted || id === wildcard;
+
+// Whether `ids` (with `wildcard` standing for any one ingredient) make up the recipe's ingredients.
+function fillsWithWildcard(ids, recipe, wildcard) {
+  const need = {};
+  for (const id of recipe.ingredients) need[id] = (need[id] ?? 0) + 1;
+  for (const id of ids) {
+    if (id === wildcard) continue;
+    if (!need[id]) return false;
+    need[id] -= 1;
+  }
+  return true;
+}
+
+function fitsPattern(grid, cells, recipe, wildcard) {
   if (recipe.pattern === 'group') return true;
   const rows = new Set(cells.map((i) => rowOf(grid, i)));
   const cols = new Set(cells.map((i) => colOf(grid, i)));
@@ -39,13 +53,14 @@ function fitsPattern(grid, cells, recipe) {
   if (rows.size !== 1 && cols.size !== 1) return false;
   if (!recipe.ordered) return true;
   const sequence = cells.map((i) => grid.cells[i].ingredient); // cells are sorted along the line
-  const forward = sequence.every((id, k) => id === recipe.ingredients[k]);
-  const backward = sequence.every((id, k) => id === recipe.ingredients[recipe.ingredients.length - 1 - k]);
+  const forward = sequence.every((id, k) => same(id, recipe.ingredients[k], wildcard));
+  const backward = sequence.every((id, k) => same(id, recipe.ingredients[recipe.ingredients.length - 1 - k], wildcard));
   return forward || backward;
 }
 
 // All placements of `recipes` currently on the grid: [{ recipe, cells }].
-export function findMatches(grid, recipes, maxSize) {
+// `wildcard` (the Ancestral Spice, spec 3.1) replaces one ingredient of recipes with at least `wildcardMinSize` ingredients.
+export function findMatches(grid, recipes, maxSize, { wildcard = null, wildcardMinSize = 3 } = {}) {
   const byKey = new Map();
   for (const recipe of recipes) {
     const key = recipeKey(recipe.ingredients);
@@ -55,10 +70,17 @@ export function findMatches(grid, recipes, maxSize) {
   const matches = [];
   for (const mask of connectedSubsets(grid, maxSize)) {
     const cells = maskToCells(mask);
-    const candidates = byKey.get(recipeKey(cells.map((i) => grid.cells[i].ingredient)));
+    const ids = cells.map((i) => grid.cells[i].ingredient);
+    const wild = wildcard ? ids.filter((id) => id === wildcard).length : 0;
+    const candidates =
+      wild === 0
+        ? byKey.get(recipeKey(ids))
+        : wild < ids.length && ids.length >= wildcardMinSize
+          ? recipes.filter((r) => r.ingredients.length === ids.length && fillsWithWildcard(ids, r, wildcard))
+          : null;
     if (!candidates) continue;
     for (const recipe of candidates) {
-      if (fitsPattern(grid, cells, recipe)) matches.push({ recipe, cells });
+      if (fitsPattern(grid, cells, recipe, wildcard)) matches.push({ recipe, cells });
     }
   }
   return matches;

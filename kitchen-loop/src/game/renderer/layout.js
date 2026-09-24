@@ -6,10 +6,11 @@ const TRAY_SLOT = 72;
 const PREVIEW = 48;
 const HUD_HEIGHT = 44;
 const CUSTOMER_HEIGHT = 152; // speech bubble + character behind the counter
-const ABILITY_ROW = 0; // utensil abilities row, only when utensils exist (phase 4)
+const ABILITY_ROW = 34; // utensil abilities row, only when the player has abilities (spec 5.4)
 const PIP_HEIGHT = 74;
 
-export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, traySlots) {
+export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, traySlots, abilityCount = 0) {
+  const abilityRow = abilityCount > 0 ? ABILITY_ROW : 0;
   const scale = Math.min(cssWidth / LOGICAL_WIDTH, cssHeight / LOGICAL_MIN_HEIGHT);
   const width = cssWidth / scale;
   const height = cssHeight / scale;
@@ -18,7 +19,7 @@ export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, trayS
   const cell = CELL_SIZE[gridSize];
   const boardPad = 8;
   const boardSize = cell * gridSize + boardPad * 2;
-  const fixed = HUD_HEIGHT + CUSTOMER_HEIGHT + boardSize + ABILITY_ROW + TRAY_SLOT + PIP_HEIGHT;
+  const fixed = HUD_HEIGHT + CUSTOMER_HEIGHT + boardSize + abilityRow + TRAY_SLOT + PIP_HEIGHT;
   const gap = Math.max(4, (height - fixed) / 6);
 
   let y = 0;
@@ -40,8 +41,14 @@ export function computeLayout(cssWidth, cssHeight, gridSize, maxCustomers, trayS
   const grid = { x: board.x + boardPad, y: board.y + boardPad, cell, size: gridSize };
   y += boardSize + gap;
 
-  const abilities = { x: ox, y, w: LOGICAL_WIDTH, h: ABILITY_ROW };
-  y += ABILITY_ROW + gap;
+  const abilityW = abilityCount > 0 ? Math.min(110, (LOGICAL_WIDTH - 16) / abilityCount) : 0;
+  const abilities = Array.from({ length: abilityCount }, (_, i) => ({
+    x: ox + (LOGICAL_WIDTH - abilityW * abilityCount) / 2 + i * abilityW + 3,
+    y,
+    w: abilityW - 6,
+    h: abilityRow,
+  }));
+  if (abilityRow) y += abilityRow + gap;
 
   const gapX = 12;
   const trayWidth = traySlots * TRAY_SLOT + (traySlots - 1) * gapX + 16 + PREVIEW;

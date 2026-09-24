@@ -27,6 +27,7 @@ const FLYER_POOL = 32;
 const VFX_POOL = 12;
 const CELL_SPRITE = 64;
 const DISH_FLYER = 72;
+export const ABILITIES = ['move', 'discard', 'freeze'];
 
 export function createRenderer(canvas, engine, { balance, reducedMotion = false, showFps = false }) {
   const ctx = canvas.getContext('2d');
@@ -40,7 +41,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
 
   const view = {
     time: 0,
-    drag: null, // { slot, pointerId, startX, startY, x, y, active }
+    drag: null, // { slot | fromCell, pointerId, startX, startY, x, y, active, downAt }
     selectedSlot: null,
     targetCell: -1,
     returning: null, // { slot, x, y, at }
@@ -57,7 +58,8 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     secretAt: -10,
     secretRecipe: null,
     comboPopAt: -10,
-    toast: null, // { title, text, at }
+    toast: null, // { title, text, color, at }
+    holdProgress: 0, // 0–1 while holding an ingredient to discard it
     fps: 60,
   };
   const texts = Array.from({ length: TEXT_POOL }, () => ({ alive: false }));
@@ -87,7 +89,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     const dpr = window.devicePixelRatio || 1;
     canvas.width = Math.round(rect.width * dpr);
     canvas.height = Math.round(rect.height * dpr);
-    layout = computeLayout(rect.width, rect.height, state.grid.size, balance.maxCustomers, TRAY_SLOTS);
+    layout = computeLayout(rect.width, rect.height, state.grid.size, state.rules.maxCustomers, TRAY_SLOTS, abilityList().length);
     pixelScale = dpr * layout.scale;
     clearPlaceholderCache();
     drawBackground();
@@ -161,6 +163,8 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     g.fillText(t('hud.next'), p.x + p.w / 2, p.y + p.h + 14);
   }
 
+  const abilityList = () => ABILITIES.filter((a) => a in state.abilities);
+
   const customerHead = (slot) => {
     const r = layout.customers[slot];
     return { x: r.x + r.w / 2, y: r.y + r.h - 50 };
@@ -187,7 +191,9 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
           particles.burst('spark', mid.x, mid.y, 14);
           particles.burst('steam', mid.x, mid.y, 4);
           const label = e.multiplier > 1 ? `+${formatNumber(e.points)}  x${formatDecimal(e.multiplier)}` : `+${formatNumber(e.points)}`;
-          addText(label, mid.x, mid.y - 8, { color: COLORS.cream, size: 20 });
+          addText(label, mid.x, mid.y - 8, { color: e.golden ? COLORS.glow : COLORS.cream, size: e.golden ? 24 : 20 });
+          if (e.golden) addVfx('coins', mid.x, mid.y, 110, 0.7, { rise: 20 });
+          if (e.fragments > 0) addText(t('fx.fragments', { n: e.fragments }), mid.x, mid.y + 30, { color: COLORS.purple, size: 14 });
           if (e.chain >= 3) addVfx('sparkle', mid.x, mid.y, 110, 0.5, { spin: 0.4 });
           if (e.customerSlot !== null) {
             const c = customerHead(e.customerSlot);
@@ -240,7 +246,46 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
         }
         case 'customerArrived':
           view.customerSeen.set(e.customer.uid, view.time);
+          if (e.category !== 'common') {
+            showToast(
+              t(e.category === 'legendary' ? 'fx.legendaryArrived' : 'fx.specialArrived'),
+              t(`customer.${e.customer.typeId}`),
+              e.category === 'legendary' ? COLORS.glow : COLORS.purple,
+            );
+            const c = customerHead(e.customer.slot);
+            addVfx(e.category === 'legendary' ? 'rainbow' : 'sparkle', c.x, c.y, 120, 0.8, { spin: 0.3 });
+          }
           break;
+        case 'clock': {
+          const c = center(cellRect(layout, e.cell));
+          addVfx('sparkle', c.x, c.y, 80, 0.5);
+          addText(t('fx.clock', { s: e.seconds }), layout.hud.x + 120, layout.hud.y + 56, { color: COLORS.ok, size: 18 });
+          break;
+        }
+        case 'move':
+          view.cellFx.set(e.to, { type: 'place', at: view.time });
+          break;
+        case 'discard': {
+          const c = center(cellRect(layout, e.cell));
+          particles.burst('smoke', c.x, c.y, 8);
+          addText(t('fx.discard'), c.x, c.y - 10, { color: COLORS.muted, size: 13 });
+          break;
+        }
+        case 'freeze':
+          for (const r of layout.customers) particles.burst('spark', r.x + r.w / 2, r.y + 30, 6);
+          addText(t('fx.freeze'), center(layout.board).x, layout.board.y - 8, { color: '#81d4fa', size: 18 });
+          break;
+        case 'pipPlaced': {
+          view.cellFx.set(e.cell, { type: 'place', at: view.time });
+          const c = center(cellRect(layout, e.cell));
+          addVfx('sparkle', c.x, c.y, 70, 0.5);
+          break;
+        }
+        case 'crazyKitchen': {
+          const c = center(layout.preview);
+          addVfx('star', c.x, c.y, 70, 0.6, { spin: 0.3 });
+          break;
+        }
         case 'secondChance':
           for (const cell of e.cells) {
             const c = center(cellRect(layout, cell));
@@ -274,8 +319,8 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     }
   }
 
-  const showToast = (title, text) => {
-    view.toast = { title, text, at: view.time };
+  const showToast = (title, text, color = COLORS.ok) => {
+    view.toast = { title, text, color, at: view.time };
   };
 
   const setHint = (hint) => {
@@ -291,6 +336,38 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     ctx.scale(sx, sy);
     drawIngredient(ctx, id, -size / 2, -size, size, pixelScale);
     ctx.restore();
+  }
+
+  // Golden ingredient (spec 2.13): pulsing gold ring behind the sprite.
+  function drawGoldenGlow(x, y, size) {
+    const pulse = 0.5 + 0.5 * Math.sin(view.time * 5);
+    ctx.save();
+    ctx.shadowColor = COLORS.glow;
+    ctx.shadowBlur = 10 + 6 * pulse * motion;
+    kit.roundRect(x + 4, y + 4, size - 8, size - 8, 10, `rgba(255, 213, 79, ${0.25 + 0.2 * pulse})`, COLORS.glow, 2);
+    ctx.restore();
+  }
+
+  function drawAbilities() {
+    abilityList().forEach((ability, i) => {
+      const r = layout.abilities[i];
+      const left = state.abilities[ability];
+      const active = ability === 'freeze' && state.time < state.frozenUntil;
+      const usable = left > 0 && state.status === 'playing';
+      kit.roundRect(
+        r.x,
+        r.y + 2,
+        r.w,
+        r.h - 4,
+        10,
+        active ? 'rgba(129, 212, 250, 0.4)' : usable ? 'rgba(255, 248, 231, 0.14)' : 'rgba(255, 248, 231, 0.05)',
+        ability === 'freeze' && usable ? '#81d4fa' : null,
+        2,
+      );
+      ctx.globalAlpha = usable || active ? 1 : 0.45;
+      kit.text(t(`ability.${ability}`, { n: left }), r.x + r.w / 2, r.y + r.h / 2, { size: 11, weight: 800 });
+      ctx.globalAlpha = 1;
+    });
   }
 
   function drawHud() {
@@ -318,7 +395,12 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       ctx.arc(clockX, cy, 8, 0, Math.PI * 2);
       ctx.stroke();
     }
-    kit.text(state.timerRunning ? String(seconds) : '–', clockX + 14, cy, { size: Math.round(22 * pulse), weight: 800, align: 'left', color: low ? COLORS.bad : COLORS.cream });
+    kit.text(state.timerRunning ? String(seconds) : '–', clockX + 14, cy, {
+      size: Math.round(22 * pulse),
+      weight: 800,
+      align: 'left',
+      color: low ? COLORS.bad : COLORS.cream,
+    });
 
     kit.text(formatNumber(state.score), hud.x + hud.w / 2 + 34, cy, { size: 24, weight: 800 });
 
@@ -326,7 +408,12 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     if (chain >= 2) {
       const pop = 1 + 0.25 * (1 - ease((view.time - view.comboPopAt) / POP_TIME));
       const right = hud.x + hud.w - 12;
-      kit.text(t('hud.combo', { n: chain }), right, cy - 5, { size: Math.round(16 * pop), weight: 800, align: 'right', color: state.combo.fever.active ? COLORS.orange : COLORS.peach });
+      kit.text(t('hud.combo', { n: chain }), right, cy - 5, {
+        size: Math.round(16 * pop),
+        weight: 800,
+        align: 'right',
+        color: state.combo.fever.active ? COLORS.orange : COLORS.peach,
+      });
       const windowLeft = 1 - (state.time - state.combo.lastCookAt) / currentComboWindow(state.combo, balance);
       kit.roundRect(right - 70, cy + 8, 70, 5, 2, 'rgba(255, 248, 231, 0.2)');
       kit.roundRect(right - 70, cy + 8, 70 * Math.max(0, windowLeft), 5, 2, COLORS.peach);
@@ -360,7 +447,16 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       if (!cell.ingredient) {
         const free = cell.lockedUntil <= state.time;
         if (i === view.targetCell || (tapTarget && free)) {
-          kit.roundRect(r.x + 3, r.y + 3, r.w - 6, r.h - 6, 6, i === view.targetCell ? 'rgba(102, 187, 106, 0.35)' : 'rgba(102, 187, 106, 0.12)', i === view.targetCell ? COLORS.target : null, 3);
+          kit.roundRect(
+            r.x + 3,
+            r.y + 3,
+            r.w - 6,
+            r.h - 6,
+            6,
+            i === view.targetCell ? 'rgba(102, 187, 106, 0.35)' : 'rgba(102, 187, 106, 0.12)',
+            i === view.targetCell ? COLORS.target : null,
+            3,
+          );
         }
         continue;
       }
@@ -385,7 +481,17 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
         sy *= 1 + bounce;
         sx *= 1 - bounce / 2;
       }
+      if (view.drag?.active && view.drag.fromCell === i) continue;
+      if (cell.golden) drawGoldenGlow(r.x, r.y, r.w);
       drawIngredientAt(cell.ingredient, r.x + dx, r.y, r.w, sx, sy);
+      if (view.drag && !view.drag.active && view.drag.fromCell === i && view.holdProgress > 0) {
+        const c = center(r);
+        ctx.strokeStyle = COLORS.bad;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, r.w / 2 - 4, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * view.holdProgress);
+        ctx.stroke();
+      }
     }
   }
 
@@ -409,10 +515,12 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       const pop = 0.6 + 0.4 * ease((view.time - view.trayPopAt[i]) / POP_TIME);
       const bob = Math.sin(view.time * 2.5 + i * 1.3) * 2 * motion;
       const size = CELL_SPRITE * pop;
+      if (state.tray.golden[i]) drawGoldenGlow(x + (CELL_SPRITE - size) / 2, y + (CELL_SPRITE - size) + bob, size);
       drawIngredientAt(id, x + (CELL_SPRITE - size) / 2, y + (CELL_SPRITE - size) + bob, size);
       ctx.globalAlpha = 1;
     });
     if (state.tray.preview) {
+      if (state.tray.previewGolden) drawGoldenGlow(preview.x - 4, preview.y - 4, preview.w + 8);
       ctx.globalAlpha = 0.5;
       drawIngredient(ctx, state.tray.preview, preview.x, preview.y, preview.w, pixelScale);
       ctx.globalAlpha = 1;
@@ -469,7 +577,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
   function drawDrag() {
     const d = view.drag;
     if (!d?.active) return;
-    const id = state.tray.slots[d.slot];
+    const id = d.fromCell !== undefined ? state.grid.cells[d.fromCell].ingredient : state.tray.slots[d.slot];
     if (!id) return;
     ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
     ctx.beginPath();
@@ -518,7 +626,16 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     const k = (view.time % HINT_CYCLE) / HINT_CYCLE;
     if (hint.slot !== undefined && hint.cell !== undefined) {
       const target = cellRect(layout, hint.cell);
-      kit.roundRect(target.x + 3, target.y + 3, target.w - 6, target.h - 6, 6, `rgba(102, 187, 106, ${0.2 + 0.15 * Math.sin(view.time * 6)})`, COLORS.target, 3);
+      kit.roundRect(
+        target.x + 3,
+        target.y + 3,
+        target.w - 6,
+        target.h - 6,
+        6,
+        `rgba(102, 187, 106, ${0.2 + 0.15 * Math.sin(view.time * 6)})`,
+        COLORS.target,
+        3,
+      );
       const from = center(layout.tray[hint.slot]);
       const to = center(target);
       const m = ease(clamp01((k - 0.15) / 0.6));
@@ -583,8 +700,8 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       const pop = 0.7 + 0.3 * ease(k / 0.1);
       ctx.globalAlpha = 1 - clamp01((k - 0.8) / 0.2);
       const y = board.y + 34;
-      kit.roundRect(c.x - 150 * pop, y - 22, 300 * pop, 46, 14, 'rgba(59, 42, 32, 0.92)', COLORS.ok, 3);
-      kit.text(view.toast.title, c.x, y - 8, { size: 15, weight: 900, color: COLORS.ok });
+      kit.roundRect(c.x - 150 * pop, y - 22, 300 * pop, 46, 14, 'rgba(59, 42, 32, 0.92)', view.toast.color, 3);
+      kit.text(view.toast.title, c.x, y - 8, { size: 15, weight: 900, color: view.toast.color });
       kit.text(view.toast.text, c.x, y + 11, { size: 11, weight: 700, color: COLORS.cream });
       ctx.globalAlpha = 1;
     }
@@ -608,6 +725,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     characters.drawCustomers();
     drawGrid(paused);
     drawTray(paused);
+    if (!paused) drawAbilities();
     characters.drawPip(view.pipLine, { persistent: view.pipLine?.persistent });
     if (!paused) {
       drawVfx();
@@ -618,12 +736,18 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       drawDrag();
     }
     drawBanners();
-    if (showFps) kit.text(`${Math.round(view.fps)} FPS`, layout.ox + layout.hud.w - 4, layout.height - 8, { size: 10, weight: 600, color: 'rgba(255,248,231,0.5)', align: 'right' });
+    if (showFps)
+      kit.text(`${Math.round(view.fps)} FPS`, layout.ox + layout.hud.w - 4, layout.height - 8, {
+        size: 10,
+        weight: 600,
+        color: 'rgba(255,248,231,0.5)',
+        align: 'right',
+      });
   }
 
   function returnDragged(slot, x, y) {
     view.returning = { slot, x: x - CELL_SPRITE / 2, y: y - balance.dragLiftOffset - CELL_SPRITE / 2, at: view.time };
   }
 
-  return { resize, handleEvents, update, draw, view, getLayout: () => layout, returnDragged, setPipLine, setHint, showToast };
+  return { resize, handleEvents, update, draw, view, getLayout: () => layout, abilityList, returnDragged, setPipLine, setHint, showToast };
 }

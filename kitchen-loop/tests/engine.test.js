@@ -43,7 +43,7 @@ describe('engine — overflow', () => {
     engine.state.tray.slots[0] = noRecipe(15);
     placeFromTray(engine, 15);
     expect(engine.state.status).toBe('overflow');
-    expect(calls.overflow).toEqual([{ secondChanceAvailable: true }]);
+    expect(calls.overflow).toEqual([{ secondChanceAvailable: true, canDiscard: false }]);
   });
 
   it('full grid with a cookable recipe does not overflow', () => {
@@ -88,7 +88,7 @@ describe('engine — overflow', () => {
     engine.state.grid.cells[0].ingredient = null;
     engine.state.tray.slots[0] = noRecipe(0);
     placeFromTray(engine, 0);
-    expect(calls.overflow[1]).toEqual({ secondChanceAvailable: false });
+    expect(calls.overflow[1]).toEqual({ secondChanceAvailable: false, canDiscard: false });
     expect(engine.applySecondChance()).toBe(false);
     engine.finishOverflow();
     expect(calls.end).toHaveLength(1);

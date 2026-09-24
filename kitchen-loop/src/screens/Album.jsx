@@ -11,6 +11,7 @@ import { CardReveal } from '../components/CardReveal.jsx';
 import { Button } from '../components/Button.jsx';
 import { RecipeBook } from './RecipeBook.jsx';
 import { createRng } from '../utils/rng.js';
+import { unlockContext } from '../systems/unlocks.js';
 import { t, formatNumber } from '../utils/i18n.js';
 
 const TABS = ['cards', 'recipes', 'diary'];
@@ -170,7 +171,7 @@ export function Album({ services, onClose }) {
           ))}
         </div>
       )}
-      {tab === 'recipes' && <RecipeBook level={save.player.level} discovered={discoveredSecrets(save)} saved={save.recipes} embedded />}
+      {tab === 'recipes' && <RecipeBook level={save.player.level} unlocks={unlockContext(save)} discovered={discoveredSecrets(save)} saved={save.recipes} embedded />}
       {tab === 'diary' && (
         <div className="diary">
           <p className="hint">{t('album.diaryIntro')}</p>

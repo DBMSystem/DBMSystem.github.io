@@ -27,9 +27,11 @@ function RecipeRow({ recipe, locked, timesCooked = 0 }) {
 
 // Recipe book (spec 4.9 recipes tab): known recipes, what unlocks next and riddles for secrets.
 // `saved`: save.recipes (times cooked). `embedded`: inside the album, without title or close button.
-export function RecipeBook({ level, discovered, saved = {}, onClose, embedded = false }) {
-  const unlocked = new Set(getUnlockedContent(level).recipes);
+// `unlocks`: chapter and bought utensils, so utensil recipes show once their utensil is bought.
+export function RecipeBook({ level, unlocks = {}, discovered, saved = {}, onClose, embedded = false }) {
+  const unlocked = new Set(getUnlockedContent(level, unlocks).recipes);
   const visible = recipes.filter((r) => r.kind === 'visible');
+  const utensilRecipes = recipes.filter((r) => r.kind === 'utensil' && unlocked.has(r.id));
   const secrets = recipes.filter((r) => r.kind === 'secret' && unlocked.has(r.id));
   return (
     <div className="recipe-book">
@@ -42,6 +44,16 @@ export function RecipeBook({ level, discovered, saved = {}, onClose, embedded = 
           <RecipeRow key={r.id} recipe={r} locked={!unlocked.has(r.id)} timesCooked={saved[r.id]?.timesCooked} />
         ))}
       </ul>
+      {utensilRecipes.length > 0 && (
+        <>
+          <h3>{t('book.utensil')}</h3>
+          <ul>
+            {utensilRecipes.map((r) => (
+              <RecipeRow key={r.id} recipe={r} timesCooked={saved[r.id]?.timesCooked} />
+            ))}
+          </ul>
+        </>
+      )}
       {secrets.length > 0 && (
         <>
           <h3>{t('book.secrets')}</h3>

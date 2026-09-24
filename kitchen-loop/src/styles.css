@@ -50,16 +50,22 @@ body {
   padding-top: 0;
 }
 
-.menu-scene {
-  display: block;
+.menu-scene-wrap {
+  --scene-ratio: 1.1028; /* height / width of ui/menu_scene.jpg: decoration `y` is in % of the image height */
+  position: relative;
   width: calc(100% + 32px);
   max-width: 480px;
   max-height: 44dvh;
   margin: 0 -16px;
-  object-fit: cover;
-  object-position: top;
+  overflow: hidden;
   border-radius: 0 0 18px 18px;
   box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
+  container-type: inline-size;
+}
+
+.menu-scene {
+  display: block;
+  width: 100%;
 }
 
 .slogan {
@@ -1515,4 +1521,292 @@ body {
 .rarity-filter button.on {
   background: var(--peach);
   color: var(--ink);
+}
+
+/* ---------- Chapters and Brûlée ---------- */
+.chapter-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: auto 0 18px;
+  padding: 12px 26px;
+  border-radius: 16px;
+  background: rgba(30, 20, 14, 0.78);
+  box-shadow: 0 0 0 2px rgba(255, 204, 128, 0.4);
+  animation: chapter-in 0.6s ease-out both;
+}
+
+.chapter-card strong {
+  color: var(--peach);
+  font-size: 24px;
+}
+
+@keyframes chapter-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.95);
+  }
+}
+
+.story .speaker {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--orange);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.story-stage.right {
+  align-items: flex-end;
+}
+
+.story-stage.right .speech::after {
+  left: auto;
+  right: 70px;
+}
+
+.story.night::before {
+  filter: blur(1.5px) brightness(0.65) saturate(1.2);
+}
+
+/* ---------- Brûlée's warehouse ---------- */
+.warehouse {
+  gap: 12px;
+}
+
+.warehouse-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 420px;
+}
+
+.warehouse-head h2 {
+  margin: 0;
+  color: var(--peach);
+}
+
+.brulee-says {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.brulee-says img {
+  width: 92px;
+  height: 92px;
+  flex: none;
+}
+
+.brulee-says .speech {
+  flex: 1;
+  margin-bottom: 18px;
+}
+
+.shelves {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.shelf {
+  padding: 8px 8px 12px;
+  border-radius: 14px;
+  background: linear-gradient(rgba(58, 40, 29, 0.9), rgba(58, 40, 29, 0.9)) padding-box;
+  box-shadow: inset 0 -8px 0 #5d3a26;
+}
+
+.shelf h3 {
+  margin: 0 0 6px;
+  color: var(--peach);
+  font-size: 14px;
+}
+
+.shelf-row {
+  display: flex;
+  gap: 8px;
+}
+
+.shelf-row.wrap {
+  flex-wrap: wrap;
+}
+
+.shelf-row.wrap .item {
+  flex: 1 1 calc(50% - 8px);
+}
+
+.item {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px 6px;
+  border-radius: 12px;
+  background: rgba(255, 248, 231, 0.07);
+  text-align: center;
+}
+
+.item strong {
+  font-size: 13px;
+}
+
+.item .hint {
+  font-size: 11px;
+}
+
+.item .btn {
+  min-height: 40px;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+.item.owned {
+  background: rgba(102, 187, 106, 0.16);
+}
+
+.item.locked .medallion {
+  filter: grayscale(1) brightness(0.6);
+}
+
+.medallion {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px #a0694a, 0 3px 0 4px #5d3a26;
+}
+
+.item.owned .medallion {
+  box-shadow: 0 0 0 3px var(--green), 0 3px 0 4px #2e5e30;
+}
+
+.decor-img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.badge {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.badge.ok {
+  background: var(--green);
+  color: var(--ink);
+}
+
+.price {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 900;
+}
+
+.price img {
+  width: 18px;
+  height: 18px;
+}
+
+.price.euro {
+  padding: 2px 10px;
+  border-radius: 8px;
+  background: var(--purple);
+  color: var(--cream);
+}
+
+/* Decoration bought in the warehouse, placed on the menu's kitchen scene. */
+.decor-placed {
+  position: absolute;
+  transform: translate(-50%, 0);
+  pointer-events: none;
+  image-rendering: auto;
+  animation: decor-idle 3s ease-in-out infinite alternate;
+}
+
+@keyframes decor-idle {
+  to {
+    transform: translate(-50%, -2px);
+  }
+}
+
+/* ---------- Daily specialty ---------- */
+.specialty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 64px;
+  padding: 8px 12px;
+  border: 2px solid rgba(255, 204, 128, 0.35);
+  border-radius: 14px;
+  background: rgba(255, 248, 231, 0.08);
+  color: var(--cream);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.specialty:active {
+  transform: scale(0.98);
+}
+
+.specialty img {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  object-fit: contain;
+}
+
+.specialty strong {
+  display: block;
+  color: var(--peach);
+}
+
+.chapter-news {
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(255, 112, 67, 0.2);
+  box-shadow: 0 0 0 2px var(--orange);
+  color: var(--peach);
+  font-weight: 900;
+}
+
+.brulee-peek {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.brulee-peek img {
+  width: 84px;
+  height: 84px;
+  animation: peek 1.2s ease-out both;
+}
+
+@keyframes peek {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
 }

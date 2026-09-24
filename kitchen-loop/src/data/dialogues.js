@@ -1,8 +1,7 @@
 // Pip's lines by trigger (spec 3.6). Texts live in i18n/es.js under each `key`.
 // draft: true = written by Claude Code, pending Daniel's review (docs/CONTENT_REVIEW.md).
 // priority: shown even if Pip spoke less than pipLineInterval seconds ago.
-const lines = (prefix, count, draftFrom = Infinity) =>
-  Array.from({ length: count }, (_, i) => ({ key: `${prefix}.${i + 1}`, draft: i + 1 >= draftFrom }));
+const lines = (prefix, count, draftFrom = Infinity) => Array.from({ length: count }, (_, i) => ({ key: `${prefix}.${i + 1}`, draft: i + 1 >= draftFrom }));
 
 export const pipTriggers = {
   loopStart: { expression: 'happy', lines: lines('pip.loopStart', 4, 4) },
@@ -35,6 +34,66 @@ export const storyScenes = {
     { speaker: 'pip', expression: 'thumbs_up', key: 'story.premise.3', draft: true },
   ],
 };
+
+// Chapter scenes 2–7 and the finale (spec 6.3). speaker: 'pip' | 'brulee'. `night`: night kitchen backdrop.
+const scene = (id, bubbles, extra = {}) => ({
+  ...extra,
+  bubbles: bubbles.map(([speaker, expression], i) => ({ speaker, expression, key: `story.${id}.${i + 1}`, draft: true })),
+});
+export const chapterScenes = {
+  chapter2: scene('chapter2', [
+    ['pip', 'proud'],
+    ['pip', 'thinking'],
+    ['pip', 'embarrassed'],
+  ]),
+  chapter3: scene('chapter3', [
+    ['brulee', 'explaining'],
+    ['pip', 'scared'],
+    ['brulee', 'proud'],
+  ]),
+  chapter4: scene('chapter4', [
+    ['brulee', 'explaining'],
+    ['pip', 'worried'],
+    ['brulee', 'laughing'],
+  ]),
+  chapter5: scene(
+    'chapter5',
+    [
+      ['pip', 'thinking'],
+      ['brulee', 'explaining'],
+      ['brulee', 'surprised'],
+    ],
+    { night: true },
+  ),
+  chapter6: scene('chapter6', [
+    ['brulee', 'proud'],
+    ['pip', 'embarrassed'],
+    ['brulee', 'explaining'],
+  ]),
+  chapter7: scene(
+    'chapter7',
+    [
+      ['brulee', 'explaining'],
+      ['pip', 'crying'],
+      ['brulee', 'happy'],
+    ],
+    { night: true },
+  ),
+  finale: scene('finale', [
+    ['brulee', 'happy'],
+    ['brulee', 'proud'],
+    ['pip', 'crying'],
+  ]),
+};
+
+// Brûlée's comments in the warehouse (spec 8.7). The first two are the spec's own lines.
+export const warehouseLines = [
+  { key: 'warehouse.brulee.1', draft: false },
+  { key: 'warehouse.brulee.2', draft: false },
+  { key: 'warehouse.brulee.3', draft: true },
+  { key: 'warehouse.brulee.4', draft: true },
+  { key: 'warehouse.brulee.5', draft: true },
+];
 
 // Riddles for undiscovered secret recipes (spec 3.2). Never the ingredients.
 export const secretHints = {
