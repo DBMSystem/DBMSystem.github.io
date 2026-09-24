@@ -68,3 +68,14 @@ Todos en `src/data/i18n/es.js`; marcados `draft: true` en `src/data/dialogues.js
 - La Receta Perdida: Cuatro esquinas: una joya negra y el desayuno de siempre.
 
 **Textos de interfaz nuevos**: recetario (`book.*`), nombre (`name.*`), menú (`menu.recipes`, `menu.story`, `menu.tutorial`, `menu.greeting`), `story.skip`, `story.next`.
+
+## Clientes comunes con poses (asignación provisional, segundo lote)
+
+| Tipo | Personaje (mega pack) | Poses usadas |
+|---|---|---|
+| Cliente tranquilo | Abuela con rebeca beige | esperar: con bastón · contento: tejiendo |
+| Estudiante | Niño con sudadera azul y mochila | llegar: saludando · esperar: con piruleta · contento: brazos arriba |
+| Oficinista | Chica de pelo verde con delantal | esperar: con zumo · contento: signo de la paz |
+| Turista | Chico con gafas de sol y camisa de notas | esperar: con vinilo · contento: brazos arriba |
+
+Los retratos grandes anteriores (abuela, chaval con cascos, chica enfadada, alien brócoli) se conservan para clientes especiales de la Fase 4.

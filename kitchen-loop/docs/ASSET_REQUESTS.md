@@ -1,5 +1,7 @@
 # Recursos de arte que faltan (para generar con Meta AI)
 
+> **Estado tras el segundo lote**: ya están los fondos, el icono, pan/pescado/hierbas, Brûlée y los iconos de interfaz. Siguen faltando: la pose **enfadado** de los clientes, las **7 expresiones de Pip de cuerpo entero** (mismo traje blanco con delantal), **8 platos** de nuestras recetas y la hoja de **efectos** (no llegó).
+
 Reglas para todas las imágenes (así se recortan solas con `scripts/extract_sprites.py`):
 
 - **Fondo blanco liso**: sin degradado, sin cuadrícula, sin sombras en el suelo.
@@ -34,7 +36,8 @@ Personajes:
 Los actuales salen de iconos pequeños.
 > Pixel art food icons in the same style as the previous sheet: a loaf of bread, a whole fish, a bunch of fresh herbs (parsley/basil). 3 items in a row, large, white plain background, no text.
 
-### 4. Platos cocinados (13 recetas visibles)
+### 4. Platos cocinados (faltan 8)
+Ya tenemos: Pescado a las Hierbas, Tortilla de Champiñones, Ensalada de la Huerta (y Guiso Marinero y Brocheta para más adelante). Faltan: Bacon con huevo, Tostada con tomate, Tostada con tomate y queso, Tres tiras de bacon, Huevos revueltos con queso, Bocadillo de bacon, Patatas bravas, Tortilla de patatas, Pescado con patatas fritas, Desayuno completo.
 Para los bocadillos de pedido y el recetario. Mejor en 4 imágenes de 4 platos:
 > Pixel art cozy food, plated dishes on small plates, 4 dishes in a 2×2 grid, white plain background, no text: **[platos]**
 

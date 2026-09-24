@@ -4,12 +4,15 @@ import { getUnlockedContent, unlockLevelOf } from '../systems/unlocks.js';
 import { RecipeIngredients } from '../components/IngredientIcon.jsx';
 import { Button } from '../components/Button.jsx';
 import { t, formatNumber } from '../utils/i18n.js';
+import { spriteUrl } from '../assets/manifest.js';
 
 const patternKey = (recipe) => (recipe.pattern === 'line' && recipe.ordered ? 'book.pattern.lineOrdered' : `book.pattern.${recipe.pattern}`);
 
 function RecipeRow({ recipe, locked }) {
+  const dish = spriteUrl(`dishes/${recipe.id}`);
   return (
     <li className={`recipe-row ${locked ? 'locked' : ''}`}>
+      {dish && <img className="dish" src={dish} alt="" />}
       <div className="recipe-head">
         <strong>{t(`recipe.${recipe.id}`)}</strong>
         <span className="points">{t('book.points', { n: formatNumber(recipe.points) })}</span>

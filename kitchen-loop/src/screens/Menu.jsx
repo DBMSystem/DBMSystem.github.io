@@ -22,9 +22,11 @@ export function Menu({ saveManager, level, onLevelChange, onPlay, onRecipes, onS
       <img className="menu-scene" src={spriteUrl('ui/menu_scene')} alt={t('game.title')} />
       <p className="slogan">{t('game.slogan')}</p>
       <p className="greeting">{t('menu.greeting', { nombre: save.player.name })}</p>
-      <Button onClick={onPlay}>{t('menu.play')}</Button>
+      <Button icon="icon_cook" onClick={onPlay}>
+        {t('menu.play')}
+      </Button>
       <div className="menu-row">
-        <Button variant="secondary" onClick={onRecipes}>
+        <Button variant="secondary" icon="icon_recipe" onClick={onRecipes}>
           {t('menu.recipes')}
         </Button>
         <Button variant="secondary" onClick={onStory}>

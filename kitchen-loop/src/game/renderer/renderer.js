@@ -3,9 +3,10 @@ import { createParticles } from '../../systems/particles.js';
 import { currentComboWindow } from '../combo.js';
 import { TRAY_SLOTS } from '../engine.js';
 import { computeLayout, cellRect, center } from './layout.js';
-import { drawIngredient, clearPlaceholderCache } from './placeholders.js';
+import { drawIngredient, drawSmooth, clearPlaceholderCache } from './placeholders.js';
 import { createCanvasKit, COLORS, font, ease, clamp01 } from './canvasKit.js';
 import { createCharacters } from './characters.js';
+import { getSprite } from '../../assets/manifest.js';
 
 // View layer of a loop: draws the engine state on a canvas and turns engine events into feedback.
 // Presentation timings (s), all under the limits of spec 9.3.
@@ -23,6 +24,7 @@ const LOW_TIME = 10;
 const TEXT_POOL = 24;
 const FLYER_POOL = 32;
 const CELL_SPRITE = 64;
+const DISH_FLYER = 72;
 
 export function createRenderer(canvas, engine, { balance, reducedMotion = false, showFps = false }) {
   const ctx = canvas.getContext('2d');
@@ -97,6 +99,22 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     g.fillStyle = gradient;
     g.fillRect(0, 0, layout.width, layout.height);
 
+    // Kitchen behind the customers, bottom-aligned with the counter; darker at the top for the HUD.
+    const kitchen = getSprite('ui/kitchen_day');
+    if (kitchen) {
+      const first = layout.customers[0];
+      const bottom = first.y + first.h;
+      const h = Math.max(bottom, (layout.width * kitchen.height) / kitchen.width);
+      const w = (h * kitchen.width) / kitchen.height;
+      drawSmooth(g, kitchen, (layout.width - w) / 2, bottom - h, w, h);
+      const shade = g.createLinearGradient(0, 0, 0, bottom);
+      shade.addColorStop(0, 'rgba(43, 29, 20, 0.85)');
+      shade.addColorStop(0.35, 'rgba(43, 29, 20, 0.25)');
+      shade.addColorStop(1, 'rgba(43, 29, 20, 0.1)');
+      g.fillStyle = shade;
+      g.fillRect(0, 0, layout.width, bottom);
+    }
+
     const { board, grid } = layout;
     g.fillStyle = COLORS.boardEdge;
     g.beginPath();
@@ -151,10 +169,10 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
           const rects = e.cells.map((i) => cellRect(layout, i));
           const mid = rects.map(center).reduce((a, b) => ({ x: a.x + b.x / rects.length, y: a.y + b.y / rects.length }), { x: 0, y: 0 });
           const to = e.customerSlot !== null ? customerHead(e.customerSlot) : { x: layout.hud.x + layout.hud.w / 2, y: layout.hud.y + 22 };
-          e.cells.forEach((cell, k) => {
-            view.cellFx.delete(cell);
-            addFlyer(e.ingredients[k], center(rects[k]), to);
-          });
+          for (const cell of e.cells) view.cellFx.delete(cell);
+          // The cooked dish flies to the customer when there is art for it; otherwise its ingredients do.
+          if (getSprite(`dishes/${e.recipeId}`)) addFlyer(`dish:${e.recipeId}`, mid, to);
+          else e.cells.forEach((cell, k) => addFlyer(e.ingredients[k], center(rects[k]), to));
           particles.burst('spark', mid.x, mid.y, 14);
           particles.burst('steam', mid.x, mid.y, 4);
           const label = e.multiplier > 1 ? `+${formatNumber(e.points)}  x${formatDecimal(e.multiplier)}` : `+${formatNumber(e.points)}`;
@@ -260,15 +278,16 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     const pulse = low ? 1 + 0.08 * Math.sin(view.time * 10) : 1;
     const clockX = hud.x + 66;
     const cy = hud.y + 22;
-    ctx.strokeStyle = low ? COLORS.bad : COLORS.cream;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(clockX, cy, 8, 0, Math.PI * 2);
-    ctx.moveTo(clockX, cy);
-    ctx.lineTo(clockX, cy - 5);
-    ctx.moveTo(clockX, cy);
-    ctx.lineTo(clockX + 4, cy);
-    ctx.stroke();
+    const timerIcon = getSprite('ui/icon_timer');
+    const iconSize = 22 * pulse;
+    if (timerIcon) drawSmooth(ctx, timerIcon, clockX - iconSize / 2, cy - iconSize / 2, iconSize, iconSize);
+    else {
+      ctx.strokeStyle = low ? COLORS.bad : COLORS.cream;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(clockX, cy, 8, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     kit.text(state.timerRunning ? String(seconds) : '–', clockX + 14, cy, { size: Math.round(22 * pulse), weight: 800, align: 'left', color: low ? COLORS.bad : COLORS.cream });
 
     kit.text(formatNumber(state.score), hud.x + hud.w / 2 + 10, cy, { size: 24, weight: 800 });
@@ -380,8 +399,13 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       ctx.globalAlpha = 1 - k * 0.5;
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate(k * Math.PI * 2 * motion);
-      drawIngredient(ctx, f.id, -size / 2, -size / 2, size, pixelScale);
+      if (f.id.startsWith('dish:')) {
+        const dishSize = DISH_FLYER * (1 + 0.3 * Math.sin(k * Math.PI));
+        drawSmooth(ctx, getSprite(`dishes/${f.id.slice(5)}`), -dishSize / 2, -dishSize / 2, dishSize, dishSize);
+      } else {
+        ctx.rotate(k * Math.PI * 2 * motion);
+        drawIngredient(ctx, f.id, -size / 2, -size / 2, size, pixelScale);
+      }
       ctx.restore();
     }
     ctx.globalAlpha = 1;

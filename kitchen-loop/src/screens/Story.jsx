@@ -25,7 +25,7 @@ export function Story({ scene, playerName, onDone }) {
   };
 
   return (
-    <div className="screen story" onClick={advance} style={{ '--scene': `url(${spriteUrl('ui/menu_scene')})` }}>
+    <div className="screen story" onClick={advance} style={{ '--scene': `url(${spriteUrl('ui/kitchen_day')})` }}>
       <button type="button" className="skip" onClick={(e) => (e.stopPropagation(), onDone())}>
         {t('story.skip')}
       </button>

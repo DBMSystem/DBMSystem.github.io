@@ -378,7 +378,7 @@ body {
   position: absolute;
   inset: -12px;
   background: linear-gradient(rgba(20, 12, 8, 0.25), rgba(20, 12, 8, 0.8)), var(--scene) top center / cover;
-  filter: blur(5px) brightness(0.7);
+  filter: blur(1.5px) brightness(0.8);
 }
 
 .story > * {
@@ -627,4 +627,22 @@ body {
   border-radius: 50%;
   background: var(--peach);
   font-weight: 800;
+}
+
+.btn .btn-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 6px;
+  vertical-align: -6px;
+}
+
+.menu-row .btn .btn-icon {
+  display: block;
+  margin: 0 auto 2px;
+}
+
+.dish {
+  width: 72px;
+  height: 72px;
+  margin: -6px 0 -10px;
 }

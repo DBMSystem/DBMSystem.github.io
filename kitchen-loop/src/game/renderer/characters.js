@@ -18,6 +18,10 @@ const TYPE_SPEED = 45; // characters per second
 export function createCharacters({ ctx, kit, view, state, getLayout, getPixelScale, reducedMotion }) {
   const motion = reducedMotion ? 0 : 1;
 
+  // Customer sprite for a pose ('arrive' | 'idle' | 'happy'), falling back to idle and then to the portrait.
+  const poseKey = (typeId, pose) =>
+    [`customers/${typeId}_${pose}`, `customers/${typeId}_idle`, `customers/${typeId}`].find((key) => getSprite(key)) ?? `customers/${typeId}`;
+
   // Draws a character sprite standing on (cx, feetY), with squash (sy) and horizontal stretch (sx).
   function drawCharacter(spriteKey, fallbackColor, initial, cx, feetY, size, { sx = 1, sy = 1, alpha = 1, flip = false } = {}) {
     ctx.save();
@@ -106,7 +110,7 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
       const walkHop = since < ARRIVE_TIME ? Math.abs(Math.sin(since * 22)) * 6 * motion : 0;
       const feetY = slot.y + slot.h + 2 - walkHop;
       const breathe = 1 + Math.sin(view.time * 3 + phase) * 0.025 * motion;
-      drawCharacter(`customers/${type.id}`, type.color, t(`customer.${type.id}`).charAt(0), cx, feetY, CHARACTER, {
+      drawCharacter(poseKey(type.id, since < ARRIVE_TIME * 2 ? 'arrive' : 'idle'), type.color, t(`customer.${type.id}`).charAt(0), cx, feetY, CHARACTER, {
         sy: breathe,
         sx: 2 - breathe,
         alpha: arrive,
@@ -127,10 +131,10 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
       const feetY = slot.y + slot.h + 2;
       if (d.happy) {
         const hop = Math.sin(clamp01(k * 1.4) * Math.PI) * 18 * motion;
-        drawCharacter(`customers/${type.id}`, type.color, '', cx, feetY - hop, CHARACTER, { alpha: 1 - clamp01((k - 0.5) * 2), sy: 1 + 0.08 * Math.sin(k * 20) * motion });
+        drawCharacter(poseKey(type.id, 'happy'), type.color, '', cx, feetY - hop, CHARACTER, { alpha: 1 - clamp01((k - 0.5) * 2), sy: 1 + 0.08 * Math.sin(k * 20) * motion });
       } else {
         const shake = k < 0.4 ? Math.sin(view.time * 50) * 3 * motion : 0;
-        drawCharacter(`customers/${type.id}`, type.color, '', cx + shake + ease((k - 0.4) / 0.6) * 60, feetY, CHARACTER, { alpha: 1 - clamp01((k - 0.4) / 0.6), flip: k > 0.4 });
+        drawCharacter(poseKey(type.id, 'idle'), type.color, '', cx + shake + ease((k - 0.4) / 0.6) * 60, feetY, CHARACTER, { alpha: 1 - clamp01((k - 0.4) / 0.6), flip: k > 0.4 });
       }
     }
     view.departures = view.departures.filter((d) => view.time - d.at < LEAVE_TIME);

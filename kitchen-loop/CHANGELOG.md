@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1 — Segundo lote de arte
+
+- Cocina de fondo detrás de los clientes y en las escenas de historia.
+- Clientes comunes con poses (llegar, esperar, contento).
+- Pan, pescado y hierbas HD; platos cocinados que vuelan al cliente y aparecen en el recetario.
+- Nuevo icono oficial (sartén con cartas) como favicon e iconos de la app.
+- Iconos de reloj, recetario, sartén y anuncio en el HUD y los botones.
+- Brûlée (7 expresiones), fondo nocturno e iconos de moneda y rareza recortados para fases posteriores.
+
 ## 0.2.0 — Historia, tutorial, recetario y personajes animados (feedback de Daniel)
 
 - Primera sesión con historia: Pip se presenta, pide el nombre y cuenta la premisa (escenas saltables, texto a máquina).

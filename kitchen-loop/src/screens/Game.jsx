@@ -112,7 +112,7 @@ export function Game({ level, tutorial = false, saveManager, adManager, onEnd, o
           <div className="panel">
             <h2>{t('pause.title')}</h2>
             <Button onClick={() => setPaused(false)}>{t('pause.resume')}</Button>
-            <Button variant="secondary" onClick={() => setShowRecipes(true)}>
+            <Button variant="secondary" icon="icon_recipe" onClick={() => setShowRecipes(true)}>
               {t('pause.recipes')}
             </Button>
             <Button variant="secondary" onClick={() => setAttempt((n) => n + 1)}>
@@ -134,7 +134,7 @@ export function Game({ level, tutorial = false, saveManager, adManager, onEnd, o
             <h2>{t('overflow.title')}</h2>
             {offerSecondChance ? (
               <>
-                <Button variant="ad" disabled={!adReady || adBusy} onClick={watchSecondChance}>
+                <Button variant="ad" icon="icon_ad" disabled={!adReady || adBusy} onClick={watchSecondChance}>
                   {adReady ? t('overflow.secondChance') : t('ad.unavailable')}
                 </Button>
                 <p className="hint small">

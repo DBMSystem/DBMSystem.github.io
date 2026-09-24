@@ -163,3 +163,28 @@ Daniel pidió contexto, historia, tutorial, un menú de combinaciones, pedidos c
 - Pip usa las 8 expresiones disponibles; las otras 7 de la sección 3.4 están pedidas.
 - Los consejos que Pip da una sola vez se guardan en `story.seenScenes` (`tip.counterSale`).
 - La línea "Fase actual" de `CLAUDE.md` sigue sin tocar: la actualiza Daniel.
+
+---
+
+## 9. Segundo lote de arte (Meta AI) — "úsalos con libertad de diseño"
+
+Originales en `assets/ref/originals/17–20`. Recortes con `scripts/extract_sprites.py`.
+
+| Recurso | Uso |
+|---|---|
+| Fondo de cocina de día | Detrás de los clientes en la partida (con el mostrador delante) y fondo de las escenas de historia (ya no aparecen dos Pip). |
+| Fondo de cocina de noche | Guardado para el tema Cocina Nocturna del Pase (Fase 5). |
+| Icono con sartén y cartas holográficas | Nuevo `assets/ref/icon_final.png` por indicación de Daniel ("ICONO OFICIAL"); el anterior pasa a `icon_final_v1.png`. Favicon e iconos de la app sobre un cuadrado crema. |
+| Pan, pescado y hierbas HD | Sustituyen a los iconos pequeños del UI kit. Huevo, bacon y queso HD no se usan: el huevo frito y el bacon en tiras de la primera hoja cuadran mejor con los platos y con el resto de ingredientes. |
+| 4 clientes × 3 poses | Clientes comunes con poses: llegar (solo el estudiante), esperar y contento al ser servidos. Asignación en `CONTENT_REVIEW.md`. Los retratos detallados anteriores quedan para clientes especiales. |
+| Platos | Solo 5 de los 15 corresponden a recetas del juego: Pescado a las Hierbas, Tortilla de Champiñones, Guiso Marinero, Ensalada de la Huerta, Brocheta de la Huerta. Cuando existe el plato, es el plato lo que vuela al cliente al cocinar y aparece en el recetario. |
+| Brûlée (hoja de 7 expresiones grande) | Recortado para la Fase 4 (capítulo 3). No aparece antes para respetar la historia (sección 3.5). |
+| Iconos de interfaz | Reloj en el HUD; recetario, sartén y anuncio en los botones. Moneda, rara y legendaria, para las Fases 2 y 5. |
+
+**No usado, y por qué:**
+- **Icono "LIFE" (corazón)**: la sección 17 prohíbe vidas.
+- **Las 7 expresiones nuevas de Pip y las 7 de Brûlée del mega pack**: son bustos con otra ropa (Pip con chaqueta azul), no cuadran con el Pip de cuerpo entero que ya usamos.
+- **Primera columna de clientes del mega pack**: en tres de las cuatro filas la primera pose es otro personaje (otra chica, otro chico con cascos, otra ropa de la abuela).
+- **10 platos que no son recetas del juego** (ramen, filete, sushi, tortitas, croissant…).
+- **`vfx_sheet.png`** (efectos): el texto lo menciona, pero la imagen no ha llegado.
+- Las ideas de efectos del texto de Meta AI (humo al fallar, sartén en llamas con el tiempo crítico, pausa del juego en la legendaria) quedan como propuestas para la Fase 3; las cartas "Seta Dorada" no existen en la especificación (la legendaria es la Trufa Dorada).
