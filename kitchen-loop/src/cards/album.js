@@ -18,7 +18,11 @@ export function discoveriesFor(result) {
       (u.type === 'serve' && result.servedTypes.includes(u.customer)) ||
       (u.type === 'cookInLoop' && (result.cookedCounts[u.recipe] ?? 0) >= u.times) ||
       (u.type === 'emptyGridAtEnd' && result.emptyGridAtEnd) ||
-      (u.type === 'feverInLoop' && result.feverCount >= u.times);
+      (u.type === 'feverInLoop' && result.feverCount >= u.times) ||
+      (u.type === 'comboInLoop' && result.bestCombo >= u.times) ||
+      (u.type === 'perfectInLoop' && (result.perfectCount ?? 0) >= u.times) ||
+      (u.type === 'scoreInLoop' && result.score >= u.points) ||
+      (u.type === 'noLossLoop' && result.endReason === 'time' && result.customersLost === 0 && result.ordersServed >= u.orders);
     if (ok) earned.push(card.id);
   }
   return earned;

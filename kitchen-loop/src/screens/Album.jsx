@@ -1,5 +1,5 @@
 import { useMemo, useReducer, useState } from 'react';
-import { cards, cardById } from '../data/cards.js';
+import { cards, cardById, RARITIES } from '../data/cards.js';
 import { balance } from '../data/balance.js';
 import { albumProgress } from '../cards/album.js';
 import { openPack } from '../cards/packs.js';
@@ -63,6 +63,7 @@ function CardDetail({ cardId, save, onCraft, onShiny, onClose }) {
 export function Album({ services, onClose }) {
   const { saveManager, adManager, audio, haptics } = services;
   const [tab, setTab] = useState('cards');
+  const [rarity, setRarity] = useState('all');
   const [detail, setDetail] = useState(null);
   const [opening, setOpening] = useState(null);
   const [reveal, setReveal] = useState(null);
@@ -150,8 +151,21 @@ export function Album({ services, onClose }) {
       </div>
 
       {tab === 'cards' && (
+        <div className="rarity-filter">
+          {['all', ...RARITIES].map((id) => {
+            const group = id === 'all' ? cards : cards.filter((c) => c.rarity === id);
+            const owned = group.filter((c) => save.cards[c.id]).length;
+            return (
+              <button key={id} type="button" className={rarity === id ? 'on' : ''} aria-pressed={rarity === id} onClick={() => setRarity(id)}>
+                {t(id === 'all' ? 'album.filter.all' : `rarity.many.${id}`)} {owned}/{group.length}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      {tab === 'cards' && (
         <div className="card-grid">
-          {cards.map((card) => (
+          {cards.filter((c) => rarity === 'all' || c.rarity === rarity).map((card) => (
             <CardView key={card.id} cardId={card.id} state={cardState(save, card)} shiny={save.cards[card.id]?.shiny} onClick={() => setDetail(card.id)} />
           ))}
         </div>

@@ -1,12 +1,13 @@
-// Album (spec 4.2–4.4): 48 cards. Names, lore and hints live in i18n/es.js (`card.<id>.name|lore|hint`).
+// Album (spec 4.2–4.4): 120 cards (the spec's 48 launch cards, expanded: DECISIONES.md D-8). Names, lore and hints live in i18n/es.js (`card.<id>.name|lore|hint`).
 // source: 'pack' (packs, loop drops, calendar, crafting) | 'discovery' (only by doing something, `unlock`).
 // storyFragment: 1–12, the kitchen diary (spec 6.4). art: layers drawn on the card, bottom to top:
-// [spriteKey, { scale, x, y, rotate, filter, opacity }] with x/y in % of the art box from its centre.
+// [spriteKey, { scale, x, y, rotate, filter, opacity, backdrop }] with x/y in % of the art box from its centre;
+// backdrop layers (scenes) are left out of the silhouette of cards not owned yet.
 // draft: true = invented by Claude Code, pending review (docs/CONTENT_REVIEW.md).
 const L = (sprite, options = {}) => [sprite, options];
 
 export const cards = [
-  // Commons (20, packs)
+  // Commons (50, packs)
   { id: 'dubious_toast', rarity: 'common', source: 'pack', storyFragment: 1, art: [L('ingredients/bread', { filter: 'brightness(0.8) sepia(0.4)', rotate: -8 }), L('ingredients/tomato', { scale: 0.35, x: 22, y: -20, filter: 'grayscale(0.6)' })] },
   { id: 'burnt_egg', rarity: 'common', source: 'pack', storyFragment: 2, art: [L('ingredients/egg', { filter: 'brightness(0.35) sepia(0.8)' }), L('vfx/smoke', { scale: 0.55, x: 18, y: -22, opacity: 0.8 })] },
   { id: 'sad_tomato', rarity: 'common', source: 'pack', art: [L('ingredients/tomato', { filter: 'saturate(0.35) hue-rotate(-10deg)', rotate: 12 })] },
@@ -28,7 +29,37 @@ export const cards = [
   { id: 'dented_pan', rarity: 'common', source: 'pack', draft: true, art: [L('ui/icon_cook', { rotate: -12, filter: 'contrast(1.2)' })] },
   { id: 'kitchen_clock', rarity: 'common', source: 'pack', draft: true, art: [L('ui/icon_timer')] },
 
-  // Rares (10 packs + 4 discovery)
+  { id: 'brave_egg', rarity: 'common', source: 'pack', draft: true, art: [L('ingredients/egg', { rotate: -10 }), L('vfx/star', { scale: 0.35, x: 24, y: -24 })] },
+  { id: 'rolling_potato', rarity: 'common', source: 'pack', draft: true, art: [L('ingredients/potato', { rotate: 90, x: -10 })] },
+  { id: 'twin_tomatoes', rarity: 'common', source: 'pack', draft: true, art: [L('ingredients/tomato', { x: -16, scale: 0.7 }), L('ingredients/tomato', { x: 16, y: 8, scale: 0.7, rotate: 15 })] },
+  { id: 'cheese_moon', rarity: 'common', source: 'pack', draft: true, art: [L('ui/kitchen_night', { scale: 2.4, opacity: 0.5, backdrop: true }), L('ingredients/cheese', { scale: 0.65, filter: 'brightness(1.15)' })] },
+  { id: 'mushroom_umbrella', rarity: 'common', source: 'pack', draft: true, art: [L('ingredients/mushroom', { scale: 0.95 })] },
+  { id: 'onion_rings', rarity: 'common', source: 'pack', draft: true, art: [L('ingredients/onion', { scale: 0.45, x: -22, y: 8 }), L('ingredients/onion', { scale: 0.45, y: -12 }), L('ingredients/onion', { scale: 0.45, x: 22, y: 8 })] },
+  { id: 'herb_bouquet', rarity: 'common', source: 'pack', draft: true, art: [L('ingredients/herbs', { rotate: -20, x: -10 }), L('ingredients/herbs', { rotate: 20, x: 10, scale: 0.8 })] },
+  { id: 'jumping_fish', rarity: 'common', source: 'pack', draft: true, art: [L('ingredients/fish', { rotate: -35, y: -12 }), L('vfx/sparkle', { scale: 0.4, x: -24, y: 22, opacity: 0.7 })] },
+  { id: 'bacon_wave', rarity: 'common', source: 'pack', draft: true, art: [L('ingredients/bacon', { x: -12, y: -10, rotate: -10 }), L('ingredients/bacon', { x: 12, y: 12, rotate: 10 })] },
+  { id: 'perfect_toast', rarity: 'common', source: 'pack', draft: true, art: [L('dishes/tomato_toast')] },
+  { id: 'house_toast', rarity: 'common', source: 'pack', draft: true, art: [L('dishes/special_toast')] },
+  { id: 'sunday_scramble', rarity: 'common', source: 'pack', draft: true, art: [L('dishes/cheesy_scramble')] },
+  { id: 'forest_omelette', rarity: 'common', source: 'pack', draft: true, art: [L('dishes/mushroom_omelette')] },
+  { id: 'skewer_parade', rarity: 'common', source: 'pack', draft: true, art: [L('dishes/garden_skewer', { rotate: -12 })] },
+  { id: 'sailor_lunch', rarity: 'common', source: 'pack', draft: true, art: [L('dishes/herb_fish')] },
+  { id: 'warm_stew', rarity: 'common', source: 'pack', draft: true, art: [L('dishes/fish_stew', { filter: 'sepia(0.25) saturate(1.2)' }), L('vfx/smoke', { scale: 0.45, y: -30, opacity: 0.6 })] },
+  { id: 'the_classic', rarity: 'common', source: 'pack', draft: true, art: [L('dishes/bacon_egg')] },
+  { id: 'sandwich_tower', rarity: 'common', source: 'pack', draft: true, art: [L('dishes/bacon_sandwich', { rotate: 8, scale: 0.9 })] },
+  { id: 'pip_confused', rarity: 'common', source: 'pack', draft: true, art: [L('pip/confused')] },
+  { id: 'pip_winking', rarity: 'common', source: 'pack', draft: true, art: [L('pip/winking')] },
+  { id: 'pip_worried', rarity: 'common', source: 'pack', draft: true, art: [L('pip/worried')] },
+  { id: 'regular_customer', rarity: 'common', source: 'pack', draft: true, art: [L('customers/calm_happy')] },
+  { id: 'student_rush', rarity: 'common', source: 'pack', draft: true, art: [L('customers/student_arrive')] },
+  { id: 'coffee_break', rarity: 'common', source: 'pack', draft: true, art: [L('customers/office_idle')] },
+  { id: 'lost_tourist', rarity: 'common', source: 'pack', draft: true, art: [L('customers/tourist_idle')] },
+  { id: 'fallen_tip', rarity: 'common', source: 'pack', draft: true, art: [L('vfx/coins', { scale: 0.9 })] },
+  { id: 'steam_cloud', rarity: 'common', source: 'pack', draft: true, art: [L('vfx/smoke', { scale: 1.1 })] },
+  { id: 'fridge_note', rarity: 'common', source: 'pack', draft: true, art: [L('ui/icon_recipe', { rotate: 8, scale: 0.85 })] },
+  { id: 'morning_kitchen', rarity: 'common', source: 'pack', draft: true, art: [L('ui/kitchen_day', { scale: 2.4, backdrop: true }), L('ingredients/bread', { scale: 0.4, y: 22 })] },
+  { id: 'potato_family', rarity: 'common', source: 'pack', draft: true, art: [L('ingredients/potato', { x: -20, y: 6, scale: 0.7 }), L('ingredients/potato', { x: 16, y: -4, scale: 0.55 }), L('ingredients/potato', { x: 4, y: 22, scale: 0.35 })] },
+  // Rares (30 packs + 9 discovery)
   { id: 'angry_vegan', rarity: 'rare', source: 'pack', art: [L('customers/office')] },
   { id: 'bacon_dj', rarity: 'rare', source: 'pack', art: [L('customers/student'), L('ingredients/bacon', { scale: 0.4, x: -26, y: 26 })] },
   { id: 'samurai_tomato', rarity: 'rare', source: 'pack', art: [L('ingredients/tomato', { filter: 'saturate(1.4)' }), L('vfx/star', { scale: 0.45, x: 24, y: -24, opacity: 0.9 })] },
@@ -39,28 +70,70 @@ export const cards = [
   { id: 'champions_breakfast', rarity: 'rare', source: 'pack', draft: true, art: [L('dishes/full_breakfast')] },
   { id: 'batter_king', rarity: 'rare', source: 'pack', draft: true, storyFragment: 10, art: [L('dishes/fish_chips')] },
   { id: 'kitchen_in_love', rarity: 'rare', source: 'pack', draft: true, art: [L('dishes/bacon_egg', { scale: 0.8, y: 8 }), L('vfx/hearts', { scale: 0.7, y: -18, opacity: 0.9 })] },
+  { id: 'midnight_kitchen', rarity: 'rare', source: 'pack', draft: true, art: [L('ui/kitchen_night', { scale: 2.4, backdrop: true }), L('vfx/sparkle', { scale: 0.5, x: 22, y: -24, opacity: 0.8 })] },
+  { id: 'party_pip', rarity: 'rare', source: 'pack', draft: true, art: [L('vfx/sparkle', { scale: 1.1, opacity: 0.8 }), L('pip/celebrating', { scale: 0.85 })] },
+  { id: 'proud_pip', rarity: 'rare', source: 'pack', draft: true, art: [L('vfx/star', { scale: 0.9, opacity: 0.6 }), L('pip/proud', { scale: 0.85 })] },
+  { id: 'crybaby_pip', rarity: 'rare', source: 'pack', draft: true, art: [L('pip/crying', { scale: 0.9 }), L('ingredients/onion', { scale: 0.35, x: 26, y: 26 })] },
+  { id: 'travel_souvenir', rarity: 'rare', source: 'pack', draft: true, art: [L('customers/tourist_happy'), L('vfx/hearts', { scale: 0.5, x: 24, y: -26, opacity: 0.9 })] },
+  { id: 'happy_office', rarity: 'rare', source: 'pack', draft: true, art: [L('customers/office_happy')] },
+  { id: 'student_feast', rarity: 'rare', source: 'pack', draft: true, art: [L('customers/student_happy'), L('ingredients/bacon', { scale: 0.35, x: 26, y: 28 })] },
+  { id: 'quiet_afternoon', rarity: 'rare', source: 'pack', draft: true, art: [L('customers/calm_idle'), L('vfx/smoke', { scale: 0.35, x: -26, y: -26, opacity: 0.5 })] },
+  { id: 'sea_king', rarity: 'rare', source: 'pack', draft: true, art: [L('ingredients/fish', { scale: 0.8, y: 8 }), L('ui/icon_legendary', { scale: 0.4, y: -28 })] },
+  { id: 'sneaky_fondue', rarity: 'rare', source: 'pack', draft: true, art: [L('vfx/fire_pan', { scale: 0.8, y: 12, opacity: 0.8 }), L('ingredients/cheese', { scale: 0.55, y: -10 })] },
+  { id: 'truffle_hunter', rarity: 'rare', source: 'pack', draft: true, art: [L('ingredients/mushroom', { scale: 0.6, x: -18, y: 10 }), L('ingredients/truffle', { scale: 0.5, x: 18, y: -8 })] },
+  { id: 'rainbow_salad', rarity: 'rare', source: 'pack', draft: true, art: [L('vfx/rainbow', { scale: 1.15, opacity: 0.6 }), L('dishes/garden_salad', { scale: 0.75 })] },
+  { id: 'dawn_bravas', rarity: 'rare', source: 'pack', draft: true, art: [L('ui/kitchen_night', { scale: 2.4, opacity: 0.55, backdrop: true }), L('dishes/bravas', { scale: 0.75 })] },
+  { id: 'contest_omelette', rarity: 'rare', source: 'pack', draft: true, art: [L('dishes/spanish_omelette'), L('vfx/star', { scale: 0.4, x: 26, y: -26 })] },
+  { id: 'herb_wizard', rarity: 'rare', source: 'pack', draft: true, art: [L('vfx/sparkle', { scale: 1.1, opacity: 0.8 }), L('ingredients/herbs', { scale: 0.7 })] },
+  { id: 'egg_tower', rarity: 'rare', source: 'pack', draft: true, art: [L('ingredients/egg', { scale: 0.5, x: -16, y: 24 }), L('ingredients/egg', { scale: 0.5, x: 16, y: 24 }), L('ingredients/egg', { scale: 0.5, y: -8 })] },
+  { id: 'tomato_rain', rarity: 'rare', source: 'pack', draft: true, art: [L('ingredients/tomato', { scale: 0.4, x: -22, y: -22 }), L('ingredients/tomato', { scale: 0.4, x: 20, y: -14 }), L('ingredients/tomato', { scale: 0.4, x: -10, y: 16 }), L('ingredients/tomato', { scale: 0.4, x: 24, y: 24 })] },
+  { id: 'coin_shower', rarity: 'rare', source: 'pack', draft: true, art: [L('vfx/coins', { scale: 1.1 }), L('ui/icon_coin', { scale: 0.45 })] },
+  { id: 'love_letter', rarity: 'rare', source: 'pack', draft: true, art: [L('vfx/hearts', { scale: 1.1, opacity: 0.8 }), L('ui/icon_recipe', { scale: 0.5, rotate: -8 })] },
+  { id: 'last_second', rarity: 'rare', source: 'pack', draft: true, art: [L('vfx/fire_pan', { scale: 0.6, x: 22, y: 22, opacity: 0.9 }), L('ui/icon_timer', { scale: 0.7, x: -8, y: -8 })] },
   { id: 'bacon_crown', rarity: 'rare', source: 'discovery', unlock: { type: 'secret', recipe: 'bacon_crown' }, art: [L('ingredients/bacon', { rotate: -35, x: -22, scale: 0.6 }), L('ingredients/egg', { scale: 0.55 }), L('ingredients/bacon', { rotate: 35, x: 22, scale: 0.6 }), L('ui/icon_legendary', { scale: 0.45, y: -30 })] },
   { id: 'mystic_scramble', rarity: 'rare', source: 'discovery', unlock: { type: 'secret', recipe: 'mystic_scramble' }, art: [L('vfx/sparkle', { opacity: 0.7 }), L('dishes/cheesy_scramble', { scale: 0.7, filter: 'hue-rotate(200deg)' })] },
   { id: 'master_soup', rarity: 'rare', source: 'discovery', unlock: { type: 'secret', recipe: 'master_soup' }, art: [L('dishes/fish_stew')] },
   { id: 'happy_critic', rarity: 'rare', source: 'discovery', unlock: { type: 'serve', customer: 'critic' }, art: [L('customers/critic')] },
+  { id: 'mystery_guest', rarity: 'rare', source: 'discovery', draft: true, unlock: { type: 'serve', customer: 'mystery' }, art: [L('vfx/smoke', { scale: 1, opacity: 0.6 }), L('customers/mystery')] },
+  { id: 'collector_visit', rarity: 'rare', source: 'discovery', draft: true, unlock: { type: 'serve', customer: 'collector' }, art: [L('customers/office', { filter: 'hue-rotate(140deg)' }), L('ui/icon_rare', { scale: 0.4, x: 26, y: -26 })] },
+  { id: 'breakfast_rush', rarity: 'rare', source: 'discovery', draft: true, unlock: { type: 'cookInLoop', recipe: 'full_breakfast', times: 2 }, art: [L('dishes/full_breakfast', { scale: 0.6, x: -14, y: 10 }), L('dishes/full_breakfast', { scale: 0.6, x: 14, y: -10 })] },
+  { id: 'perfect_trio', rarity: 'rare', source: 'discovery', draft: true, unlock: { type: 'perfectInLoop', times: 3 }, art: [L('vfx/sparkle', { scale: 1.1 }), L('vfx/star', { scale: 0.4, x: -24, y: 10 }), L('vfx/star', { scale: 0.45, y: -18 }), L('vfx/star', { scale: 0.4, x: 24, y: 10 })] },
+  { id: 'untouchable', rarity: 'rare', source: 'discovery', draft: true, unlock: { type: 'noLossLoop', orders: 8 }, art: [L('vfx/hearts', { scale: 1, opacity: 0.7 }), L('pip/proud', { scale: 0.8 })] },
 
-  // Epics (5 packs + 5 discovery)
+  // Epics (14 packs + 8 discovery)
   { id: 'galactic_bread', rarity: 'epic', source: 'pack', art: [L('vfx/rainbow', { scale: 1.15 }), L('ingredients/bread', { scale: 0.65, rotate: 15 })] },
   { id: 'rooster_king', rarity: 'epic', source: 'pack', draft: true, storyFragment: 11, art: [L('customers/old_master')] },
   { id: 'rival_chef', rarity: 'epic', source: 'pack', draft: true, art: [L('customers/rival_chef')] },
   { id: 'pan_on_fire', rarity: 'epic', source: 'pack', draft: true, art: [L('vfx/fire_pan', { scale: 1.1 })] },
   { id: 'spice_whirl', rarity: 'epic', source: 'pack', draft: true, art: [L('vfx/sparkle', { scale: 1.15 }), L('ingredients/herbs', { scale: 0.55 })] },
+  { id: 'brulee_smile', rarity: 'epic', source: 'pack', draft: true, art: [L('vfx/sparkle', { scale: 1.1, opacity: 0.6 }), L('brulee/proud', { scale: 0.9 })] },
+  { id: 'pastry_jealousy', rarity: 'epic', source: 'pack', draft: true, art: [L('brulee/jealous', { scale: 0.9 })] },
+  { id: 'brulee_laugh', rarity: 'epic', source: 'pack', draft: true, art: [L('vfx/hearts', { scale: 0.9, opacity: 0.5 }), L('brulee/laughing', { scale: 0.9 })] },
+  { id: 'sweet_truce', rarity: 'epic', source: 'pack', draft: true, art: [L('vfx/hearts', { scale: 1, opacity: 0.6 }), L('pip/happy', { scale: 0.6, x: -22, y: 8 }), L('brulee/happy', { scale: 0.6, x: 22, y: 8 })] },
+  { id: 'golden_egg', rarity: 'epic', source: 'pack', draft: true, art: [L('vfx/sparkle', { scale: 1.15 }), L('ingredients/egg', { scale: 0.65, filter: 'sepia(1) saturate(3) brightness(1.15)' })] },
+  { id: 'fever_dream', rarity: 'epic', source: 'pack', draft: true, art: [L('vfx/rainbow', { scale: 1.15, opacity: 0.7 }), L('vfx/fire_pan', { scale: 0.8 })] },
+  { id: 'full_house', rarity: 'epic', source: 'pack', draft: true, art: [L('customers/calm_happy', { scale: 0.55, x: -26, y: 10 }), L('customers/office_happy', { scale: 0.55, x: 26, y: 10 }), L('customers/student_happy', { scale: 0.6, y: -6 })] },
+  { id: 'mystery_lid', rarity: 'epic', source: 'pack', draft: true, art: [L('vfx/smoke', { scale: 1, opacity: 0.7 }), L('ui/icon_rare', { scale: 0.7 })] },
+  { id: 'star_breakfast', rarity: 'epic', source: 'pack', draft: true, art: [L('vfx/rainbow', { scale: 1.1, opacity: 0.6 }), L('dishes/full_breakfast', { scale: 0.75 }), L('vfx/star', { scale: 0.4, x: 26, y: -26 })] },
   { id: 'triple_bacon_master', rarity: 'epic', source: 'discovery', unlock: { type: 'cookInLoop', recipe: 'triple_bacon', times: 3 }, art: [L('vfx/fire_pan', { scale: 0.9, y: 10, opacity: 0.8 }), L('dishes/triple_bacon', { scale: 0.7, y: -8 })] },
   { id: 'exploding_tomato', rarity: 'epic', source: 'discovery', unlock: { type: 'secret', recipe: 'exploding_tomato' }, art: [L('vfx/star', { filter: 'hue-rotate(160deg)' }), L('ingredients/tomato', { scale: 0.6 })] },
   { id: 'impossible_omelette', rarity: 'epic', source: 'discovery', unlock: { type: 'secret', recipe: 'impossible_omelette' }, art: [L('dishes/mushroom_omelette', { filter: 'hue-rotate(-20deg) saturate(1.3)' }), L('vfx/sparkle', { scale: 0.6, x: 24, y: -24 })] },
   { id: 'void_chef', rarity: 'epic', source: 'discovery', unlock: { type: 'emptyGridAtEnd' }, art: [L('vfx/smoke', { filter: 'invert(1) hue-rotate(180deg)', opacity: 0.6 }), L('pip/surprised', { scale: 0.8 })] },
   { id: 'double_fever', rarity: 'epic', source: 'discovery', unlock: { type: 'feverInLoop', times: 2 }, art: [L('vfx/fire_pan', { x: -18, scale: 0.7 }), L('vfx/fire_pan', { x: 18, y: 10, scale: 0.7 })] },
+  { id: 'combo_ten', rarity: 'epic', source: 'discovery', draft: true, unlock: { type: 'comboInLoop', times: 10 }, art: [L('vfx/star', { scale: 1.15 }), L('ui/icon_cook', { scale: 0.55 })] },
+  { id: 'rival_defeated', rarity: 'epic', source: 'discovery', draft: true, unlock: { type: 'serve', customer: 'rival_chef' }, art: [L('customers/rival_chef', { scale: 0.85, x: -10 }), L('pip/thumbs_up', { scale: 0.45, x: 26, y: 24 })] },
+  { id: 'high_score', rarity: 'epic', source: 'discovery', draft: true, unlock: { type: 'scoreInLoop', points: 3000 }, art: [L('vfx/coins', { scale: 1.1 }), L('ui/icon_legendary', { scale: 0.55 })] },
 
-  // Legendaries (2 packs + 2 discovery)
+  // Legendaries (4 packs + 5 discovery)
   { id: 'golden_truffle', rarity: 'legendary', source: 'pack', art: [L('vfx/sparkle', { scale: 1.2 }), L('ingredients/truffle', { scale: 0.6, filter: 'sepia(1) saturate(3) brightness(1.2)' })] },
   { id: 'first_recipe', rarity: 'legendary', source: 'pack', storyFragment: 12, art: [L('vfx/rainbow', { scale: 1.1, opacity: 0.8 }), L('ui/icon_recipe', { scale: 0.6, filter: 'sepia(0.8)' })] },
+  { id: 'dream_pan', rarity: 'legendary', source: 'pack', draft: true, art: [L('vfx/sparkle', { scale: 1.2 }), L('vfx/fire_pan', { scale: 0.85, filter: 'sepia(1) saturate(2.5) brightness(1.2)' })] },
+  { id: 'kitchen_heart', rarity: 'legendary', source: 'pack', draft: true, art: [L('ui/kitchen_day', { scale: 2.4, opacity: 0.8, backdrop: true }), L('vfx/hearts', { scale: 1 }), L('pip/happy', { scale: 0.5, y: 14 })] },
   { id: 'old_master_seal', rarity: 'legendary', source: 'discovery', unlock: { type: 'serve', customer: 'old_master' }, art: [L('vfx/coins', { opacity: 0.6 }), L('ui/icon_legendary', { scale: 0.7 })] },
   { id: 'lost_recipe', rarity: 'legendary', source: 'discovery', unlock: { type: 'secret', recipe: 'lost_recipe' }, art: [L('vfx/rainbow', { scale: 1.2 }), L('ingredients/truffle', { scale: 0.45, y: 10 }), L('ui/icon_recipe', { scale: 0.4, y: -26 })] },
+  { id: 'night_visitor_card', rarity: 'legendary', source: 'discovery', draft: true, unlock: { type: 'serve', customer: 'night_visitor' }, art: [L('ui/kitchen_night', { scale: 2.4, backdrop: true }), L('customers/mystery', { scale: 0.75, filter: 'brightness(0.85) hue-rotate(200deg)' }), L('vfx/sparkle', { scale: 0.5, x: 24, y: -24 })] },
+  { id: 'legendary_critic_card', rarity: 'legendary', source: 'discovery', draft: true, unlock: { type: 'serve', customer: 'legendary_critic' }, art: [L('vfx/sparkle', { scale: 1.2 }), L('customers/critic', { scale: 0.85 }), L('ui/icon_legendary', { scale: 0.4, y: -32 })] },
+  { id: 'triple_fever', rarity: 'legendary', source: 'discovery', draft: true, unlock: { type: 'feverInLoop', times: 3 }, art: [L('vfx/fire_pan', { scale: 0.6, x: -24, y: 12 }), L('vfx/fire_pan', { scale: 0.7, y: -12 }), L('vfx/fire_pan', { scale: 0.6, x: 24, y: 12 })] },
 ].map((card, index) => ({ number: index + 1, draft: false, storyFragment: null, unlock: null, ...card }));
 
 export const cardById = Object.fromEntries(cards.map((c) => [c.id, c]));

@@ -18,7 +18,7 @@
 | D-5 | Sobre diario del Pase | Se mantiene (Fase 5). |
 | D-6 | Idioma | Español; todo texto sale de `src/data/i18n/es.js` mediante `t()`. |
 | D-7 | Plugin de pagos | Se decide en la Fase 7. |
-| D-8 | Álbum | 48 cartas; 6–8 semanas (Fase 2). |
+| D-8 | Álbum | 48 cartas; 6–8 semanas (Fase 2). **Daniel decidió ampliarlo a 120 cartas** (sección 12). |
 | D-9 | Especialidad del día | Activada desde el nivel 4 y desactivable (`loopModifiersEnabled`). Se implementa en la Fase 4. |
 | D-10 | Segunda oportunidad solo en desbordamiento | Sí. |
 | D-11 | Recetas de lanzamiento | Las de la sección 3.2, sin cambios. |
@@ -231,9 +231,41 @@ Daniel pidió generar lo que faltaba respetando el diseño. Sus tres preguntas a
 - **Especialidad del día:** desbloqueada en la tabla desde el nivel 4, pero se implementa en la Fase 4. Al llegar a ese nivel se anuncia como "próximamente".
 - **Selector "Nivel de prueba":** eliminado. El nivel real sale de la XP. En desarrollo/playtest hay un botón "Subir nivel (prueba)".
 - **Balance ajustado con el simulador** (sección 4.10): ver `docs/ECONOMY_REPORT.md`. Los valores originales de la especificación están comentados en `balance.js`.
-- **Forma de la colección:** con ~10 cartas al día, comunes, raras y épicas se completan en una semana; las 2 legendarias marcan las 6–8 semanas. **Decisión pendiente de Daniel:** ampliar el álbum o dar menos cartas al día (detalles en el informe).
+- **Forma de la colección:** con ~10 cartas al día, comunes, raras y épicas se completan en una semana; las 2 legendarias marcan las 6–8 semanas. **Decisión de Daniel:** ampliar el álbum (sección 12).
 
 **Arte generado a partir de los sprites existentes** (`scripts/extract_sprites.py`, funciones `generate_*`):
 - 7 expresiones de Pip que faltaban (celebrando, asustado, orgulloso, confuso, llorando de emoción, guiño, avergonzado): son variantes de las 8 originales con confeti, gotas, lágrimas, rubor, "?" o destellos.
 - Platos Tostada Especial y Desayuno Completo.
 - Pose "contento" de la oficinista y de la abuela: su pose de espera con corazones.
+
+## 12. Encargos de Pip y álbum de 120 cartas
+
+**Botón de resultados:** "OTRA VEZ" pasa a **"SIGUIENTE SERVICIO"** (propuesta aceptada por Daniel). Mantiene la idea de bucle sin sugerir niveles que el juego no tiene.
+
+**Encargos de Pip** (petición de Daniel: "retos de combos a conseguir que den algún beneficio"). No es un sistema de misiones nuevo: son 3 retos diarios sobre lo que ya mide el loop.
+- 8 tipos (`src/data/challenges.js`): combo xN en un servicio, N pedidos en un servicio, N puntos en un servicio, un servicio sin perder clientes, cocinar una receta N veces en el día, N ¡En su punto! en el día, N fiebres en el día (desde nivel 2), N recetas en el día.
+- Los mismos 3 para todo el mundo en un día y un tramo de nivel (1–2, 3–5, 6–9, 10+), con semilla por fecha. Objetivos y recompensas en `balance.challenges`.
+- Recompensa por encargo: monedas + fragmentos (vía `inventory.js`). Por cumplir los tres: 1 sobre normal. No hay ventajas de pago ni anuncios ligados a los encargos.
+- En partida, un botón rápido en el HUD (icono de recetario) pausa y abre un panel con dos pestañas: **Encargos** (con el progreso en vivo) y **Recetas**. Al cumplir un encargo aparece el aviso "¡Encargo cumplido!" con sonido y vibración. El tutorial no cuenta.
+- Menú: tarjeta compacta con los encargos del día. Resultados: encargos cumplidos en ese servicio y el sobre de regalo.
+- Personalizables: las monedas de los encargos se gastarán en decoración y utensilios (Fase 4), así que no se añade una moneda nueva.
+
+**Álbum de 120 cartas** (Daniel: "elijo ampliar el álbum, a la gente le gusta coleccionar cartas"). La especificación pide que los datos admitan 120 cartas sin cambios de código; solo cambian los datos.
+
+| Rareza | De sobre | De descubrimiento | Total |
+|---|---|---|---|
+| Común | 50 | 0 | 50 |
+| Rara | 30 | 9 | 39 |
+| Épica | 14 | 8 | 22 |
+| Legendaria | 4 | 5 | 9 |
+| **Total** | **98** | **22** | **120** |
+
+- Las 72 cartas nuevas son `draft` (lista en `CONTENT_REVIEW.md`). Arte compuesto con los sprites existentes. Las escenas de cocina de fondo se marcan `backdrop` para no tapar la silueta de las cartas que aún no tienes.
+- Los 12 fragmentos del diario no cambian.
+- Cartas de descubrimiento nuevas: 4 condiciones sencillas sobre el resultado del loop (`comboInLoop`, `perfectInLoop`, `scoreInLoop`, `noLossLoop`), más clientes especiales y legendarios de la Fase 4 (Misterioso, Coleccionista, Chef rival, Visitante Nocturno, Crítico legendario). Como Crítico Satisfecho y Sello del Maestro Antiguo, **no se pueden conseguir hasta que esos clientes aparezcan en la Fase 4**.
+- Álbum: filtro por rareza con el recuento (p. ej. "legendarias 0/9"). En las cartas pequeñas el número va sin "Nº" para que quepan tres cifras.
+
+**Economía reajustada** (simulador con encargos incluidos, `docs/ECONOMY_REPORT.md`):
+- `newCardBias` vuelve al valor de la especificación (0,6). `legendaryPity` 60 (especificación: 40 con 48 cartas). `craftCost` 40 / 150 / 600 / 3000.
+- Recompensas de los encargos en 15–30 monedas para que el árbol de Brûlée siga en 4 semanas.
+- Resultado: jugador constante con anuncios → álbum de sobres en 6,7 semanas (objetivo 6–8) y árbol en 4 semanas (objetivo 4–6). Sin anuncios ni Pase: 13 semanas; ocasional: 4–6 meses.

@@ -7,7 +7,8 @@ import { t } from '../utils/i18n.js';
 export function CardArt({ card, silhouette = false }) {
   return (
     <div className="card-art">
-      {card.art.map(([sprite, o = {}], i) => (
+      {card.art.map(([sprite, o = {}], i) =>
+        silhouette && o.backdrop ? null : (
         <img
           key={i}
           src={spriteUrl(sprite)}
@@ -22,7 +23,8 @@ export function CardArt({ card, silhouette = false }) {
             opacity: silhouette ? 0.35 : o.opacity,
           }}
         />
-      ))}
+        ),
+      )}
     </div>
   );
 }
@@ -35,7 +37,7 @@ export function CardView({ cardId, state = 'owned', shiny = false, size = 'small
   const Tag = onClick ? 'button' : 'div';
   return (
     <Tag type={onClick ? 'button' : undefined} className={`card card-${card.rarity} card-${size} ${state} ${shiny ? 'shiny' : ''}`} onClick={onClick}>
-      <span className="card-number">{t('card.number', { n: card.number })}</span>
+      <span className="card-number">{t(size === 'large' ? 'card.number' : 'card.numberShort', { n: card.number })}</span>
       <span className="card-stars" aria-label={t(`rarity.${card.rarity}`)}>
         {stars}
       </span>

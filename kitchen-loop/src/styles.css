@@ -768,7 +768,7 @@ body {
 }
 
 .card-number {
-  left: 8px;
+  left: 7px;
   color: #8a735f;
 }
 
@@ -777,6 +777,10 @@ body {
   color: #f5b400;
   text-shadow: 0 1px 0 #3b2a20;
   letter-spacing: -1px;
+}
+
+.card-small .card-stars {
+  font-size: 9px;
 }
 
 .card-large .card-number,
@@ -1484,4 +1488,31 @@ body {
 .challenges-done .bonus {
   color: var(--peach);
   font-weight: 800;
+}
+
+.rarity-filter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.rarity-filter button {
+  min-height: 36px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 248, 231, 0.1);
+  color: var(--cream);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rarity-filter button.on {
+  background: var(--peach);
+  color: var(--ink);
 }

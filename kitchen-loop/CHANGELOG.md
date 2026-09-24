@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 — Encargos de Pip y álbum de 120 cartas
+
+- Encargos de Pip: 3 retos diarios (combo, pedidos, puntos, sin perder clientes, receta concreta, ¡En su punto!, fiebre, recetas) con monedas y fragmentos; sobre de regalo al cumplir los tres.
+- Botón rápido en el HUD que pausa y abre Encargos/Recetas; aviso "¡Encargo cumplido!" en partida.
+- Encargos en el menú y en resultados; el botón de resultados pasa a "SIGUIENTE SERVICIO".
+- Álbum ampliado de 48 a 120 cartas (72 nuevas en borrador) con filtro por rareza.
+- 4 nuevas condiciones de descubrimiento: combo x10, 3 ¡En su punto!, 3000 puntos y 8 pedidos sin perder clientes.
+- Economía reajustada con el simulador: álbum en 6,7 semanas y árbol en 4 para un jugador constante con anuncios.
+- 106 tests.
+
 ## 0.3.0 — Fase 2: progresión, colección y economía · sonido y vibración
 
 - XP y niveles reales (sin selector de prueba): desbloqueos desde la tabla, monedas por nivel y un sobre cada 3 niveles.
