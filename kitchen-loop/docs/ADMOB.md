@@ -42,7 +42,7 @@ Ningún anuncio se ofrece hasta haber jugado 3 loops.
 
 1. Crear la app Android "KITCHEN LOOP" en AdMob y vincularla a Google Play cuando esté publicada.
 2. Crear **3 bloques de anuncios recompensados**: `KL Sobre`, `KL Segunda oportunidad` y `KL Probar`. En cada uno, la recompensa puede quedarse en "1 recompensa" (el juego decide qué da).
-3. Copiar los tres IDs (`ca-app-pub-…/…`) en `src/data/ads.js` (`adPlacements`) y el ID de la app en el `AndroidManifest.xml` (lo preparo en la Fase 6; ahora está el ID de prueba de Google).
+3. Copiar los tres IDs (`ca-app-pub-…/…`) en `src/data/ads.js` (`adPlacements`) y el ID de la app en `android/app/src/main/AndroidManifest.xml` (`com.google.android.gms.ads.APPLICATION_ID`; ahora está el ID de prueba de Google).
 4. En **Privacidad y mensajes**, crear el mensaje de **RGPD** (Europa) y, si quieres, el de estados de EE. UU. Sin ese mensaje, el formulario de consentimiento no sale.
 5. `app-ads.txt` ya está en la raíz de la web con tu ID de editor: AdMob lo verificará al vincular la app.
 6. Opcional, más adelante: precios mínimos por bloque (empezar sin ellos y ajustar con datos) y mediación con otras redes.

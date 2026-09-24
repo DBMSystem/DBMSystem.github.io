@@ -58,8 +58,12 @@ jobs:
           KL_VERSION_CODE: ${{ github.run_number }}
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Name the APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk KitchenLoop.apk
+      - name: Name and check the APK
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk KitchenLoop.apk
+          unzip -l KitchenLoop.apk | grep -q 'assets/public/index.html'
+          unzip -l KitchenLoop.apk | grep -q 'assets/public/assets/'
+          ls -lh KitchenLoop.apk
 
       - uses: actions/upload-artifact@v4
         with:
