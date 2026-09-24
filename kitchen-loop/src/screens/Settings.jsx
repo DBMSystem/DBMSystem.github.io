@@ -3,8 +3,11 @@ import { Button } from '../components/Button.jsx';
 import { Toggle } from '../components/Toggle.jsx';
 import { t } from '../utils/i18n.js';
 import { useAds } from '../monetization/useAds.js';
+import { hasMaestroPass } from '../inventory/inventory.js';
+import { balance } from '../data/balance.js';
+import { DEV_TOOLS } from '../utils/platform.js';
 
-const VERSION = '0.5.2';
+const VERSION = '0.6.0';
 
 function Slider({ label, value, onChange, disabled, note }) {
   return (
@@ -22,11 +25,13 @@ function Slider({ label, value, onChange, disabled, note }) {
 // Settings (spec 8.8). Ad privacy options appear where Google's consent requires them (spec 7.7);
 // store purchases and the privacy policy arrive with monetisation (phases 5–7).
 export function Settings({ services, onClose, onRename, onTutorial, onStory, onDeleted }) {
-  const { saveManager, audio, adManager } = services;
+  const { saveManager, audio, adManager, shop } = services;
+  const [notice, setNotice] = useState(null);
   useAds(adManager);
   const [, refresh] = useReducer((n) => n + 1, 0);
   const [deleteStep, setDeleteStep] = useState(0);
-  const { settings } = saveManager.get();
+  const { settings, stats } = saveManager.get();
+  const showPaid = stats.loopsPlayed >= balance.adsMinLoops; // nothing about payments before 3 loops (spec 7.1)
 
   const set = async (key, value) => {
     await saveManager.update((s) => {
@@ -34,6 +39,18 @@ export function Settings({ services, onClose, onRename, onTutorial, onStory, onD
     });
     if (key === 'reducedMotion') document.body.classList.toggle('reduced-motion', value);
     if (key === 'sfx') audio.play('tap');
+    refresh();
+  };
+
+  const restore = async () => {
+    const { status } = await shop.restorePurchases();
+    setNotice(t(status === 'ok' ? 'shop.restored' : 'shop.unavailable'));
+    refresh();
+  };
+
+  const devRefund = async () => {
+    shop.billing.refundAll();
+    await shop.refreshEntitlements();
     refresh();
   };
 
@@ -53,6 +70,11 @@ export function Settings({ services, onClose, onRename, onTutorial, onStory, onD
       <Toggle label={t('settings.vibration')} value={settings.vibration} onChange={(v) => set('vibration', v)} />
       <Toggle label={t('settings.reducedMotion')} value={settings.reducedMotion} onChange={(v) => set('reducedMotion', v)} />
       <Toggle label={t('settings.tapToPlace')} value={settings.tapToPlace} onChange={(v) => set('tapToPlace', v)} />
+      {hasMaestroPass(saveManager.get()) ? (
+        <Toggle label={t('settings.nightTheme')} value={settings.nightTheme} onChange={(v) => set('nightTheme', v)} />
+      ) : (
+        showPaid && <Slider label={t('settings.nightTheme')} note={t('settings.nightThemeLocked')} />
+      )}
       <Button variant="secondary" onClick={onRename}>
         {t('settings.name')}
       </Button>
@@ -62,6 +84,17 @@ export function Settings({ services, onClose, onRename, onTutorial, onStory, onD
       <Button variant="secondary" onClick={onStory}>
         {t('settings.story')}
       </Button>
+      {showPaid && (
+        <Button variant="secondary" onClick={restore}>
+          {t('settings.restore')}
+        </Button>
+      )}
+      {notice && <p className="hint small">{notice}</p>}
+      {DEV_TOOLS && shop.billing.refundAll && (
+        <Button variant="secondary" onClick={devRefund}>
+          {t('settings.devRefund')}
+        </Button>
+      )}
       {adManager.privacyOptionsRequired() && (
         <Button variant="secondary" onClick={() => adManager.showPrivacyOptions()}>
           {t('settings.adPrivacy')}

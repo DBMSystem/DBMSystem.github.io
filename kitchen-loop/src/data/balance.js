@@ -137,6 +137,7 @@ export const balance = {
   tutorialLoopDuration: 30,
   pipLineInterval: 4,
   pipLineDuration: 3.2,
+  passLineChance: 0.3, // Maestro Pass: share of everyday lines that become special ones
   tutorialLineDuration: 5,
   dialogueHistory: 5,
   closeCallPatience: 0.15,

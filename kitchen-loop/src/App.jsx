@@ -27,15 +27,16 @@ export function App({ services }) {
   const dueAtStart = firstSession ? null : pendingScenes(saveManager.get())[0];
   const [screen, setScreen] = useState(firstSession ? 'intro' : dueAtStart ? 'scene' : 'menu');
   const [result, setResult] = useState(null);
-  const [run, setRun] = useState({ id: 0, tutorial: false, specialty: null });
+  const [run, setRun] = useState({ id: 0, tutorial: false, specialty: null, trial: null });
   const [picking, setPicking] = useState(false); // choosing the daily specialty before a loop
   const [scene, setScene] = useState(dueAtStart ? { id: dueAtStart, then: () => setScreen('menu') } : null); // { id, then }
   const [returnTo, setReturnTo] = useState(null); // where a replayed story or a rename goes back to
   const [, setVersion] = useState(0);
 
-  const startLoop = (tutorial, specialty = null) => {
+  // `trial`: a utensil or pan lent for this one service by a rewarded ad (spec 7.2); never saved.
+  const startLoop = (tutorial, specialty = null, trial = null) => {
     setPicking(false);
-    setRun((r) => ({ id: r.id + 1, tutorial, specialty }));
+    setRun((r) => ({ id: r.id + 1, tutorial, specialty, trial }));
     setScreen('game');
   };
   const play = (tutorial = false) => {
@@ -130,7 +131,15 @@ export function App({ services }) {
         );
       case 'game':
         return (
-          <Game key={run.id} tutorial={run.tutorial} specialty={run.specialty} services={services} onEnd={handleLoopEnd} onQuit={() => setScreen('menu')} />
+          <Game
+            key={run.id}
+            tutorial={run.tutorial}
+            specialty={run.specialty}
+            trial={run.trial}
+            services={services}
+            onEnd={handleLoopEnd}
+            onQuit={() => setScreen('menu')}
+          />
         );
       case 'results':
         return <Results result={result} playerName={playerName} services={services} onAgain={() => proceed(() => play(false))} onMenu={toMenu} />;
@@ -139,7 +148,7 @@ export function App({ services }) {
       case 'album':
         return <Album services={services} onClose={() => setScreen('menu')} />;
       case 'warehouse':
-        return <Warehouse services={services} onClose={toMenu} />;
+        return <Warehouse services={services} onClose={toMenu} onTrial={(trial) => startLoop(false, null, trial)} />;
       case 'settings':
         return (
           <Settings

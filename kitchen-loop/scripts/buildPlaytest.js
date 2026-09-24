@@ -1,7 +1,7 @@
 // Playtest build for GitHub Pages (kitchen-loop/play/) that keeps the previous build's files.
 // GitHub Pages caches pages for a few minutes: a page loaded just before a deploy keeps asking for the old
-// hashed sprites. Deleting them showed broken images, so the files of the published build (the one committed
-// in git) and of the last local build stay; the published ones come back from git if a local build removed them.
+// hashed sprites. Deleting them showed broken images, so the files of the published build (origin/main) and of
+// the last local build stay; the published ones come back from git if a local build removed them.
 // Usage: npm run build:playtest
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -28,16 +28,17 @@ function referenced() {
   return used;
 }
 
-// Files of the build committed in git (what GitHub Pages is serving), restored if they are missing.
+// Files of the build on origin/main (what GitHub Pages is serving), restored if they are missing.
+const PUBLISHED = 'origin/main';
 function published() {
-  const git = (path) => execSync(`git show HEAD:./play/${path}`, { cwd: join(OUT, '..'), encoding: 'buffer', stdio: ['ignore', 'pipe', 'ignore'] });
+  const git = (path) => execSync(`git show ${PUBLISHED}:./play/${path}`, { cwd: join(OUT, '..'), encoding: 'buffer', stdio: ['ignore', 'pipe', 'ignore'] });
   let index;
   try {
     index = git('index.html').toString();
   } catch {
     return new Set(); // nothing published yet
   }
-  const names = execSync('git ls-tree --name-only HEAD play/assets/', { cwd: join(OUT, '..'), encoding: 'utf8' })
+  const names = execSync(`git ls-tree --name-only ${PUBLISHED} play/assets/`, { cwd: join(OUT, '..'), encoding: 'utf8' })
     .split('\n')
     .filter(Boolean)
     .map((path) => path.replace('play/assets/', ''));

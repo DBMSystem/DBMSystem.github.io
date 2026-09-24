@@ -3,7 +3,8 @@ import { cards, cardById, RARITIES } from '../data/cards.js';
 import { balance } from '../data/balance.js';
 import { albumProgress } from '../cards/album.js';
 import { openPack } from '../cards/packs.js';
-import { craftCard, makeShiny, takePack } from '../inventory/inventory.js';
+import { craftCard, makeShiny, takePack, claimPassPack, hasMaestroPass } from '../inventory/inventory.js';
+import { calendarToday } from '../components/Calendar.jsx';
 import { discoveredSecrets } from '../economy/rewards.js';
 import { CardView } from '../components/CardView.jsx';
 import { PackOpening } from '../components/PackOpening.jsx';
@@ -87,6 +88,16 @@ export function Album({ services, onClose }) {
       },
     });
 
+  // The Maestro Pass's daily pack (spec 7.4, D-5): claimed once a day, then opened like any pack.
+  const passPackReady = hasMaestroPass(save) && save.cooldowns.lastPassPackDate !== calendarToday(save);
+  const claimPass = async () => {
+    let ok = false;
+    await saveManager.update((s) => {
+      ok = claimPassPack(s, calendarToday(s));
+    });
+    if (ok) startPack(false, true);
+  };
+
   const watchAdPack = async () => {
     await adManager.showRewarded('CARD_PACK', () => startPack(false, false));
     refresh();
@@ -114,7 +125,7 @@ export function Album({ services, onClose }) {
   const adReady = adManager.isRewardedAvailable('CARD_PACK');
 
   return (
-    <div className="screen scroll album">
+    <div className={`screen scroll album ${hasMaestroPass(save) ? 'golden' : ''}`}>
       <div className="album-head">
         <h2>{t('album.title')}</h2>
         <p className="album-progress">{t('album.progress', progress)}</p>
@@ -125,6 +136,7 @@ export function Album({ services, onClose }) {
       </div>
 
       <div className="pack-actions">
+        {passPackReady && <Button onClick={claimPass}>{t('album.passPack')}</Button>}
         {save.packs.standard > 0 && (
           <Button onClick={() => startPack(false, true)}>
             {t('album.openPack')} ({save.packs.standard})
@@ -168,12 +180,16 @@ export function Album({ services, onClose }) {
       )}
       {tab === 'cards' && (
         <div className="card-grid">
-          {cards.filter((c) => rarity === 'all' || c.rarity === rarity).map((card) => (
-            <CardView key={card.id} cardId={card.id} state={cardState(save, card)} shiny={save.cards[card.id]?.shiny} onClick={() => setDetail(card.id)} />
-          ))}
+          {cards
+            .filter((c) => rarity === 'all' || c.rarity === rarity)
+            .map((card) => (
+              <CardView key={card.id} cardId={card.id} state={cardState(save, card)} shiny={save.cards[card.id]?.shiny} onClick={() => setDetail(card.id)} />
+            ))}
         </div>
       )}
-      {tab === 'recipes' && <RecipeBook level={save.player.level} unlocks={unlockContext(save)} discovered={discoveredSecrets(save)} saved={save.recipes} embedded />}
+      {tab === 'recipes' && (
+        <RecipeBook level={save.player.level} unlocks={unlockContext(save)} discovered={discoveredSecrets(save)} saved={save.recipes} embedded />
+      )}
       {tab === 'diary' && (
         <div className="diary">
           <p className="hint">{t('album.diaryIntro')}</p>

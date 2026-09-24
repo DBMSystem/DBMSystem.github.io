@@ -124,3 +124,10 @@ Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challe
 - **Especialidades:** descripciones cortas (`specialty.*.desc`).
 - **Avisos en partida:** "¡Cliente especial!", "¡Cliente legendario!", "¡Paciencia congelada!" y "Fuera". En resultados: "Alguien te observa desde la puerta de la cocina…".
 - **Clientes sin arte propio** (provisional): Coleccionista = chico de los cascos, Crítico legendario = crítico de traje negro, Visitante de la Cocina Nocturna = alien brócoli.
+
+## Fase 5
+
+- **Frases del Pase de Pip** (`pip.pass.1`–`15`, draft): p. ej. "¡Con esta sartén dorada hasta yo parezco un chef de verdad!", "¿Oyes la lluvia? Es el mejor ruido para cocinar.", "Gracias por quedarte en la cocina, {nombre}."
+- **Pack de Inicio** (draft): Bacon Normal, Tomate Triste, Queso Perezoso, Cebolla Llorona y Pip Dormido.
+- **Nombres de sartenes:** Sartén de Pip (la inicial), Sartén Oxidada, Sartén Rosa de Pip, Sartén Negra y Sartén Dorada.
+- **Textos de tienda** (`shop.*`, `warehouse.*`, `pass.*`): "Pago pendiente: recibirás el contenido cuando se complete.", "La compra ha fallado. No se te ha cobrado nada."

@@ -19,6 +19,7 @@ export const pipTriggers = {
   endWeak: { expression: 'embarrassed', lines: lines('pip.endWeak', 2) },
   secret: { expression: 'surprised', priority: true, lines: lines('pip.secret', 1) },
   counterSaleTip: { expression: 'winking', priority: true, lines: lines('pip.counterSaleTip', 1, 1) },
+  pass: { expression: 'winking', lines: lines('pip.pass', 15, 1) }, // Maestro Pass: special lines (spec 7.4)
 };
 
 // Story scenes: at most 3 bubbles each (spec 6.3), skippable. All draft until D-1 is approved.

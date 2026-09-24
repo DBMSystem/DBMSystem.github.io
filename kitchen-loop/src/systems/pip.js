@@ -2,13 +2,17 @@ import { pipTriggers } from '../data/dialogues.js';
 import { createDialogue } from './dialogue.js';
 import { countOccupied } from '../game/grid.js';
 
+const PASS_TRIGGERS = ['loopStart', 'cook', 'combo'];
+
 // Turns loop events into Pip's lines (spec 3.6). `tips` = tip ids already seen (shown once ever).
-export function createPip({ engine, balance, rng, tips = new Set(), onTipSeen = () => {} }) {
+// `pass`: with the Maestro Pass, some everyday lines become one of its 15 special lines.
+export function createPip({ engine, balance, rng, tips = new Set(), onTipSeen = () => {}, pass = false }) {
   const dialogue = createDialogue({ triggers: pipTriggers, rng, minInterval: balance.pipLineInterval, historySize: balance.dialogueHistory });
   let line = null;
 
   const say = (trigger) => {
-    const next = dialogue.say(trigger, engine.state.time);
+    const special = pass && PASS_TRIGGERS.includes(trigger) && rng.next() < balance.passLineChance;
+    const next = (special && dialogue.say('pass', engine.state.time)) || dialogue.say(trigger, engine.state.time);
     if (next) line = { ...next, duration: balance.pipLineDuration };
   };
 

@@ -3,8 +3,13 @@
 import scales from './spriteScales.json';
 
 const files = import.meta.glob('./sprites/**/*.{png,jpg}', { eager: true, query: '?url', import: 'default' });
+// The cosmetic pans live in the project's assets/ folder (never modified): keys 'pans/<id>'.
+const pans = import.meta.glob('../../assets/pan_*.png', { eager: true, query: '?url', import: 'default' });
 
-export const manifest = Object.fromEntries(Object.entries(files).map(([path, url]) => [path.replace('./sprites/', '').replace(/\.\w+$/, ''), url]));
+export const manifest = Object.fromEntries([
+  ...Object.entries(files).map(([path, url]) => [path.replace('./sprites/', '').replace(/\.\w+$/, ''), url]),
+  ...Object.entries(pans).map(([path, url]) => [`pans/${path.match(/pan_(\w+)\.png$/)[1]}`, url]),
+]);
 
 const images = new Map();
 

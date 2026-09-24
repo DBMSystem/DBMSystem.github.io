@@ -23,7 +23,8 @@ export function createAdManager({ saveManager, provider: initialProvider = DEV_T
     if (save.stats.loopsPlayed < balance.adsMinLoops) return false;
     if (type === 'SECOND_CHANCE') return dailyCaps().secondChances < balance.secondChanceDailyCap;
     if (type === 'CARD_PACK') return freePackWait() === 0;
-    return false; // TRIAL arrives in phase 5
+    if (type === 'TRIAL') return dailyCaps().trials < balance.trialDailyCap;
+    return false;
   }
 
   // Seconds until the free pack is ready again (spec 7.2: cooldown freePackCooldown).
@@ -59,6 +60,7 @@ export function createAdManager({ saveManager, provider: initialProvider = DEV_T
     await saveManager.update((save) => {
       if (type === 'SECOND_CHANCE') save.dailyCaps = { ...dailyCaps(), secondChances: dailyCaps().secondChances + 1 };
       if (type === 'CARD_PACK') save.cooldowns.lastFreePackTime = now();
+      if (type === 'TRIAL') save.dailyCaps = { ...dailyCaps(), trials: dailyCaps().trials + 1 };
     });
     onReward();
     return { status };

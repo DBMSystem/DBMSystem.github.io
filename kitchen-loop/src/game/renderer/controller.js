@@ -23,11 +23,13 @@ export function createGameController({
   tutorial,
   pipOptions,
   challenges = [],
+  cosmetics = {},
+  trialName = null,
   onPauseRequest,
   onQuickRequest,
   onEvents,
 }) {
-  const renderer = createRenderer(canvas, engine, { balance, reducedMotion: settings.reducedMotion, showFps });
+  const renderer = createRenderer(canvas, engine, { balance, reducedMotion: settings.reducedMotion, showFps, cosmetics });
   const { view } = renderer;
   const pip = createPip({ engine, balance, rng: createRng(), ...pipOptions });
   const runner = tutorial ? createTutorialRunner(engine, tutorial, balance) : null;
@@ -197,6 +199,7 @@ export function createGameController({
   renderer.resize();
   if (runner) syncTutorial();
   else pip.say('loopStart');
+  if (trialName) renderer.showToast(t('trial.title'), trialName);
   requestAnimationFrame(frame);
 
   return {
