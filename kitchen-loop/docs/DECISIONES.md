@@ -388,3 +388,4 @@ Daniel señaló que las sartenes apenas se veían y mandó el cambio de diseño 
 - **Sitio en pantalla:** el fogón ocupa 58 px lógicos. Si en un móvil bajo (16:9) no caben todas las filas, el diseño entero se reduce un poco en lugar de salirse de la pantalla. En móviles alargados (20:9) no cambia nada.
 - **Menú:** la sartén equipada sustituye a la que hay dibujada en el alféizar de la cocina (la de Pip es la del dibujo).
 - Sigue siendo solo cosmética: nada del juego cambia con la sartén.
+- **Sartén de Pip (la inicial):** era el icono de cocinar, pequeño y visto de lado, distinto de las sartenes diseñadas, que se ven desde arriba. Ahora es la sartén negra de la referencia convertida en acero claro (`generate_default_pan`), en la misma perspectiva que las demás y distinta de la negra de pago. Los archivos de `assets/` no se tocan.

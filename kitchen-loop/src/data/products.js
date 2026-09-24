@@ -22,7 +22,7 @@ export const starterPack = {
 // Cosmetic pans (spec 7.5): only looks and cosmetic particles, never gameplay. `product`: what unlocks it.
 // The equipped pan sits on the stove during every service; `glow` is its colour on ¡En su punto! and in a fever.
 export const pans = [
-  { id: 'default', product: null, sprite: 'ui/icon_cook', particle: 'steam', glow: '#fff3d6' },
+  { id: 'default', product: null, sprite: 'pans/default', particle: 'steam', glow: '#fff3d6' },
   { id: 'rusty', product: 'kl_skin_rusty', sprite: 'pans/rusty', particle: 'fire', glow: '#ff7043' },
   { id: 'pink', product: 'kl_skin_pink', sprite: 'pans/pink', particle: 'pinkSpark', glow: '#f48fb1' },
   { id: 'black', product: 'kl_skin_black', sprite: 'pans/black', particle: 'smoke', glow: '#b0bec5' },
