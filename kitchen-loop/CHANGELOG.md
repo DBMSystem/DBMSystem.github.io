@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.2 — Partida completa simulada
+
+- Bot jugador (`scripts/bot.js`) y `scripts/simulatePlaythrough.js`. El bot se pasa el juego con el motor y la progresión reales, y el informe queda en `docs/PLAYTHROUGH_REPORT.md`.
+- Sin cambios de balance: las propuestas esperan la decisión de Daniel.
+
 ## 0.8.1 — Música y sonidos
 
 - Música provisional: tema del menú, tema de partida con capa extra en la fiebre y tema de la Cocina Nocturna con lluvia. Volumen en Ajustes.

@@ -9,6 +9,7 @@ npm test                # Vitest
 npm run build:playtest  # versión de pruebas en play/ (con anuncio simulado)
 npm run build           # versión de producción en dist/ (sin mocks)
 node scripts/simulateEconomy.js > docs/ECONOMY_REPORT.md   # simulación de economía
+node scripts/simulatePlaythrough.js skilled > docs/PLAYTHROUGH_REPORT.md   # un bot se pasa el juego (skilled|casual)
 python3 scripts/extract_sprites.py                        # regenerar sprites (Pillow + numpy)
 npm run build:android   # web + sincronizar el proyecto Android (Capacitor)
 python3 scripts/android_assets.py                         # icono y pantalla de inicio de Android
