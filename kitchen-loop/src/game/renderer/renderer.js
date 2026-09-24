@@ -28,8 +28,11 @@ const FLYER_POOL = 32;
 const VFX_POOL = 12;
 const CELL_SPRITE = 64;
 const DISH_FLYER = 72;
-const PAN_SIZE = 56;
-const PAN_TIME = 0.35;
+const PAN_DRAW = 84; // width of the pan on the stove
+const PAN_SIZZLE = 0.45; // s of sizzling after food lands
+const PAN_GLOW_TIME = 0.8;
+const STEAM_EVERY = 0.55;
+const FEVER_SPARK_EVERY = 0.18;
 const RAIN_DROPS = 36;
 export const ABILITIES = ['move', 'discard', 'freeze'];
 
@@ -66,7 +69,9 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     secretRecipe: null,
     comboPopAt: -10,
     toast: null, // { title, text, color, at }
-    pans: [], // { x, y, at } — the pan that receives a cooked recipe
+    panCookAt: -10, // when food last landed in the pan
+    nextSteamAt: 0,
+    nextFeverSparkAt: 0,
     holdProgress: 0, // 0–1 while holding an ingredient to discard it
     fps: 60,
   };
@@ -80,9 +85,10 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     Object.assign(slot, { alive: true, text, x, y, color, size, at: view.time, duration });
   }
 
-  function addFlyer(id, from, to) {
+  // `delay` and `duration` in seconds; a flyer waits unseen until its delay has passed.
+  function addFlyer(id, from, to, { delay = 0, duration = balance.cookDuration } = {}) {
     const slot = flyers.find((item) => !item.alive);
-    if (slot) Object.assign(slot, { alive: true, id, from, to, at: view.time });
+    if (slot) Object.assign(slot, { alive: true, id, from, to, at: view.time + delay, duration });
   }
 
   // Sprite effects (vfx sheet): pop in, drift, fade out. `spin` in turns over the effect's life.
@@ -193,14 +199,17 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
           const mid = rects.map(center).reduce((a, b) => ({ x: a.x + b.x / rects.length, y: a.y + b.y / rects.length }), { x: 0, y: 0 });
           const to = e.customerSlot !== null ? customerHead(e.customerSlot) : { x: layout.hud.x + layout.hud.w / 2, y: layout.hud.y + 22 };
           for (const cell of e.cells) view.cellFx.delete(cell);
-          // The cooked dish flies to the customer when there is art for it; otherwise its ingredients do.
-          if (getSprite(`dishes/${e.recipeId}`)) addFlyer(`dish:${e.recipeId}`, mid, to);
-          else e.cells.forEach((cell, k) => addFlyer(e.ingredients[k], center(rects[k]), to));
+          // Board → pan → customer (spec 7.5): the ingredients jump into the equipped pan, it sizzles, and the
+          // dish (or, without dish art, its ingredients) leaves the pan for the customer.
+          const half = balance.cookDuration / 2;
+          const panPos = layout.pan;
+          e.cells.forEach((cell, k) => addFlyer(e.ingredients[k], center(rects[k]), panPos, { duration: half }));
+          if (getSprite(`dishes/${e.recipeId}`)) addFlyer(`dish:${e.recipeId}`, panPos, to, { delay: half, duration: half });
+          else e.ingredients.forEach((id) => addFlyer(id, panPos, to, { delay: half, duration: half }));
+          view.panCookAt = view.time + half;
           particles.burst('spark', mid.x, mid.y, 14);
-          particles.burst('steam', mid.x, mid.y, 4);
-          // The ingredients jump into the equipped pan, which sizzles with its own cosmetic particles.
-          view.pans.push({ x: mid.x, y: mid.y, at: view.time });
-          particles.burst(pan.particle, mid.x, mid.y, 8);
+          particles.burst(pan.particle, panPos.x, panPos.y - 6, 12);
+          particles.burst('steam', panPos.x, panPos.y - 10, 4);
           const label = e.multiplier > 1 ? `+${formatNumber(e.points)}  x${formatDecimal(e.multiplier)}` : `+${formatNumber(e.points)}`;
           addText(label, mid.x, mid.y - 8, { color: e.golden ? COLORS.glow : COLORS.cream, size: e.golden ? 24 : 20 });
           if (e.golden) addVfx('coins', mid.x, mid.y, 110, 0.7, { rise: 20 });
@@ -314,7 +323,16 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     view.fps = view.fps * 0.95 + (dt > 0 ? 1 / dt : 60) * 0.05;
     particles.update(dt);
     for (const item of texts) if (item.alive && view.time - item.at > item.duration) item.alive = false;
-    for (const item of flyers) if (item.alive && view.time - item.at > balance.cookDuration) item.alive = false;
+    for (const item of flyers) if (item.alive && view.time - item.at > item.duration) item.alive = false;
+    // The pan at rest breathes a little steam; in a fever it keeps sizzling with its own particles.
+    if (view.time >= view.nextSteamAt) {
+      view.nextSteamAt = view.time + (reducedMotion ? STEAM_EVERY * 3 : STEAM_EVERY);
+      if (layout) particles.burst('steam', layout.pan.x + (Math.random() - 0.5) * 16, layout.pan.y - 12, 1);
+    }
+    if (state.combo.fever.active && view.time >= view.nextFeverSparkAt && layout) {
+      view.nextFeverSparkAt = view.time + FEVER_SPARK_EVERY;
+      particles.burst(pan.particle, layout.pan.x, layout.pan.y - 8, reducedMotion ? 1 : 3);
+    }
     for (const item of vfx) if (item.alive && view.time - item.at > item.duration) item.alive = false;
     if (view.returning && view.time - view.returning.at > RETURN_TIME) view.returning = null;
   }
@@ -542,7 +560,8 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
   function drawFlyers() {
     for (const f of flyers) {
       if (!f.alive) continue;
-      const k = ease((view.time - f.at) / balance.cookDuration);
+      if (view.time < f.at) continue;
+      const k = ease((view.time - f.at) / f.duration);
       const size = CELL_SPRITE * (1 - 0.6 * k);
       const x = f.from.x + (f.to.x - f.from.x) * k;
       const y = f.from.y + (f.to.y - f.from.y) * k - Math.sin(k * Math.PI) * 30;
@@ -561,18 +580,56 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     ctx.globalAlpha = 1;
   }
 
-  function drawPans() {
-    const sprite = getSprite(pan.sprite);
-    view.pans = view.pans.filter((p) => view.time - p.at < PAN_TIME);
-    if (!sprite) return;
-    for (const p of view.pans) {
-      const k = (view.time - p.at) / PAN_TIME;
-      const size = PAN_SIZE * (0.7 + 0.3 * ease(k / 0.3));
-      const shake = Math.sin(view.time * 60) * 1.5 * motion;
-      ctx.globalAlpha = 1 - clamp01((k - 0.6) / 0.4);
-      drawSmooth(ctx, sprite, p.x - size / 2 + shake, p.y - size / 2, size, size);
+  // The stove between the customers and the board, with the equipped pan always on it (spec 2.1, 7.5).
+  function drawStove() {
+    const { stove, pan: p } = layout;
+    const cooking = clamp01(1 - (view.time - view.panCookAt) / PAN_SIZZLE);
+    const fever = state.combo.fever.active;
+    const perfect = clamp01(1 - (view.time - view.perfectAt) / PAN_GLOW_TIME);
+    // Range top: a steel plate with two knobs and a burner ring.
+    const topW = 190;
+    const topY = stove.y + stove.h - 18;
+    kit.roundRect(p.x - topW / 2, topY, topW, 16, 6, '#4a4f55', '#2d3136', 2);
+    kit.roundRect(p.x - topW / 2 + 12, topY + 5, 7, 7, 3, '#c9ced4');
+    kit.roundRect(p.x + topW / 2 - 19, topY + 5, 7, 7, 3, '#c9ced4');
+    // Flame under the pan: small at rest, higher while cooking, big in a fever.
+    const flame = (fever ? 1 : 0.35 + 0.5 * cooking) * (1 + 0.15 * Math.sin(view.time * 20) * motion);
+    for (let i = -3; i <= 3; i++) {
+      const h = (10 + (3 - Math.abs(i)) * 3) * flame * (1 + 0.2 * Math.sin(view.time * 17 + i) * motion);
+      ctx.fillStyle = Math.abs(i) % 2 === 0 ? '#ff9f43' : '#ffd54f';
+      ctx.beginPath();
+      ctx.moveTo(p.x - 12 + i * 12 - 5, topY + 2);
+      ctx.lineTo(p.x - 12 + i * 12, topY + 2 - h);
+      ctx.lineTo(p.x - 12 + i * 12 + 5, topY + 2);
+      ctx.fill();
     }
-    ctx.globalAlpha = 1;
+    // Glow of the pan's own colour on ¡En su punto! and in a fever.
+    const glow = Math.max(perfect, fever ? 0.55 + 0.25 * Math.sin(view.time * 8) : 0);
+    if (glow > 0.01) {
+      const g = ctx.createRadialGradient(p.x, p.y, 4, p.x, p.y, PAN_DRAW * 0.9);
+      g.addColorStop(
+        0,
+        `${pan.glow}${Math.round(glow * 200)
+          .toString(16)
+          .padStart(2, '0')}`,
+      );
+      g.addColorStop(1, `${pan.glow}00`);
+      ctx.fillStyle = g;
+      ctx.fillRect(p.x - PAN_DRAW, p.y - PAN_DRAW, PAN_DRAW * 2, PAN_DRAW * 2);
+    }
+    // The pan: a gentle sway at rest, a hop when food lands in it, a jump on ¡En su punto!
+    const sprite = getSprite(pan.sprite);
+    const hop = (Math.sin(cooking * Math.PI) * 5 + Math.sin(perfect * Math.PI) * 10) * motion;
+    const sway = Math.sin(view.time * 1.6) * 0.035 * motion + (cooking > 0 ? Math.sin(view.time * 50) * 0.03 * motion : 0);
+    ctx.save();
+    ctx.translate(p.x, p.y - hop);
+    ctx.rotate(sway);
+    if (sprite) {
+      const w = PAN_DRAW;
+      const h = (PAN_DRAW * sprite.height) / sprite.width;
+      drawSmooth(ctx, sprite, -w / 2, -h / 2, w, h);
+    }
+    ctx.restore();
   }
 
   // Night kitchen: warm lights over the counter and rain running down behind the customers.
@@ -772,12 +829,12 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     if (night) drawNight();
     drawHud();
     characters.drawCustomers();
+    drawStove();
     drawGrid(paused);
     drawTray(paused);
     if (!paused) drawAbilities();
     characters.drawPip(view.pipLine, { persistent: view.pipLine?.persistent });
     if (!paused) {
-      drawPans();
       drawVfx();
       drawFlyers();
       particles.draw(ctx);

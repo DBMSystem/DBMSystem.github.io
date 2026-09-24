@@ -1879,3 +1879,9 @@ body {
   animation: none;
   box-shadow: 0 0 0 3px #ffd54f;
 }
+
+.menu-pan {
+  left: 80%;
+  top: calc(36.5 * var(--scene-ratio) * 1cqw);
+  width: 23%;
+}
