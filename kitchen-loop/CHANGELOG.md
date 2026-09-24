@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.1 — Primera pantalla nítida e idiomas
+
+- El fondo de la presentación de Pip y de las escenas se ve nítido: la cocina en pixel art, sin difuminar.
+- Idiomas: español e inglés. Se elige en la primera pantalla (el del móvil aparece primero) y se cambia en Ajustes.
+- Arreglado: al saltar las animaciones de resultados, la pantalla se recortaba en forma de óvalo.
+- 169 tests.
+
 ## 0.9.0 — Economía y mejoras de la partida simulada
 
 - **Combo y fiebre:** ventana de combo de 4 s y fiebre en x5, que ya no se reenciende sola al acabar. El jugador casual también vive la fiebre.

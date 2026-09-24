@@ -388,6 +388,7 @@ if __name__ == "__main__":
     generate_special_poses()
     extract_utensils()
     generate_shop_decor()
+    generate_story_backdrops()
     extract_decor()
     generate_phase4_art()
     generate_dish_art()
@@ -450,6 +451,17 @@ def extract_decor():
         img.putalpha(alpha)
         img = img.crop(img.getbbox())
         save(img.resize((img.width * DECOR_SCALE, img.height * DECOR_SCALE), Image.NEAREST), SPRITES / "decor" / f"{decor_id}.png")
+
+
+# ---------- Story backdrops (Daniel: the first screen looked blurry, as if it had not loaded) ----------
+def generate_story_backdrops(factor=2):
+    """The kitchens of the mega pack snapped to their pixel grid (box-averaged by `factor`), saved as PNG: the story
+    screens scale them up with crisp pixels instead of blowing up a small, soft JPEG."""
+    mega = Image.open(ORIGINALS / "20_mega_pack.jpg").convert("RGB")
+    for name, key in (("scene_day", "kitchen_day"), ("scene_night", "kitchen_night")):
+        kitchen = mega.crop(MEGA[key])
+        small = kitchen.resize((kitchen.width // factor, kitchen.height // factor), Image.BOX)
+        save(small, SPRITES / "ui" / f"{name}.png")
 
 
 # ---------- More decoration for coins and Brûlée's magic corner for fragments ----------

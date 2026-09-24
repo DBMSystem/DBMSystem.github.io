@@ -1,7 +1,7 @@
 import { useReducer, useState } from 'react';
 import { Button } from '../components/Button.jsx';
 import { Toggle } from '../components/Toggle.jsx';
-import { t } from '../utils/i18n.js';
+import { t, setLanguage, LANGUAGES } from '../utils/i18n.js';
 import { useAds } from '../monetization/useAds.js';
 import { hasMaestroPass } from '../inventory/inventory.js';
 import { balance } from '../data/balance.js';
@@ -24,7 +24,7 @@ function Slider({ label, value, onChange, disabled, note }) {
 
 // Settings (spec 8.8). Ad privacy options appear where Google's consent requires them (spec 7.7);
 // store purchases and the privacy policy arrive with monetisation (phases 5–7).
-export function Settings({ services, onClose, onRename, onTutorial, onStory, onDeleted }) {
+export function Settings({ services, onLanguage, onClose, onRename, onTutorial, onStory, onDeleted }) {
   const { saveManager, audio, adManager, shop } = services;
   const [notice, setNotice] = useState(null);
   useAds(adManager);
@@ -38,6 +38,10 @@ export function Settings({ services, onClose, onRename, onTutorial, onStory, onD
       s.settings[key] = value;
     });
     if (key === 'reducedMotion') document.body.classList.toggle('reduced-motion', value);
+    if (key === 'language') {
+      setLanguage(value);
+      onLanguage?.();
+    }
     if (key === 'sfx') audio.play('tap');
     refresh();
   };
@@ -65,6 +69,16 @@ export function Settings({ services, onClose, onRename, onTutorial, onStory, onD
   return (
     <div className="screen scroll settings">
       <h2>{t('settings.title')}</h2>
+      <div className="toggle language-row">
+        <span>{t('settings.language')}</span>
+        <span className="segmented">
+          {Object.keys(LANGUAGES).map((code) => (
+            <button key={code} type="button" className={settings.language === code ? 'on' : ''} onClick={() => set('language', code)}>
+              {t(`language.${code}`)}
+            </button>
+          ))}
+        </span>
+      </div>
       <Slider label={t('settings.music')} value={settings.music} onChange={(v) => set('music', v)} />
       <Slider label={t('settings.sfx')} value={settings.sfx} onChange={(v) => set('sfx', v)} />
       <Toggle label={t('settings.vibration')} value={settings.vibration} onChange={(v) => set('vibration', v)} />

@@ -388,13 +388,17 @@ body {
   cursor: pointer;
 }
 
-/* The kitchen in the background, blurred so the talking Pip stands out. */
+/* The kitchen in the background, crisp pixel art (never blurred): the scene on the top two thirds, its tiled floor
+   continuing below, and a darker foot so the bubble and Pip read well. */
 .story::before {
   content: '';
   position: absolute;
-  inset: -12px;
-  background: linear-gradient(rgba(20, 12, 8, 0.25), rgba(20, 12, 8, 0.8)), var(--scene) top center / cover;
-  filter: blur(1.5px) brightness(0.8);
+  inset: 0;
+  background:
+    linear-gradient(rgba(20, 12, 8, 0) 40%, rgba(20, 12, 8, 0.5) 68%, rgba(20, 12, 8, 0.85)),
+    var(--scene) center top / auto 72% no-repeat,
+    linear-gradient(#b98e68 66%, #6b4a36 80%, #2b1d14);
+  image-rendering: pixelated;
 }
 
 .story > * {
@@ -1396,7 +1400,7 @@ body {
   animation: bubble-pop 0.4s ease-out 0.3s both;
 }
 
-.results.skip .pop-in {
+.results.no-anim .pop-in {
   animation: none;
 }
 
@@ -1584,7 +1588,7 @@ body {
 }
 
 .story.night::before {
-  filter: blur(1.5px) brightness(0.65) saturate(1.2);
+  filter: brightness(0.9) saturate(1.1);
 }
 
 /* ---------- Brûlée's warehouse ---------- */
@@ -1923,4 +1927,42 @@ body {
   left: 80%;
   top: calc(36.5 * var(--scene-ratio) * 1cqw);
   width: 23%;
+}
+
+/* ---------- Language ---------- */
+
+.language-picker {
+  justify-content: center;
+  gap: 14px;
+}
+
+.language-picker h2 {
+  max-width: 300px;
+  text-align: center;
+  color: var(--peach);
+}
+
+.segmented {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 12px;
+  background: rgba(255, 248, 231, 0.1);
+}
+
+.segmented button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--cream);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.segmented button.on {
+  background: var(--peach);
+  color: var(--ink);
 }

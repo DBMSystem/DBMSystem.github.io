@@ -738,6 +738,10 @@ export const es = {
 
   // Settings (spec 8.8)
   'settings.title': 'Ajustes',
+  'settings.language': 'Idioma',
+  'language.title': 'Elige tu idioma · Choose your language',
+  'language.es': 'Español',
+  'language.en': 'English',
   'settings.music': 'Música',
   'settings.sfx': 'Efectos',
   'settings.vibration': 'Vibración',
