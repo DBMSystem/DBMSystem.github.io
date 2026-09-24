@@ -368,6 +368,7 @@ if __name__ == "__main__":
     generate_dish_art()
     write_visual_scales()
     boost_poses()
+    generate_default_pan()
 
 
 # ---------- Kitchen decoration (spec 5.6), cut out of the day kitchen of the mega pack ----------
@@ -774,3 +775,14 @@ def generate_dish_art():
     shavings = [(rng.randrange(80, 380), rng.randrange(150, 330)) for _ in range(14)]
     paint_blocks(lost, [(y // BLOCK, x // BLOCK) for x, y in shavings], lambda r, c: (92, 62, 44, 255))
     save(glints(plate(lost.convert("RGB")), [(30, 34, 2), (130, 36, 2), (82, 22, 1)]), dishes / "lost_recipe.png")
+
+
+def generate_default_pan():
+    """Pip's own pan, in the same style and top-down view as the designed ones: the black pan turned into clean
+    steel (so it never looks like the paid black one). The designed pans in assets/ are never modified."""
+    black = np.asarray(Image.open(ROOT / "assets" / "pan_black.png").convert("RGBA")).astype(float)
+    lum = black[..., :3] @ np.array([0.3, 0.59, 0.11])
+    steel = np.clip(70 + lum * 1.55, 0, 255)
+    out = black.copy()
+    out[..., 0], out[..., 1], out[..., 2] = steel * 0.95, steel * 0.98, np.clip(steel * 1.06, 0, 255)
+    save(Image.fromarray(out.astype("uint8"), "RGBA"), SPRITES / "pans" / "default.png")
