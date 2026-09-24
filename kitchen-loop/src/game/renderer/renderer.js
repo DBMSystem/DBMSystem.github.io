@@ -23,6 +23,7 @@ const HINT_CYCLE = 1.4;
 const LOW_TIME = 10;
 const TEXT_POOL = 24;
 const FLYER_POOL = 32;
+const VFX_POOL = 12;
 const CELL_SPRITE = 64;
 const DISH_FLYER = 72;
 
@@ -59,6 +60,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
   };
   const texts = Array.from({ length: TEXT_POOL }, () => ({ alive: false }));
   const flyers = Array.from({ length: FLYER_POOL }, () => ({ alive: false }));
+  const vfx = Array.from({ length: VFX_POOL }, () => ({ alive: false }));
   const characters = createCharacters({ ctx, kit, view, state, getLayout: () => layout, getPixelScale: () => pixelScale, reducedMotion });
 
   function addText(text, x, y, { color = COLORS.cream, size = 16, duration = TEXT_TIME } = {}) {
@@ -69,6 +71,13 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
   function addFlyer(id, from, to) {
     const slot = flyers.find((item) => !item.alive);
     if (slot) Object.assign(slot, { alive: true, id, from, to, at: view.time });
+  }
+
+  // Sprite effects (vfx sheet): pop in, drift, fade out. `spin` in turns over the effect's life.
+  function addVfx(key, x, y, size, duration, { spin = 0, rise = 0 } = {}) {
+    if (!getSprite(`vfx/${key}`)) return;
+    const slot = vfx.find((item) => !item.alive) ?? vfx[0];
+    Object.assign(slot, { alive: true, key, x, y, size, duration, spin: spin * motion, rise, at: view.time });
   }
 
   function resize() {
@@ -177,10 +186,11 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
           particles.burst('steam', mid.x, mid.y, 4);
           const label = e.multiplier > 1 ? `+${formatNumber(e.points)}  x${formatDecimal(e.multiplier)}` : `+${formatNumber(e.points)}`;
           addText(label, mid.x, mid.y - 8, { color: COLORS.cream, size: 20 });
+          if (e.chain >= 3) addVfx('sparkle', mid.x, mid.y, 110, 0.5, { spin: 0.4 });
           if (e.customerSlot !== null) {
             const c = customerHead(e.customerSlot);
             addText(t('fx.served'), c.x, c.y - 20, { color: COLORS.ok, size: 15 });
-            particles.burst('star', c.x, c.y, 12);
+            addVfx('hearts', c.x, c.y - 10, 80, 0.6, { rise: 30 });
             view.departures.push({ slot: e.customerSlot, typeId: e.customerTypeId, happy: true, at: view.time });
           } else {
             addText(t('fx.counterSale'), mid.x, mid.y + 16, { color: COLORS.peach, size: 12 });
@@ -189,6 +199,8 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
             view.secretAt = view.time;
             view.secretRecipe = e.recipeId;
             particles.burst('star', mid.x, mid.y, 30);
+            const b = center(layout.board);
+            addVfx('rainbow', b.x, b.y + 30, 220, BIG_TEXT_TIME, { spin: 1 });
           }
           if (e.chain >= 2) view.comboPopAt = view.time;
           if (!reducedMotion) view.shakeAt = view.time;
@@ -202,6 +214,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
           if (!reducedMotion && view.time - view.flashAt >= balance.perfectFlashMinInterval) view.flashAt = view.time;
           const c = center(layout.board);
           particles.burst('star', c.x, c.y, 40);
+          addVfx('star', c.x, c.y - 40, 150, 0.9, { spin: 0.15 });
           break;
         }
         case 'fever': {
@@ -212,8 +225,15 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
         case 'customerLeft': {
           const c = customerHead(e.customer.slot);
           addText(t('fx.customerLeft'), c.x, c.y - 20, { color: COLORS.muted, size: 13 });
+          addVfx('smoke', c.x + 20, c.y - 10, 60, 0.5, { rise: 20 });
           particles.burst('smoke', c.x, c.y, 10);
           view.departures.push({ slot: e.customer.slot, typeId: e.customer.typeId, happy: false, at: view.time });
+          break;
+        }
+        case 'overflow': {
+          const b = center(layout.board);
+          addVfx('smoke', b.x, b.y, 260, BIG_TEXT_TIME, { rise: 30 });
+          if (!reducedMotion) view.shakeAt = view.time;
           break;
         }
         case 'customerArrived':
@@ -237,6 +257,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     particles.update(dt);
     for (const item of texts) if (item.alive && view.time - item.at > item.duration) item.alive = false;
     for (const item of flyers) if (item.alive && view.time - item.at > balance.cookDuration) item.alive = false;
+    for (const item of vfx) if (item.alive && view.time - item.at > item.duration) item.alive = false;
     if (view.returning && view.time - view.returning.at > RETURN_TIME) view.returning = null;
   }
 
@@ -411,6 +432,21 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     ctx.globalAlpha = 1;
   }
 
+  function drawVfx() {
+    for (const item of vfx) {
+      if (!item.alive) continue;
+      const k = (view.time - item.at) / item.duration;
+      const scale = 0.5 + 0.5 * ease(k / 0.3);
+      ctx.save();
+      ctx.globalAlpha = 1 - clamp01((k - 0.55) / 0.45);
+      ctx.translate(item.x, item.y - item.rise * k);
+      ctx.rotate(item.spin * k * Math.PI * 2);
+      const size = item.size * scale;
+      drawSmooth(ctx, getSprite(`vfx/${item.key}`), -size / 2, -size / 2, size, size);
+      ctx.restore();
+    }
+  }
+
   function drawTexts() {
     for (const item of texts) {
       if (!item.alive) continue;
@@ -512,6 +548,12 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       kit.roundRect(c.x - w / 2, board.y - 12, w, 20, 10, COLORS.orange, COLORS.cream, 2);
       kit.roundRect(c.x - w / 2 + 3, board.y + 3, (w - 6) * left, 3, 2, COLORS.cream);
       kit.text(t('hud.fever'), c.x, board.y - 3, { size: 12, weight: 800 });
+      const firePan = getSprite('vfx/fire_pan');
+      if (firePan) {
+        const s = 34 + Math.sin(view.time * 12) * 2 * motion;
+        drawSmooth(ctx, firePan, c.x - w / 2 - s + 8, board.y - 3 - s / 2 - 4, s, s);
+        drawSmooth(ctx, firePan, c.x + w / 2 - 8, board.y - 3 - s / 2 - 4, s, s);
+      }
     }
     const sincePerfect = view.time - view.perfectAt;
     if (sincePerfect < BIG_TEXT_TIME) {
@@ -549,6 +591,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     drawTray(paused);
     characters.drawPip(view.pipLine, { persistent: view.pipLine?.persistent });
     if (!paused) {
+      drawVfx();
       drawFlyers();
       particles.draw(ctx);
       drawTexts();

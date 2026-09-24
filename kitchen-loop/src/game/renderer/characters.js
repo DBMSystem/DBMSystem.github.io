@@ -13,6 +13,7 @@ const ARRIVE_TIME = 0.45;
 const BUBBLE_DELAY = 0.2;
 const LEAVE_TIME = 0.7;
 const PIP_SIZE = 70;
+const ANGRY_SCALE = 0.8; // the angry art is a bust, drawn a bit smaller so heads match the full-body poses
 const TYPE_SPEED = 45; // characters per second
 
 export function createCharacters({ ctx, kit, view, state, getLayout, getPixelScale, reducedMotion }) {
@@ -110,12 +111,15 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
       const walkHop = since < ARRIVE_TIME ? Math.abs(Math.sin(since * 22)) * 6 * motion : 0;
       const feetY = slot.y + slot.h + 2 - walkHop;
       const breathe = 1 + Math.sin(view.time * 3 + phase) * 0.025 * motion;
-      drawCharacter(poseKey(type.id, since < ARRIVE_TIME * 2 ? 'arrive' : 'idle'), type.color, t(`customer.${type.id}`).charAt(0), cx, feetY, CHARACTER, {
+      const pose = urgent ? 'angry' : since < ARRIVE_TIME * 2 ? 'arrive' : 'idle';
+      const key = poseKey(type.id, pose);
+      const angryArt = key.endsWith('_angry');
+      drawCharacter(key, type.color, t(`customer.${type.id}`).charAt(0), cx, feetY, angryArt ? CHARACTER * ANGRY_SCALE : CHARACTER, {
         sy: breathe,
         sx: 2 - breathe,
         alpha: arrive,
       });
-      if (urgent) drawAngerMark(cx + CHARACTER * 0.32, feetY - CHARACTER * 0.85);
+      if (urgent && !angryArt) drawAngerMark(cx + CHARACTER * 0.32, feetY - CHARACTER * 0.85);
 
       const pop = ease((since - BUBBLE_DELAY) / 0.25) * (1 + 0.15 * Math.sin(clamp01((since - BUBBLE_DELAY) / 0.25) * Math.PI));
       if (pop > 0.01) drawOrderBubble(slot, recipe, ratio, pop, urgent);
@@ -134,7 +138,9 @@ export function createCharacters({ ctx, kit, view, state, getLayout, getPixelSca
         drawCharacter(poseKey(type.id, 'happy'), type.color, '', cx, feetY - hop, CHARACTER, { alpha: 1 - clamp01((k - 0.5) * 2), sy: 1 + 0.08 * Math.sin(k * 20) * motion });
       } else {
         const shake = k < 0.4 ? Math.sin(view.time * 50) * 3 * motion : 0;
-        drawCharacter(poseKey(type.id, 'idle'), type.color, '', cx + shake + ease((k - 0.4) / 0.6) * 60, feetY, CHARACTER, { alpha: 1 - clamp01((k - 0.4) / 0.6), flip: k > 0.4 });
+        const key = poseKey(type.id, 'angry');
+        const size = key.endsWith('_angry') ? CHARACTER * ANGRY_SCALE : CHARACTER;
+        drawCharacter(key, type.color, '', cx + shake + ease((k - 0.4) / 0.6) * 60, feetY, size, { alpha: 1 - clamp01((k - 0.4) / 0.6), flip: k > 0.4 });
       }
     }
     view.departures = view.departures.filter((d) => view.time - d.at < LEAVE_TIME);

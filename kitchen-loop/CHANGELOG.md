@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 — Tercer lote de arte: efectos, platos y enfados
+
+- Efectos de la hoja de VFX en combo, servir, cliente que se va, desbordamiento, receta secreta, ¡En su punto! y fiebre.
+- 13 platos cocinados (8 nuevos) vuelan al cliente y aparecen en el recetario.
+- Clientes con cara de enfado cuando se impacientan y al irse; personajes reasignados para que cada cliente sea siempre la misma persona.
+
 ## 0.2.1 — Segundo lote de arte
 
 - Cocina de fondo detrás de los clientes y en las escenas de historia.

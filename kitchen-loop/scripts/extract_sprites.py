@@ -42,15 +42,26 @@ MEGA = {"kitchen_day": (95, 10, 921, 378), "kitchen_night": (976, 10, 1833, 378)
 # Customers with poses: 3 columns; rows touch each other, so each crop keeps only its main figure.
 POSE_COLS = ((1131, 1278), (1336, 1500), (1565, 1721))
 POSE_ROWS = ((387, 527), (529, 650), (650, 790), (790, 921))
+# Only poses that match the angry faces of the third batch, so each customer is always the same person.
 CUSTOMER_POSES = {  # customer: {pose: (col, row)}
-    "office": {"idle": (2, 0), "happy": (1, 0)},
+    "office": {"idle": (0, 0)},
     "tourist": {"idle": (2, 1), "happy": (1, 1)},
-    "calm": {"idle": (1, 2), "happy": (2, 2)},
+    "calm": {"idle": (0, 2)},
     "student": {"idle": (2, 3), "happy": (1, 3), "arrive": (0, 3)},
 }
 DISH_COLS = ((49, 214), (228, 394), (408, 574), (588, 753), (768, 933))
 DISH_ROWS = ((931, 1045), (1045, 1149), (1149, 1261))
 DISHES = {"herb_fish": (0, 0), "mushroom_omelette": (4, 0), "fish_stew": (3, 1), "garden_salad": (4, 1), "garden_skewer": (2, 2)}
+# Third batch: 8 dishes (4x2 plates), angry customers (2x2 busts) and the effects sheet.
+DISHES_8 = {"bacon_egg": (0, 0), "tomato_toast": (1, 0), "triple_bacon": (2, 0), "cheesy_scramble": (3, 0),
+            "bacon_sandwich": (0, 1), "bravas": (1, 1), "spanish_omelette": (2, 1), "fish_chips": (3, 1)}
+DISHES_8_COLS = ((37, 489), (528, 980), (1020, 1472), (1511, 1963))
+DISHES_8_ROWS = ((46, 488), (519, 962))
+ANGRY = {"office": (340, 47, 912, 641), "tourist": (1073, 47, 1598, 641), "calm": (341, 674, 884, 1235), "student": (1056, 674, 1566, 1235)}
+VFX = {"sparkle": (56, 55, 520, 563), "hearts": (600, 55, 990, 563), "smoke": (1069, 55, 1561, 563),
+       "rainbow": (44, 568, 533, 1059), "coins": (556, 568, 1047, 1059), "star": (1076, 568, 1556, 1059),
+       "fire_pan": (52, 1118, 523, 1506)}
+VFX_SIZE = 256
 PANS = {"golden": "pan_golden_ref.jpg", "rusty": "pan_rusty_ref.jpg", "pink": "pan_pink_ref.jpg", "black": "pan_black_ref.jpg"}
 
 INGREDIENT_SIZE = 192  # 64 logical px × 3 device px
@@ -189,6 +200,19 @@ def main():
     for recipe_id, (col, row) in DISHES.items():
         crop = mega.crop((DISH_COLS[col][0] - 4, DISH_ROWS[row][0], DISH_COLS[col][1] + 4, DISH_ROWS[row][1]))
         save(fit(remove_background(crop, tolerance=40), DISH_SIZE, upscale_nearest=True), SPRITES / "dishes" / f"{recipe_id}.png")
+
+    dishes8 = Image.open(ORIGINALS / "22_dishes_8.jpg")
+    for recipe_id, (col, row) in DISHES_8.items():
+        crop = dishes8.crop((DISHES_8_COLS[col][0] - 6, DISHES_8_ROWS[row][0] - 6, DISHES_8_COLS[col][1] + 6, DISHES_8_ROWS[row][1] + 6))
+        save(fit(remove_background(crop, tolerance=40), DISH_SIZE), SPRITES / "dishes" / f"{recipe_id}.png")
+
+    angry = Image.open(ORIGINALS / "24_customers_angry.webp")
+    for customer_id, box in ANGRY.items():
+        save(fit(remove_background(angry.crop(box)), CUSTOMER_SIZE), SPRITES / "customers" / f"{customer_id}_angry.png")
+
+    vfx = Image.open(ORIGINALS / "21_vfx_sheet.webp")
+    for effect, box in VFX.items():
+        save(fit(remove_background(vfx.crop(box), tolerance=30, keep_ratio=0), VFX_SIZE, fill=0.98), SPRITES / "vfx" / f"{effect}.png")
 
     for pan_id, name in PANS.items():
         pan = Image.open(REF / name)

@@ -1,6 +1,9 @@
 # Recursos de arte que faltan (para generar con Meta AI)
 
-> **Estado tras el segundo lote**: ya están los fondos, el icono, pan/pescado/hierbas, Brûlée y los iconos de interfaz. Siguen faltando: la pose **enfadado** de los clientes, las **7 expresiones de Pip de cuerpo entero** (mismo traje blanco con delantal), **8 platos** de nuestras recetas y la hoja de **efectos** (no llegó).
+> **Estado tras el tercer lote**: ya están los efectos, 13 de los 15 platos y las caras de enfado. Faltan:
+> 1. **Las 7 expresiones de Pip**: la última hoja es otro personaje. Hay que adjuntar a Meta AI la imagen de Pip (`assets/ref/pip_expressions_ref.jpg`: chico de pelo castaño, gorro alto, chaqueta blanca con delantal y batidor en el bolsillo) y pedir "the same character".
+> 2. **Pose "contento"** de la chica de camiseta verde (Oficinista) y de la abuela de rebeca lila (Cliente tranquilo), adjuntando su imagen.
+> 3. **Platos**: Tostada Especial (tostada con tomate y queso fundido) y Desayuno Completo (huevo, bacon, tostada y tomate en un plato).
 
 Reglas para todas las imágenes (así se recortan solas con `scripts/extract_sprites.py`):
 

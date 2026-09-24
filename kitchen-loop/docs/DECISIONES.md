@@ -188,3 +188,23 @@ Originales en `assets/ref/originals/17–20`. Recortes con `scripts/extract_spri
 - **10 platos que no son recetas del juego** (ramen, filete, sushi, tortitas, croissant…).
 - **`vfx_sheet.png`** (efectos): el texto lo menciona, pero la imagen no ha llegado.
 - Las ideas de efectos del texto de Meta AI (humo al fallar, sartén en llamas con el tiempo crítico, pausa del juego en la legendaria) quedan como propuestas para la Fase 3; las cartas "Seta Dorada" no existen en la especificación (la legendaria es la Trufa Dorada).
+
+---
+
+## 10. Tercer lote de arte
+
+Originales en `assets/ref/originals/21–24`.
+
+| Recurso | Uso |
+|---|---|
+| Hoja de efectos | Chispas doradas: combo ×3 o más. Corazones: cliente servido. Humo: cliente que se va (pequeño) y desbordamiento (grande). Espiral arcoíris: receta secreta descubierta. Estrella azul: ¡En su punto! Sartén en llamas: a los lados del cartel de ¡Fiebre en la cocina! Monedas: guardadas para la Fase 2. Duraciones dentro de la tabla 9.3. |
+| 8 platos | Bacon con Huevo, Tostada con Tomate, Triple Bacon, Revuelto con Queso, Bocadillo de Bacon, Patatas Bravas, Tortilla de Patatas, Pescado con Patatas. Faltan Tostada Especial y Desayuno Completo. |
+| Caras de enfado | Pose "enfadado" de los 4 clientes comunes: se ve cuando les queda poca paciencia y cuando se van sin comer. Es un busto, se dibuja al 80 % para que la cabeza cuadre con las poses de cuerpo entero. |
+
+**Cambio de personajes para que cada cliente sea siempre la misma persona** (las caras de enfado no coinciden con todas las poses anteriores):
+- Oficinista: ahora la chica de media melena castaña y camiseta verde (antes, la chica de pelo verde, que no tiene cara de enfado).
+- Cliente tranquilo: ahora la abuela de rebeca lila, como en su cara de enfado (antes, la de rebeca beige).
+- Estudiante y Turista: sin cambios.
+- Oficinista y Cliente tranquilo no tienen pose "contento": usan la de espera con un salto.
+
+**No usado**: la hoja de 7 expresiones de Pip de este lote es **otro personaje** (piel más oscura, bigote, sin pelo castaño), no el Pip del juego. Se guarda en `assets/ref/originals/23_pip_expressions_2.webp`.

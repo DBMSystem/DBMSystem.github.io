@@ -73,9 +73,9 @@ Todos en `src/data/i18n/es.js`; marcados `draft: true` en `src/data/dialogues.js
 
 | Tipo | Personaje (mega pack) | Poses usadas |
 |---|---|---|
-| Cliente tranquilo | Abuela con rebeca beige | esperar: tejiendo · contento: con bastón |
-| Estudiante | Niño con sudadera azul y mochila | llegar: saludando · esperar: con piruleta · contento: brazos arriba |
-| Oficinista | Chica de pelo verde con delantal | esperar: con zumo · contento: signo de la paz |
-| Turista | Chico con gafas de sol y camisa de notas | esperar: con vinilo · contento: brazos arriba |
+| Cliente tranquilo | Abuela con rebeca lila | esperar · enfadada (con bastón) |
+| Estudiante | Niño con sudadera azul y mochila | llegar: saludando · esperar: con piruleta · contento: brazos arriba · enfadado (capucha) |
+| Oficinista | Chica de media melena castaña, camiseta verde con hoja | esperar · enfadada (brazos cruzados) |
+| Turista | Chico con gorra, gafas de sol y camisa de notas | esperar: con vinilo · contento: brazos arriba · enfadado (con cascos) |
 
 Los retratos grandes anteriores (abuela, chaval con cascos, chica enfadada, alien brócoli) se conservan para clientes especiales de la Fase 4.
