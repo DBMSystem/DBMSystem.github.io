@@ -1222,6 +1222,16 @@ body {
   cursor: pointer;
 }
 
+/* Four tabs (the warehouse) fit a 360 px screen. */
+.tabs button {
+  min-width: 0;
+  padding: 0 4px;
+}
+
+.tabs:has(> :nth-child(4)) button {
+  font-size: 13px;
+}
+
 .tabs button.on {
   background: var(--peach);
   color: var(--ink);
@@ -1731,6 +1741,30 @@ body {
 .price img {
   width: 18px;
   height: 18px;
+}
+
+.price.fragments {
+  color: #fff3a8;
+}
+
+.wallet {
+  display: inline-flex;
+  gap: 12px;
+}
+
+/* A small, still pack on the warehouse's pack shelf. */
+.pack.mini {
+  width: 64px;
+  height: 88px;
+  gap: 0;
+  border-radius: 8px 8px 10px 10px;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5), 0 4px 0 rgba(0, 0, 0, 0.3);
+  animation: none;
+}
+
+.pack.mini img {
+  width: 44px;
+  border-radius: 8px;
 }
 
 .price.euro {

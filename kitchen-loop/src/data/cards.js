@@ -444,7 +444,7 @@ export const cards = [
     id: 'void_chef',
     rarity: 'epic',
     source: 'discovery',
-    unlock: { type: 'emptyGridAtEnd' },
+    unlock: { type: 'emptyGridAtEnd', max: 2 }, // at most 2 ingredients left (it was 0: too hard, docs/PLAYTHROUGH_REPORT.md)
     art: [L('vfx/smoke', { filter: 'invert(1) hue-rotate(180deg)', opacity: 0.6 }), L('pip/surprised', { scale: 0.8 })],
   },
   {

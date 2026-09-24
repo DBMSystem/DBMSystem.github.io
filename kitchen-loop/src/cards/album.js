@@ -17,7 +17,7 @@ export function discoveriesFor(result) {
       (u.type === 'secret' && result.discovered.includes(u.recipe)) ||
       (u.type === 'serve' && result.servedTypes.includes(u.customer)) ||
       (u.type === 'cookInLoop' && (result.cookedCounts[u.recipe] ?? 0) >= u.times) ||
-      (u.type === 'emptyGridAtEnd' && result.emptyGridAtEnd) ||
+      (u.type === 'emptyGridAtEnd' && (result.leftoverAtEnd ?? (result.emptyGridAtEnd ? 0 : Infinity)) <= (u.max ?? 0)) ||
       (u.type === 'feverInLoop' && result.feverCount >= u.times) ||
       (u.type === 'comboInLoop' && result.bestCombo >= u.times) ||
       (u.type === 'perfectInLoop' && (result.perfectCount ?? 0) >= u.times) ||

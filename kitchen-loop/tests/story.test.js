@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createDefaultSave, validateSave } from '../src/save/schema.js';
 import { advanceStory, pendingScenes, markSceneSeen } from '../src/systems/story.js';
 import { utensilState, treeTotalCost, treeComplete } from '../src/systems/utensils.js';
-import { buyUtensil, buyDecor, addCoins } from '../src/inventory/inventory.js';
+import { buyUtensil, buyDecor, placeDecor, buyPack, addCoins, addFragments } from '../src/inventory/inventory.js';
 import { availableSpecialties, rollSpecialties } from '../src/systems/specialty.js';
 import { unlocksBetween } from '../src/economy/progression.js';
 import { finalizeLoop } from '../src/economy/rewards.js';
@@ -26,13 +26,13 @@ describe('story chapters (spec 6.3)', () => {
     expect(pendingScenes(save)).toEqual(['chapter2']);
   });
 
-  it('Brûlée: a good loop from loop 3, guaranteed at the end of loop 6, only after a loop', () => {
+  it('Brûlée: a good loop from bruleeFromLoop, guaranteed at bruleeGuaranteedLoop, only after a loop', () => {
     const save = fresh();
     save.player.level = 3;
     advanceStory(save);
-    save.stats.loopsPlayed = 2;
+    save.stats.loopsPlayed = balance.bruleeFromLoop - 1;
     expect(advanceStory(save, loop(5000))).toEqual([]);
-    save.stats.loopsPlayed = 3;
+    save.stats.loopsPlayed = balance.bruleeFromLoop;
     expect(advanceStory(save, loop(balance.bruleeScoreThreshold - 1))).toEqual([]);
     expect(advanceStory(save)).toEqual([]); // not outside a loop's results
     expect(advanceStory(save, loop(balance.bruleeScoreThreshold))).toEqual([3]);
@@ -111,23 +111,43 @@ describe('Brûlée’s warehouse (spec 5.4, 5.6)', () => {
     expect(save.coins).toBe(0);
   });
 
-  it('decoration costs 150–2000 coins, is placed once and survives validation', () => {
+  it('decoration: coins or fragments, bought once, one object on show per slot, survives validation', () => {
     for (const d of decorItems) {
-      expect(d.cost).toBeGreaterThanOrEqual(150);
-      expect(d.cost).toBeLessThanOrEqual(2000);
+      const [min, max] = d.currency === 'fragments' ? [500, 5000] : [150, 3000];
+      expect(d.cost, d.id).toBeGreaterThanOrEqual(min);
+      expect(d.cost, d.id).toBeLessThanOrEqual(max);
       expect(hasKey(`decor.${d.id}.name`)).toBe(true);
     }
-    expect(decorItems).toHaveLength(10);
     const save = fresh();
     rich(save);
     expect(buyDecor(save, 'big_plant')).toBe(true);
     expect(buyDecor(save, 'big_plant')).toBe(false);
     expect(save.decor.floor).toBe('big_plant');
+    // Fragments pay for Brûlée's magic corner; the last object bought goes on show, and you can switch back.
+    expect(buyDecor(save, 'enchanted_mushrooms')).toBe(false);
+    addFragments(save, 2000, 'test');
+    expect(buyDecor(save, 'plate_croissant')).toBe(true);
+    expect(buyDecor(save, 'enchanted_mushrooms')).toBe(true);
+    expect(save.fragments).toBe(0);
+    expect(save.decor.plate).toBe('enchanted_mushrooms');
+    expect(placeDecor(save, 'plate_croissant')).toBe(true);
+    expect(placeDecor(save, 'plate_steak')).toBe(false); // not owned
+    expect(save.decor.plate).toBe('plate_croissant');
     save.unlockedItems.push('hacked_item');
     save.decor.salt = 'big_plant';
     const clean = validateSave(save);
-    expect(clean.unlockedItems).toEqual(['big_plant']);
-    expect(clean.decor).toEqual({ floor: 'big_plant' });
+    expect(clean.unlockedItems).toEqual(['big_plant', 'plate_croissant', 'enchanted_mushrooms']);
+    expect(clean.decor).toEqual({ floor: 'big_plant', plate: 'plate_croissant' });
+  });
+
+  it('card packs for coins wait in the album', () => {
+    const save = fresh();
+    expect(buyPack(save, 'standard')).toBe(false);
+    addCoins(save, balance.packPrices.standard + balance.packPrices.special, 'test');
+    expect(buyPack(save, 'standard')).toBe(true);
+    expect(buyPack(save, 'special')).toBe(true);
+    expect(save.packs).toEqual({ standard: 1, special: 1 });
+    expect(save.coins).toBe(0);
   });
 });
 

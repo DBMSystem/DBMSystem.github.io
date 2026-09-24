@@ -79,3 +79,16 @@ describe('scoring', () => {
     expect(recipePoints({ base: 100, chain: 10, feverActive: true, served: true }, balance).points).toBe(675);
   });
 });
+
+describe('fever after fever', () => {
+  it('a chain that outlives a fever needs feverThreshold more recipes for the next one', async () => {
+    const { createComboState, registerCook } = await import('../src/game/combo.js');
+    const { balance } = await import('../src/data/balance.js');
+    const state = createComboState();
+    const starts = [];
+    // One recipe every second for 20 s: the chain never breaks (window 4 s).
+    for (let t = 1; t <= 20; t++) if (registerCook(state, t, balance).feverStarted) starts.push(t);
+    expect(state.chain).toBe(20);
+    expect(starts).toEqual([5, 14]); // not relit at 10, when the first one ends
+  });
+});

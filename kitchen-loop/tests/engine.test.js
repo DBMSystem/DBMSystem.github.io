@@ -268,4 +268,17 @@ describe('engine — cooking in the pan (spec 2.6)', () => {
     engine.cookAt(8);
     expect(engine.drainEvents().some((e) => e.type === 'fullStove')).toBe(true);
   });
+
+  it('two pans in a combo of x3 also make the kitchen go full, once every few seconds', () => {
+    const { engine } = setup({ level: 1 });
+    engine.state.nextCustomerAt = Infinity;
+    engine.state.customers = [0, 1].map((slot) => ({ uid: slot + 1, typeId: 'calm', recipeId: 'bacon_egg', slot, patience: 20, maxPatience: 20 }));
+    fill(engine, ['bread', 'tomato', '.', '.', 'egg', 'bacon', '.', '.', 'egg', 'bacon']);
+    engine.cookAt(0); // counter sale: combo x1
+    engine.cookAt(4); // pan 1, x2
+    expect(engine.drainEvents().some((e) => e.type === 'fullStove')).toBe(false);
+    engine.cookAt(8); // pan 2, x3
+    expect(engine.drainEvents().some((e) => e.type === 'fullStove')).toBe(true);
+  });
 });
+

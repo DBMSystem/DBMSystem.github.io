@@ -128,7 +128,7 @@ Tamaño máximo de una receta: 4 ingredientes.
 
 ### 2.8 Combos
 
-- Cada receta cocinada dentro de `comboWindow` (3,0 s) desde la anterior aumenta la cadena de combo. Si pasa el tiempo, la cadena vuelve a 0.
+- Cada receta cocinada dentro de `comboWindow` (4,0 s; eran 3,0: el jugador casual no llegaba nunca a la fiebre) desde la anterior aumenta la cadena de combo. Si pasa el tiempo, la cadena vuelve a 0.
 - Se muestra "Combo x{n}", donde n es la longitud de la cadena.
 - Multiplicador de puntos por cadena (`comboMultipliers`): x1 → 1,0; x2 → 1,2; x3 → 1,5; x5 → 2,0; x10 → 3,0. Entre escalones se mantiene el valor anterior.
 - Los combos suben ligeramente la probabilidad de carta al final del loop (sección 4.6), pero **nunca son obligatorios para progresar**.
@@ -142,7 +142,8 @@ Tamaño máximo de una receta: 4 ingredientes.
 
 ### 2.10 ¡FIEBRE EN LA COCINA! (antes "Kitchen Fever")
 
-- Se activa al llegar a una cadena de combo ≥ `feverThreshold` (6). Dura `feverDuration` (5 s).
+- Se activa al llegar a una cadena de combo ≥ `feverThreshold` (5). Dura `feverDuration` (5 s).
+- Si la cadena sigue viva cuando la fiebre acaba, la siguiente fiebre pide otras `feverThreshold` recetas en la cadena (si no, se encendería otra vez al instante).
 - Durante la fiebre: multiplicador extra × `feverMultiplier` (1,5), `comboWindow` × 1,5, música con una capa más intensa, partículas adicionales, estelas en los ingredientes y Pip animado.
 - La legibilidad manda: el grid y los pedidos deben leerse perfectamente durante la fiebre.
 
@@ -386,7 +387,7 @@ Nunca salen en sobres, nunca se fabrican con fragmentos. Solo se consiguen hacie
 | Maestro del Triple Bacon | Épica | Cocinar Triple Bacon 3 veces en un mismo loop |
 | Tomate Explosivo | Épica | Descubrir la receta secreta Tomate Explosivo |
 | Tortilla Imposible | Épica | Descubrir la receta secreta Tortilla Imposible |
-| Chef del Vacío | Épica | Terminar un loop por tiempo con el grid completamente vacío |
+| Chef del Vacío | Épica | Terminar un loop por tiempo con 2 ingredientes o menos en el grid |
 | Fiebre Doble | Épica | Activar la fiebre 2 veces en el mismo loop |
 | Sello del Maestro Antiguo | Legendaria | Servir al Maestro antiguo |
 | La Receta Perdida | Legendaria | Descubrir la receta secreta La Receta Perdida |
@@ -532,8 +533,11 @@ Los utensilios desbloquean **contenido y pequeños cambios estratégicos**, nunc
 
 ### 5.6 Monedas y decoración
 
-- **Monedas de cocina**: se ganan jugando. Se gastan en el árbol de Brûlée, en decoración y en nada más. Nunca se compran con dinero real.
-- **Decoración de la cocina**: 10 objetos cosméticos (150–2.000 monedas) que aparecen en la escena de la cocina del menú (por ejemplo: macetas de hierbas, pizarra de menú, lámpara de cobre, estantería de especias, reloj de pared, cortinas de cuadros, tarro de galletas, gato dormido). Claude Code los crea como `draft`. Sirven para que las monedas sigan teniendo uso cuando el árbol esté completo.
+- **Monedas de cocina**: se ganan jugando. Se gastan en el árbol de Brûlée, en decoración y en sobres de cartas del Almacén (`packPrices`: 900 el normal, 2.400 el especial), y en nada más. Nunca se compran con dinero real, así que un sobre por monedas nunca es contenido aleatorio de pago.
+- **Decoración de la cocina**: 16 objetos cosméticos (150–3.000 monedas) que aparecen en la escena de la cocina del menú. Si varios comparten sitio, el jugador elige cuál colocar. Claude Code los crea como `draft`.
+- **Rincón mágico de Brûlée**: 5 objetos de decoración que se pagan con **fragmentos** (600–5.000).
+- **Fragmentos**: fabricar cartas, variantes brillantes y el rincón mágico.
+- El reparto y los tiempos esperados están en `docs/DECISIONES.md` §23 y se comprueban con `scripts/simulatePlaythrough.js`.
 
 ---
 
@@ -557,7 +561,7 @@ Los utensilios desbloquean **contenido y pequeños cambios estratégicos**, nunc
 |---|---|---|---|
 | 1 | La Cocina | Inicio del juego | Completo |
 | 2 | El Aprendiz | Nivel 3 | Completo |
-| 3 | El Maestro | Aparición de Brûlée: al terminar el primer loop con ≥ 1.200 puntos a partir del loop 3; **garantizada al terminar el loop 6** si no ha ocurrido antes | Completo |
+| 3 | El Maestro | Aparición de Brûlée: al terminar el primer loop con ≥ 1.200 puntos a partir del loop 5 (`bruleeFromLoop`); **garantizada al terminar el loop 7** si no ha ocurrido antes | Completo |
 | 4 | El Baúl | Comprar la Encimera Rúnica | Estructura + diálogos `draft` |
 | 5 | La Cocina Nocturna | Nivel 12 y 3 utensilios comprados | Estructura + diálogos `draft` |
 | 6 | Las Recetas Perdidas | Nivel 16 y 3 recetas secretas descubiertas | Estructura + diálogos `draft` |

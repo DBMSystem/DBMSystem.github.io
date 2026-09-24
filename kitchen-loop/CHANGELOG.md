@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.0 — Economía y mejoras de la partida simulada
+
+- **Combo y fiebre:** ventana de combo de 4 s y fiebre en x5, que ya no se reenciende sola al acabar. El jugador casual también vive la fiebre.
+- **Brûlée:** llega a partir del 5.º servicio.
+- **"¡Cocina a tope!":** también con 2 sartenes en combo x3.
+- **"Chef del Vacío":** basta con 2 ingredientes o menos al acabar.
+- **Decoración nueva:** reloj de pared y 5 platos de exposición. Cada sitio admite varios objetos y eliges cuál colocar.
+- **Rincón mágico de Brûlée:** 5 objetos que se pagan con fragmentos.
+- **Sobres de cartas por monedas** en el Almacén (pestaña "Sobres").
+- **Economía comprobada con el bot:** monedas y fragmentos siempre tienen en qué gastarse.
+- 165 tests.
+
 ## 0.8.2 — Partida completa simulada
 
 - Bot jugador (`scripts/bot.js`) y `scripts/simulatePlaythrough.js`. El bot se pasa el juego con el motor y la progresión reales, y el informe queda en `docs/PLAYTHROUGH_REPORT.md`.

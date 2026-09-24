@@ -95,10 +95,28 @@ export function buyUtensil(save, id) {
 export function buyDecor(save, id) {
   const item = decorById[id];
   if (!item || save.unlockedItems.includes(id)) return false;
-  if (!spendCoins(save, item.cost, 'decor')) return false;
+  const paid = item.currency === 'fragments' ? spendFragments(save, item.cost, 'decor') : spendCoins(save, item.cost, 'decor');
+  if (!paid) return false;
   save.unlockedItems.push(id);
   save.decor[item.slot] = id;
   track('decor_bought', { id });
+  return true;
+}
+
+// Puts an owned object on show in its slot (another object of the same slot goes back to the warehouse).
+export function placeDecor(save, id) {
+  const item = decorById[id];
+  if (!item || !save.unlockedItems.includes(id)) return false;
+  save.decor[item.slot] = id;
+  return true;
+}
+
+// A card pack bought with coins in the warehouse; it waits in the album to be opened. Coins are only earned by
+// playing (no product sells them), so this is never random content for real money (spec 17).
+export function buyPack(save, kind = 'standard') {
+  if (!spendCoins(save, balance.packPrices[kind], 'pack')) return false;
+  addPack(save, kind);
+  track('pack_bought', { kind });
   return true;
 }
 
