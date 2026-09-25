@@ -48,7 +48,7 @@ export function Results({ result, playerName, services, onAgain, onMenu }) {
     ['results.recipes', result.recipesCooked],
   ];
   return (
-    <div className={`screen results ${skip ? 'skip' : ''}`} onClick={() => setSkip(true)}>
+    <div className={`screen results ${skip ? 'no-anim' : ''}`} onClick={() => setSkip(true)}>
       <h2>{t(result.endReason === 'overflow' ? 'results.titleOverflow' : 'results.title')}</h2>
       <div className="score-block">
         <span className="label">{t('results.score')}</span>

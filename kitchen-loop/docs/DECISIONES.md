@@ -477,3 +477,17 @@ Tres mejoras de feedback sobre la sartén, sin mecánicas nuevas ni efecto en pu
 - **Resultado con el bot casual** (4 servicios al día): en 150 días completa el árbol y casi toda la decoración, y tiene el rincón mágico a medias. Sigue teniendo metas.
 - La especificación (2.8, 2.10, 5.6, 6.3 y la tabla de cartas) queda actualizada con estos cambios.
 
+## 24. Primera pantalla nítida e idiomas (Daniel: "el arte del fondo se ve tan difuminado que parece que no haya cargado" · "un detector de idioma o seleccionador… antes de la primera conversación")
+
+- **Fondo de las escenas:** era la cocina del mega pack (368 px de alto) estirada unas 7 veces y además con `blur`. Ahora:
+  - Es la misma cocina ajustada a su rejilla de píxeles, en PNG (`ui/scene_day` y `ui/scene_night`, `generate_story_backdrops`).
+  - Se escala con píxeles nítidos, sin `blur`, ocupando dos tercios de la pantalla, con su suelo continuado debajo y un degradado para que se lean el bocadillo y Pip.
+- **Idiomas:** español e inglés. El inglés es una traducción `draft` completa (809 textos) con las mismas variables (hay un test que lo comprueba).
+  - Números con el formato de cada idioma: 1.500 / 1,500.
+  - El nombre por defecto sigue el idioma ("Aprendiz" / "Apprentice").
+- **Selector:** es la primera pantalla de una partida nueva. El título está en los dos idiomas y el del móvil aparece primero y destacado (cualquier variante de español cuenta como español; lo demás, inglés).
+  - En Ajustes, la fila "Idioma" lo cambia al momento.
+  - Las partidas anteriores a esto se quedan en español.
+  - Al borrar la partida se vuelve a preguntar.
+- **Arreglo de paso:** al tocar la pantalla de resultados para saltar sus animaciones, la pantalla cogía la clase `skip`, la del botón "Saltar" de las escenas. Heredaba su forma de píldora y todo se recortaba en óvalo. Ahora la clase se llama `no-anim`.
+

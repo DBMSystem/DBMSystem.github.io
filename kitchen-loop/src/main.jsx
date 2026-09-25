@@ -12,6 +12,7 @@ import { createAudioManager } from './audio/audioManager.js';
 import { createHaptics } from './utils/haptics.js';
 import { onAppLifecycle } from './utils/lifecycle.js';
 import { handleBack } from './utils/backButton.js';
+import { setLanguage, detectLanguage } from './utils/i18n.js';
 import { App as NativeApp } from '@capacitor/app';
 import './styles.css';
 
@@ -43,6 +44,7 @@ onAppLifecycle({
 if (isNative()) NativeApp.addListener('backButton', () => handleBack() || NativeApp.exitApp());
 
 Promise.all([saveManager.load(), loadSprites()]).then(() => {
+  setLanguage(saveManager.get().settings.language ?? detectLanguage()); // not chosen yet: the device's, for the picker
   shop.refreshEntitlements(); // spec 7.6: the store confirms purchases on start; offline, the cache stays
   document.body.classList.toggle('reduced-motion', saveManager.get().settings.reducedMotion);
   createRoot(document.getElementById('root')).render(<App services={services} />);

@@ -9,6 +9,8 @@ import { Settings } from './screens/Settings.jsx';
 import { Warehouse } from './screens/Warehouse.jsx';
 import { SpecialtyPicker } from './components/SpecialtyPicker.jsx';
 import { ExitConfirm } from './components/ExitConfirm.jsx';
+import { LanguagePicker } from './screens/LanguagePicker.jsx';
+import { setLanguage } from './utils/i18n.js';
 import { setRootBackHandler, useBackButton } from './utils/backButton.js';
 import { pendingScenes, markSceneSeen } from './systems/story.js';
 import { availableSpecialties } from './systems/specialty.js';
@@ -27,7 +29,8 @@ export function App({ services }) {
   const firstSession = !saveManager.get().tutorialDone;
   // A scene still due when the game opens (e.g. the app closed on the results screen) plays first.
   const dueAtStart = firstSession ? null : pendingScenes(saveManager.get())[0];
-  const [screen, setScreen] = useState(firstSession ? 'intro' : dueAtStart ? 'scene' : 'menu');
+  const needsLanguage = !saveManager.get().settings.language;
+  const [screen, setScreen] = useState(needsLanguage ? 'language' : firstSession ? 'intro' : dueAtStart ? 'scene' : 'menu');
   const [result, setResult] = useState(null);
   const [run, setRun] = useState({ id: 0, tutorial: false, specialty: null, trial: null });
   const [picking, setPicking] = useState(false); // choosing the daily specialty before a loop
@@ -95,6 +98,14 @@ export function App({ services }) {
     setVersion((v) => v + 1);
   };
 
+  const pickLanguage = async (code) => {
+    setLanguage(code);
+    await saveManager.update((s) => {
+      s.settings.language = code;
+    });
+    setScreen(firstSession ? 'intro' : 'menu');
+  };
+
   // Android Back on each screen (spec 8.9): the menu asks before closing, the others go back. The first
   // session and chapter scenes ignore it (scenes are skipped with their own button). Overlays answer first.
   const goBack = () => {
@@ -141,6 +152,8 @@ export function App({ services }) {
 
   function renderScreen() {
     switch (screen) {
+      case 'language':
+        return <LanguagePicker onPick={pickLanguage} />;
       case 'intro':
         return <Story key="intro" scene="intro" playerName={playerName} onDone={() => setScreen(returnTo ? 'premise' : 'name')} />;
       case 'name':
@@ -183,6 +196,7 @@ export function App({ services }) {
         return (
           <Settings
             services={services}
+            onLanguage={() => setVersion((v) => v + 1)}
             onClose={() => setScreen('menu')}
             onRename={() => {
               setReturnTo('settings');
@@ -196,7 +210,7 @@ export function App({ services }) {
             onDeleted={async () => {
               await saveManager.reset();
               setReturnTo(null);
-              setScreen('intro');
+              setScreen('language'); // a new game starts by choosing the language
             }}
           />
         );

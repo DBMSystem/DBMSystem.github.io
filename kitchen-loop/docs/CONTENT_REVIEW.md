@@ -168,3 +168,11 @@ Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challe
 - **Rincón mágico de Brûlée (fragmentos):** Poción de Sabor, Tarro de Polvo de Estrellas, Setas del Bosque Encantado, Recetario de Brûlée y Trufa Dorada. Texto: "Objetos que Brûlée trajo de sus viajes."
 - **Sobres del Almacén:** "Sobres de cartas por monedas. Se guardan en tu Álbum para abrirlos cuando quieras."
 - **Chef del Vacío:** pista nueva, "Termina un servicio con 2 ingredientes o menos en la encimera".
+
+## Inglés (draft)
+
+- `src/data/i18n/en.js`: traducción completa de todos los textos, pendiente de revisión, a ser posible por una persona nativa.
+- Decisiones de traducción:
+  - Nombres propios sin traducir (Pip, Brûlée, Patatas Bravas).
+  - "¡En su punto!" → "Perfectly done!", "Fiebre en la cocina" → "Kitchen fever", "Encargos de Pip" → "Pip's Orders", "Almacén de Brûlée" → "Brûlée's Warehouse".
+  - Inglés británico ("favourite", "neighbourhood").

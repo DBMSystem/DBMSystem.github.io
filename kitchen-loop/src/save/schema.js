@@ -6,6 +6,7 @@ import { xpToNext } from '../economy/progression.js';
 import { challengeTemplates } from '../data/challenges.js';
 import { utensilById } from '../data/utensils.js';
 import { decorById } from '../data/decor.js';
+import { LANGUAGES } from '../utils/i18n.js';
 
 export const SAVE_VERSION = 1;
 
@@ -35,7 +36,7 @@ export function createDefaultSave(now = Date.now()) {
     entitlements: { maestroPass: false, skins: [], starterPack: false, starterPackGranted: false, verifiedAt: 0 },
     equippedPan: 'default',
     grantedRewards: [],
-    settings: { music: 0.7, sfx: 0.8, vibration: true, reducedMotion: false, tapToPlace: false, notifications: false, nightTheme: false },
+    settings: { music: 0.7, sfx: 0.8, vibration: true, reducedMotion: false, tapToPlace: false, notifications: false, nightTheme: false, language: null },
   };
 }
 
@@ -140,5 +141,7 @@ export function validateSave(raw) {
   settings.sfx = volume(settings.sfx, defaults.settings.sfx);
   for (const key of ['vibration', 'reducedMotion', 'tapToPlace', 'notifications', 'nightTheme']) settings[key] = Boolean(settings[key]);
   settings.nightTheme = settings.nightTheme && clean.entitlements.maestroPass;
+  // null = not chosen yet: a new game asks before Pip's first words. Saves from before languages were Spanish.
+  settings.language = LANGUAGES[settings.language] ? settings.language : clean.tutorialDone ? 'es' : null;
   return clean;
 }

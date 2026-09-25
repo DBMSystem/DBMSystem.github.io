@@ -839,7 +839,8 @@ kitchen-loop/
 ### 10.4 Idioma
 
 - Todo texto visible sale de `src/data/i18n/es.js` mediante `t(key, vars)`, con interpolación de `{nombre}`.
-- Idioma de lanzamiento **[DECISIÓN D-6]**: español. La estructura permite añadir inglés sin tocar la lógica.
+- Idioma de lanzamiento **[DECISIÓN D-6]**: español e inglés (`src/data/i18n/en.js`, traducción `draft`). Añadir otro idioma es añadir un archivo y registrarlo en `LANGUAGES` (`src/utils/i18n.js`).
+- **Selector de idioma**: es la primera pantalla de una partida nueva, antes de que Pip diga nada. Aparece primero, destacado, el idioma del dispositivo si el juego lo tiene; si no, inglés. Se cambia cuando se quiera en Ajustes (`settings.language`). Una clave que falte en un idioma se muestra en español.
 - Fuente de pixel art con soporte completo de á, é, í, ó, ú, ü, ñ, ¿ y ¡. Verificarlo en el canvas.
 
 ### 10.5 Configuración de balance (`src/data/balance.js`)
@@ -1077,7 +1078,7 @@ Mientras una decisión no esté cerrada, Claude Code usa el valor por defecto y 
 | D-3 | Música | Sin música o con loops provisionales; efectos sintetizados |
 | D-4 | Público objetivo | 13+, no dirigido a niños |
 | D-5 | ¿Mantener el sobre diario extra del Pase? | Se mantiene, porque el 100 % del álbum es alcanzable gratis |
-| D-6 | Idioma de lanzamiento | Español, con estructura preparada para inglés |
+| D-6 | Idioma de lanzamiento | Español e inglés (inglés `draft`), con selector al empezar y en Ajustes |
 | D-7 | Plugin de pagos | Se decide en la fase 7 |
 | D-8 | Tamaño del álbum y tiempo para completarlo | 48 cartas; 6–8 semanas para un jugador gratuito constante |
 | D-9 | Especialidad del día (capa roguelite) | Activada desde el nivel 4, desactivable por configuración |
