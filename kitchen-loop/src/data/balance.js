@@ -34,6 +34,9 @@ export const balance = {
   smallRecipeMaxSize: 2,
   cheapRecipeMaxPoints: 100,
   orderBias: 0.35,
+  // Even loops (docs/LOOP_BALANCE.md): at level 5 a third of the loops overflowed with herbs only one recipe used.
+  demandWeighting: 0.5, // 0–1: deal each ingredient by how many unlocked recipes use it (src/game/tray.js)
+  ingredientBag: 2, // tokens per ingredient in the shuffled bag (no droughts or floods); 0 = independent rolls
   orderBonus: 0.5,
   counterSaleMultiplier: 0.5,
   gridNearlyFullCells: 13,

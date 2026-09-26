@@ -43,12 +43,46 @@ export function missingIngredients(orderRecipes, grid, tray) {
   return [...missing];
 }
 
-// Weighted bag, biased toward what active orders are missing (orderBias).
-export function generateIngredient(rng, { pool, orderRecipes, grid, tray, orderBias, weightOf = (i) => i.weight }) {
+// How much each ingredient should be dealt: the unlocked recipes that use it (Daniel: every loop balanced). An
+// ingredient few recipes need is dealt less, so it does not clutter the board; `blend` 0 = all equal.
+export function demandWeights(pool, recipes, blend) {
+  const uses = Object.fromEntries(pool.map((i) => [i.id, 0]));
+  for (const recipe of recipes) for (const id of recipe.ingredients) if (id in uses) uses[id] += 1;
+  const average = Object.values(uses).reduce((a, b) => a + b, 0) / Math.max(1, pool.length) || 1;
+  return Object.fromEntries(pool.map((i) => [i.id, 1 - blend + (blend * uses[i.id]) / average]));
+}
+
+// Shuffled bag (like the pieces of a falling-block game): every ingredient comes up as often as its weight says
+// within each bag, so a loop has neither long droughts nor floods of one ingredient. `size` = tokens per ingredient.
+export function createBag(rng, pool, weightOf, size) {
+  const tokens = [];
+  const fill = () => {
+    const total = pool.reduce((sum, i) => sum + weightOf(i), 0);
+    const n = Math.max(pool.length, Math.round(size * pool.length));
+    const exact = pool.map((i) => ({ id: i.id, x: (weightOf(i) / total) * n }));
+    const counts = exact.map((e) => Math.floor(e.x));
+    let left = n - counts.reduce((a, b) => a + b, 0);
+    [...exact.keys()].sort((a, b) => (exact[b].x % 1) - (exact[a].x % 1)).forEach((k) => left-- > 0 && counts[k]++);
+    exact.forEach((e, k) => tokens.push(...Array(counts[k]).fill(e.id)));
+    for (let k = tokens.length - 1; k > 0; k--) {
+      const j = rng.int(k + 1);
+      [tokens[k], tokens[j]] = [tokens[j], tokens[k]];
+    }
+  };
+  return {
+    draw() {
+      if (tokens.length === 0) fill();
+      return tokens.pop();
+    },
+  };
+}
+
+// Next ingredient: from the bag (or a weighted roll), biased toward what active orders are missing (orderBias).
+export function generateIngredient(rng, { pool, orderRecipes, grid, tray, orderBias, weightOf = (i) => i.weight, bag = null }) {
   if (orderRecipes.length > 0 && rng.next() < orderBias) {
     const poolIds = new Set(pool.map((i) => i.id));
     const missing = missingIngredients(orderRecipes, grid, tray).filter((id) => poolIds.has(id));
     if (missing.length > 0) return rng.pick(missing);
   }
-  return rng.weighted(pool, weightOf).id;
+  return bag ? bag.draw() : rng.weighted(pool, weightOf).id;
 }

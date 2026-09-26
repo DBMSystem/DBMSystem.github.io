@@ -225,6 +225,8 @@ export const es = {
   'tutorial.dragBacon': 'Ahora el bacon, justo al lado del huevo.',
   'tutorial.cook': '¡Brillan! Eso es una receta. Tócala para cocinarla.',
   'tutorial.order': '¡Un cliente! Quiere Tostada con Tomate: pan y tomate juntos.',
+  'tutorial.orderTomato': 'Ahora el tomate, pegado al pan.',
+  'tutorial.orderCook': '¡Brillan! Tócalos: el plato va a la sartén de su cliente.',
   'tutorial.pan': '¡A la sartén! Se cocina en su sartén y se sirve sola. ¡Que no se acabe su paciencia!',
   'tutorial.free': '¡Ahora sin ayuda! Tienes 30 segundos. Cocina seguido para hacer combo.',
 

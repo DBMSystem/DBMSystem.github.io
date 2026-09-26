@@ -5,7 +5,7 @@ import { getUnlockedContent } from '../systems/unlocks.js';
 import { createRng } from '../utils/rng.js';
 import { createGrid, isCellFree, isFull } from './grid.js';
 import { findMatches, pickMatchAt } from './recipeMatcher.js';
-import { createTray, takeFromTray, generateIngredient, setPreview, missingIngredients } from './tray.js';
+import { createTray, takeFromTray, generateIngredient, setPreview, missingIngredients, demandWeights, createBag } from './tray.js';
 import { createComboState, registerCook, updateCombo } from './combo.js';
 import { recipePoints } from './scoring.js';
 import { chooseOrder, customerFor, freeSlot } from './customers.js';
@@ -99,7 +99,9 @@ export function createEngine({
   // Customers whose dish is not in a pan yet (spec 2.6): only they can still be cooked for.
   const waiting = () => state.customers.filter((c) => !c.cooking);
   const orderRecipes = () => waiting().map((c) => recipeById[c.recipeId]);
-  const weightOf = (i) => i.weight * (mod?.ingredient === i.id ? mod.weight : 1);
+  const demand = demandWeights(pool, orderable, balance.demandWeighting);
+  const weightOf = (i) => i.weight * demand[i.id] * (mod?.ingredient === i.id ? mod.weight : 1);
+  const bag = balance.ingredientBag > 0 ? createBag(rng, pool, weightOf, balance.ingredientBag) : null;
 
   // A special ingredient still under its per-loop cap, or null.
   function pickSpecial() {
@@ -121,7 +123,7 @@ export function createEngine({
       const special = pickSpecial();
       if (special) return special;
     }
-    return generateIngredient(rng, { pool, orderRecipes: orderRecipes(), grid: state.grid, tray, orderBias: balance.orderBias, weightOf });
+    return generateIngredient(rng, { pool, orderRecipes: orderRecipes(), grid: state.grid, tray, orderBias: balance.orderBias, weightOf, bag });
   }
   const rollGolden = (id) => !ingredientById[id]?.special && rng.next() < balance.goldenIngredientChance;
   state.tray = createTray(TRAY_SLOTS, generate, rollGolden);

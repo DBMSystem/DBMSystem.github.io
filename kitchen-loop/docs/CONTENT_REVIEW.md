@@ -176,3 +176,11 @@ Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challe
   - Nombres propios sin traducir (Pip, Brûlée, Patatas Bravas).
   - "¡En su punto!" → "Perfectly done!", "Fiebre en la cocina" → "Kitchen fever", "Encargos de Pip" → "Pip's Orders", "Almacén de Brûlée" → "Brûlée's Warehouse".
   - Inglés británico ("favourite", "neighbourhood").
+
+## Arte de las cartas y tutorial (0.9.2, draft)
+
+- **Ilustraciones de las 120 cartas** (`scripts/card_art.py`), dibujadas a juego con su nombre y su texto, sobre fondos en pixel art. Merece la pena revisar sobre todo las que interpretan el nombre:
+  - Sartén Abollada, Reloj de Cocina (va hacia atrás), Propina Caída (debajo de la nevera) y Tapa Misteriosa (ojos debajo de la tapa).
+  - Sello del Maestro Antiguo (sello de cera con una sartén), La Primera Receta (papel escrito a mano) y Cadena de Diez / Noche de Récord (pizarra con "x10" y "3000").
+- **Tutorial** (`tutorial.orderTomato`, `tutorial.orderCook`): "Ahora el tomate, pegado al pan." y "¡Brillan! Tócalos: el plato va a la sartén de su cliente."
+

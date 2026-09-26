@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.2 — Cartas coherentes, servicios parejos y mejor tutorial
+
+- **Las 120 cartas, redibujadas a juego con su nombre**, con fondo propio y sin nada recortado (`scripts/card_art.py`). Ejemplos:
+  - El Tomate Triste llora, el Queso Perezoso duerme y la Cebolla Llorona llora a chorros.
+  - El Huevo de Dos Yemas tiene dos yemas y los Aros de Cebolla son aros rebozados.
+  - La Luna de Queso brilla en la ventana y la Nota en la Nevera está en la nevera.
+  - La Tapa Misteriosa tiene ojos que brillan debajo.
+- **Seis cartas usan las ilustraciones de la referencia:** Vegana Enfadada, Huevo Quemado, DJ del Bacon, Maestro del Triple Bacon, Trufa Dorada y Tomate Explosivo.
+- **Servicios más parejos:** los ingredientes salen de una bolsa barajada y según las recetas que los usan. En el nivel 5 los desbordes pasan del 38 % al 2 % (`docs/LOOP_BALANCE.md`).
+- **Tutorial:** una mano de Pip en pixel art lleva el ingrediente hasta la casilla. El primer pedido también va guiado paso a paso.
+- 171 tests.
+
 ## 0.9.1 — Primera pantalla nítida e idiomas
 
 - El fondo de la presentación de Pip y de las escenas se ve nítido: la cocina en pixel art, sin difuminar.

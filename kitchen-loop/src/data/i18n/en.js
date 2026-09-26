@@ -226,6 +226,8 @@ export const en = {
   'tutorial.dragBacon': 'Now the bacon, right next to the egg.',
   'tutorial.cook': 'They glow! That’s a recipe. Tap it to cook it.',
   'tutorial.order': 'A customer! They want Tomato Toast: bread and tomato together.',
+  'tutorial.orderTomato': 'Now the tomato, right next to the bread.',
+  'tutorial.orderCook': 'They glow! Tap them: the dish goes to its customer’s pan.',
   'tutorial.pan': 'Into the pan! It cooks in their pan and serves itself. Don’t let their patience run out!',
   'tutorial.free': 'Now on your own! You have 30 seconds. Cook in a row to make a combo.',
 

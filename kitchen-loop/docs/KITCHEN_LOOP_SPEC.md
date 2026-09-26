@@ -75,7 +75,10 @@ Todo sistema secundario existe para reforzar este núcleo. Si no lo refuerza, no
 
 - Cada ingrediente ocupa **1 casilla**.
 - La bandeja tiene 3 huecos. Al colocar un ingrediente, su hueco se rellena con el de la vista previa y se genera una nueva vista previa.
-- **Generación**: bolsa ponderada con los ingredientes desbloqueados. Con probabilidad `orderBias` (0,35), el siguiente ingrediente será uno que falte para completar algún pedido activo. Esto evita partidas imposibles sin quitar el reto.
+- **Generación**: bolsa barajada con los ingredientes desbloqueados (`ingredientBag` fichas por ingrediente, que se rellena al vaciarse), sin rachas ni sequías.
+  - Cada ingrediente pesa según las recetas desbloqueadas que lo usan (`demandWeighting`).
+  - Con probabilidad `orderBias` (0,35), el siguiente ingrediente será uno que falte para completar algún pedido activo.
+  - Esto evita partidas imposibles, y que unas salgan mucho mejor que otras, sin quitar el reto (`docs/LOOP_BALANCE.md`).
 - Los ingredientes aparecen con una pequeña animación de entrada y partículas suaves (chispas, vapor o aceite según el ingrediente), limitadas por el sistema de partículas (sección 9.2).
 
 ### 2.3 Colocar
@@ -349,7 +352,7 @@ La rareza nunca se comunica solo con el color: siempre estrellas + forma del mar
   description: '...',
   lore: '...',            // máx. 140 caracteres
   storyFragment: null,    // número de fragmento de historia (sección 6.4) o null
-  art: 'cards/burnt_egg', // clave del manifiesto de assets
+  // arte: sprites cards/<id> y su fondo cards/bg_<tema>, dibujados por scripts/card_art.py a juego con el nombre
   draft: false,
 }
 ```
@@ -676,12 +679,12 @@ Objetivo: que en menos de 3 minutos el jugador piense "ya he empezado mi colecci
 
 ### 8.2 Loop tutorial (≤ 90 s)
 
-Secuencia de ingredientes fija. El tiempo no corre hasta el paso 5.
+Secuencia de ingredientes fija. El tiempo no corre hasta el paso 5. En cada gesto guiado, la mano de Pip lo muestra: lleva el ingrediente de la bandeja a la casilla, o toca las casillas que brillan.
 
 1. Pip: arrastra el huevo a la encimera.
 2. Arrastra el bacon al lado: las casillas brillan.
 3. Toca para cocinar: Bacon con Huevo.
-4. Llega un cliente que pide Tostada con Tomate: prepárala y se sirve sola.
+4. Llega un cliente que pide Tostada con Tomate: el pan, el tomate a su lado y tocar para cocinar, también guiados. Se sirve solo.
 5. Empieza un loop libre de 30 s con recetas de nivel 1.
 6. Resultados y primera carta.
 

@@ -1,30 +1,22 @@
 import { cardById, STARS } from '../data/cards.js';
-import { spriteUrl, spriteScale } from '../assets/manifest.js';
+import { spriteUrl } from '../assets/manifest.js';
+import backdrops from '../assets/cardBackdrops.json';
 import { t } from '../utils/i18n.js';
 
-// A card (spec 4.1, 4.9): frame shape per rarity (never colour alone), stars, number and name.
-// state: 'owned' | 'silhouette' (pack card not owned) | 'hidden' (discovery card not earned).
+// A card's illustration (scripts/card_art.py): its subject over its backdrop. Cards without a backdrop are a full
+// scene. The silhouette of a card not owned yet is its subject in shadow, without the backdrop.
 export function CardArt({ card, silhouette = false }) {
+  const backdrop = backdrops[card.id];
   return (
     <div className="card-art">
-      {card.art.map(([sprite, o = {}], i) =>
-        silhouette && o.backdrop ? null : (
-        <img
-          key={i}
-          src={spriteUrl(sprite)}
-          alt=""
-          draggable={false}
-          style={{
-            width: `${(o.scale ?? 0.9) * spriteScale(sprite) * 100}%`,
-            left: `${50 + (o.x ?? 0)}%`,
-            top: `${50 + (o.y ?? 0)}%`,
-            transform: `translate(-50%, -50%) rotate(${o.rotate ?? 0}deg)`,
-            filter: silhouette ? 'brightness(0)' : o.filter,
-            opacity: silhouette ? 0.35 : o.opacity,
-          }}
-        />
-        ),
-      )}
+      {backdrop && !silhouette && <img className="card-layer" src={spriteUrl(`cards/bg_${backdrop}`)} alt="" draggable={false} />}
+      <img
+        className="card-layer"
+        src={spriteUrl(`cards/${card.id}`)}
+        alt=""
+        draggable={false}
+        style={silhouette ? { filter: 'brightness(0)', opacity: backdrop ? 0.35 : 0.2 } : undefined}
+      />
     </div>
   );
 }

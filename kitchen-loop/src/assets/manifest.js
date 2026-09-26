@@ -13,8 +13,9 @@ export const manifest = Object.fromEntries([
 
 const images = new Map();
 
-// Preloads sprites (all by default). Never rejects: an image that fails keeps its placeholder.
-export function loadSprites(keys = Object.keys(manifest)) {
+// Preloads sprites (all the canvas ones by default: the card illustrations are plain <img> in the album).
+// Never rejects: an image that fails keeps its placeholder.
+export function loadSprites(keys = Object.keys(manifest).filter((key) => !key.startsWith('cards/'))) {
   return Promise.all(
     keys.map(
       (key) =>

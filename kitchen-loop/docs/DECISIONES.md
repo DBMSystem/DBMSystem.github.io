@@ -491,3 +491,38 @@ Tres mejoras de feedback sobre la sartén, sin mecánicas nuevas ni efecto en pu
   - Al borrar la partida se vuelve a preguntar.
 - **Arreglo de paso:** al tocar la pantalla de resultados para saltar sus animaciones, la pantalla cogía la clase `skip`, la del botón "Saltar" de las escenas. Heredaba su forma de píldora y todo se recortaba en óvalo. Ahora la clase se llama `no-anim`.
 
+
+## 25. Datos de la Fase 7 (Daniel: plantilla con los datos de las cuentas, "lo que me tendrás que ir pidiendo paso a paso mañana")
+
+- La plantilla es genérica. Lo adaptado a KITCHEN LOOP está en `docs/FASE7_DATOS.md`, en 10 pasos: qué ya fija la especificación y qué hay que preguntar.
+- **Choques con la especificación** (manda la especificación hasta que Daniel la cambie):
+  - Banner e intersticial: no se usan (7.1 y 7.3).
+  - `premium_lifetime` y la donación consumible no existen. Los productos son los 5 de la sección 7.4, todos de compra única.
+  - "Los premium no inicializan AdMob": pendiente de decidir (paso 8). Por defecto, opción A: quien tenga el Pase puede seguir viendo anuncios voluntarios. No se regalan "Segunda oportunidad" ni "Probar", porque sería vender ventaja.
+- **D-7 (plugin de pagos):** la recomendación es un plugin propio sobre Google Play Billing Library 8.x, sin RevenueCat. Pendiente de la respuesta de Daniel.
+- Ningún dato se inventa: lo que falte queda en constantes vacías con `PENDIENTE`.
+
+## 26. Cartas, reparto y tutorial (Daniel: «revisa la coherencia de todas las cartas… muchas no tienen sentido, están cortadas», «revisa más combinaciones y oportunidades… equilibrado en cada partida», «mejora la mano del tutorial»)
+
+- **Cartas:** revisé las 120 a tamaño real.
+  - **Qué fallaba:** muchas eran solo el ingrediente suelto, sin relación con su nombre:
+    - El Huevo de Dos Yemas eran dos huevos y los Aros de Cebolla, tres cebollas.
+    - La Nota en la Nevera era un libro y la Tapa Misteriosa, un icono con humo.
+    - El Coleccionista y el Visitante Nocturno usaban otro cliente recoloreado.
+    - Los fondos de cocina estaban recortados por la mitad y algunos personajes se salían del marco.
+  - **Ahora:** cada carta tiene su ilustración, generada por `scripts/card_art.py`:
+    - El sujeto va sobre uno de 19 fondos en pixel art (encimera, ventana de noche, amanecer, lluvia, comedor, despensa, huerto, mar, espacio, fuego, oro, corazones, escenario, magia, pizarra, nevera, sótano de Brûlée, sol y suelo).
+    - Lleva caras y accesorios dibujados en el mismo pixel art: lágrimas, zzz, notas, corona, cinta de samurái, casco, tapa, sobre, sello de cera…
+    - Nunca hay texto dentro del arte, porque no se podría traducir.
+  - **Referencia:** las seis cartas que ya ilustra `assets/ref/cards_ref.jpg` usan ese arte, recortado en vertical y sin el bocadillo en inglés. La referencia no se modifica.
+  - **Silueta:** la de las cartas que aún no tienes es el sujeto en sombra, sin el fondo.
+  - **Tamaño:** 1,5 MB en total (PNG de paleta). No se precargan con los sprites de la partida.
+- **Reparto de ingredientes:** ver `docs/LOOP_BALANCE.md`.
+  - Reparto por demanda: `demandWeighting` 0,5.
+  - Bolsa barajada: `ingredientBag` 2.
+  - No se añaden recetas ni mecánicas: solo cambia cómo reparte la bandeja.
+  - La economía se mantiene: un 5 % más de monedas en 150 días.
+- **Tutorial:**
+  - La mano es un sprite en pixel art (`ui/tutorial_hand`) que lleva el ingrediente hasta la casilla; antes era un dedo de dos rectángulos.
+  - El primer pedido (pan, tomate y cocinar) va guiado con la mano, como el primer plato.
+

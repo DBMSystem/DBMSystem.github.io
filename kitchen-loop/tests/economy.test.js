@@ -300,12 +300,13 @@ describe('album data (spec 4.3, 6.4, 15.1)', () => {
     for (const c of cards.filter((c) => c.unlock)) expect(known, c.id).toContain(c.unlock.type);
   });
 
-  it('every art layer points to an existing sprite', () => {
+  it('every card has its illustration and its backdrop (scripts/card_art.py)', async () => {
+    const backdrops = (await import('../src/assets/cardBackdrops.json')).default;
+    const sprite = (key) => ['png', 'jpg'].some((ext) => existsSync(join(import.meta.dirname, '../src/assets/sprites', `${key}.${ext}`)));
+    expect(Object.keys(backdrops).sort()).toEqual(cards.map((c) => c.id).sort());
     for (const c of cards) {
-      for (const [sprite] of c.art) {
-        const exists = ['png', 'jpg'].some((ext) => existsSync(join(import.meta.dirname, '../src/assets/sprites', `${sprite}.${ext}`)));
-        expect(exists, `${c.id}: ${sprite}`).toBe(true);
-      }
+      expect(sprite(`cards/${c.id}`), c.id).toBe(true);
+      if (backdrops[c.id]) expect(sprite(`cards/bg_${backdrops[c.id]}`), c.id).toBe(true);
     }
   });
 
