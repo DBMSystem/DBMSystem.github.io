@@ -42,7 +42,7 @@ describe('tutorial', () => {
     expect(engine.placeIngredient(0, 5)).toBe(true);
   });
 
-  it('full run: egg → bacon → cook → order served → 30 s free loop → end', () => {
+  it('full run: egg → bacon → cook → guided order served → 30 s free loop → end', () => {
     const { engine, runner, pump, wait, ended } = setup();
     engine.placeIngredient(0, 5);
     pump();
@@ -56,13 +56,17 @@ describe('tutorial', () => {
     expect(runner.step.id).toBe('order');
     expect(engine.state.customers.map((c) => c.recipeId)).toEqual(['tomato_toast']);
 
-    // Tray now holds bread and tomato.
-    const bread = engine.state.tray.slots.indexOf('bread');
-    const tomato = engine.state.tray.slots.indexOf('tomato');
+    // Guided order: bread (slot 0) to cell 9, tomato (slot 1) next to it, then cook.
+    expect(engine.state.tray.slots.slice(0, 2)).toEqual(['bread', 'tomato']);
     wait(0.5); // cooked cells unlock
-    engine.placeIngredient(bread, 0);
-    engine.placeIngredient(tomato, 1);
-    engine.cookAt(0);
+    expect(engine.placeIngredient(1, 9)).toBe(false);
+    expect(engine.placeIngredient(0, 9)).toBe(true);
+    pump();
+    expect(runner.step.id).toBe('orderTomato');
+    expect(engine.placeIngredient(1, 10)).toBe(true);
+    pump();
+    expect(runner.step.id).toBe('orderCook');
+    engine.cookAt(9);
     pump();
     expect(runner.step.id).toBe('pan');
     wait(balance.panCookTime - 0.1);

@@ -395,6 +395,7 @@ if __name__ == "__main__":
     write_visual_scales()
     boost_poses()
     generate_default_pan()
+    generate_tutorial_hand()
 
 
 # ---------- Kitchen decoration (spec 5.6), cut out of the day kitchen of the mega pack ----------
@@ -896,3 +897,33 @@ def generate_default_pan():
     out = black.copy()
     out[..., 0], out[..., 1], out[..., 2] = steel * 0.95, steel * 0.98, np.clip(steel * 1.06, 0, 255)
     save(Image.fromarray(out.astype("uint8"), "RGBA"), SPRITES / "pans" / "default.png")
+
+
+def generate_tutorial_hand():
+    """Pip's hand for the tutorial (Daniel: a better tutorial hand): pixel art pointing up, in the chef jacket's
+    sleeve. The fingertip is at the top, 6.5 blocks from the left (the renderer's HAND_TIP)."""
+    from card_art import PAL, pattern
+
+    PAL.update({"h": (255, 214, 170), "H": (232, 170, 128), "j": (255, 236, 214)})
+    rows = [
+        ".....hh........",
+        "....hjjh.......",
+        "....hhhH.......",
+        "....hhhH.......",
+        "....hhhH.......",
+        "....hhhH.......",
+        "....hhhHhhh....",
+        "....hhhhhhHhhh.",
+        ".hh.hhhhHhhhhHh",
+        "hhhhhhhhhHhhhhh",
+        "hhhHhhhhhhhHhhh",
+        "hhhhHhhhhhhhhhh",
+        ".hhhhhhhhhhhhhH",
+        ".hhhhhhhhhhhhH.",
+        "..hhhhhhhhhhH..",
+        "...hhhhhhhhH...",
+        "..wwwwwwwwwww..",
+        "..wwwwwwwwwww..",
+        "..sssssssssss..",
+    ]
+    save(pattern(rows, p=6), SPRITES / "ui" / "tutorial_hand.png")

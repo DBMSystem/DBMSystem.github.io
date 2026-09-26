@@ -501,3 +501,28 @@ Tres mejoras de feedback sobre la sartén, sin mecánicas nuevas ni efecto en pu
   - "Los premium no inicializan AdMob": pendiente de decidir (paso 8). Por defecto, opción A: quien tenga el Pase puede seguir viendo anuncios voluntarios. No se regalan "Segunda oportunidad" ni "Probar", porque sería vender ventaja.
 - **D-7 (plugin de pagos):** la recomendación es un plugin propio sobre Google Play Billing Library 8.x, sin RevenueCat. Pendiente de la respuesta de Daniel.
 - Ningún dato se inventa: lo que falte queda en constantes vacías con `PENDIENTE`.
+
+## 26. Cartas, reparto y tutorial (Daniel: «revisa la coherencia de todas las cartas… muchas no tienen sentido, están cortadas», «revisa más combinaciones y oportunidades… equilibrado en cada partida», «mejora la mano del tutorial»)
+
+- **Cartas:** revisé las 120 a tamaño real.
+  - **Qué fallaba:** muchas eran solo el ingrediente suelto, sin relación con su nombre:
+    - El Huevo de Dos Yemas eran dos huevos y los Aros de Cebolla, tres cebollas.
+    - La Nota en la Nevera era un libro y la Tapa Misteriosa, un icono con humo.
+    - El Coleccionista y el Visitante Nocturno usaban otro cliente recoloreado.
+    - Los fondos de cocina estaban recortados por la mitad y algunos personajes se salían del marco.
+  - **Ahora:** cada carta tiene su ilustración, generada por `scripts/card_art.py`:
+    - El sujeto va sobre uno de 19 fondos en pixel art (encimera, ventana de noche, amanecer, lluvia, comedor, despensa, huerto, mar, espacio, fuego, oro, corazones, escenario, magia, pizarra, nevera, sótano de Brûlée, sol y suelo).
+    - Lleva caras y accesorios dibujados en el mismo pixel art: lágrimas, zzz, notas, corona, cinta de samurái, casco, tapa, sobre, sello de cera…
+    - Nunca hay texto dentro del arte, porque no se podría traducir.
+  - **Referencia:** las seis cartas que ya ilustra `assets/ref/cards_ref.jpg` usan ese arte, recortado en vertical y sin el bocadillo en inglés. La referencia no se modifica.
+  - **Silueta:** la de las cartas que aún no tienes es el sujeto en sombra, sin el fondo.
+  - **Tamaño:** 1,5 MB en total (PNG de paleta). No se precargan con los sprites de la partida.
+- **Reparto de ingredientes:** ver `docs/LOOP_BALANCE.md`.
+  - Reparto por demanda: `demandWeighting` 0,5.
+  - Bolsa barajada: `ingredientBag` 2.
+  - No se añaden recetas ni mecánicas: solo cambia cómo reparte la bandeja.
+  - La economía se mantiene: un 5 % más de monedas en 150 días.
+- **Tutorial:**
+  - La mano es un sprite en pixel art (`ui/tutorial_hand`) que lleva el ingrediente hasta la casilla; antes era un dedo de dos rectángulos.
+  - El primer pedido (pan, tomate y cocinar) va guiado con la mano, como el primer plato.
+

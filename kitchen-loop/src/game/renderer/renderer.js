@@ -39,6 +39,8 @@ const FEVER_SPARK_EVERY = 0.18;
 const RAIN_DROPS = 36;
 const REACTION_LINES = 2; // react.<customer>.1–2 in es.js
 const FULL_STOVE_TIME = 1.4;
+const HAND_HEIGHT = 52; // tutorial hand (ui/tutorial_hand, scripts/extract_sprites.py)
+const HAND_TIP = { x: 0.4, y: 0.03 }; // its fingertip, in fractions of the sprite
 export const ABILITIES = ['move', 'discard', 'freeze'];
 
 // `cosmetics`: { pan, night } — the equipped pan seen when cooking and the Maestro Pass's night kitchen (spec 7.4, 7.5).
@@ -838,32 +840,35 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     ctx.restore();
   }
 
-  // Tutorial pointer: a finger that drags from a tray slot to a cell, or taps glowing cells.
-  function drawFinger(x, y, pressed) {
+  // Tutorial pointer: Pip's hand drags the ingredient from its tray slot to a cell, or taps glowing cells.
+  function drawFinger(x, y, pressed, carrying = null) {
     ctx.save();
-    ctx.translate(x, y);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
-    ctx.beginPath();
-    ctx.ellipse(4, 22, 12, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = COLORS.cream;
-    ctx.strokeStyle = COLORS.ink;
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.roundRect(-7, -4, 14, 30, 7);
-    ctx.fill();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.roundRect(-11, 14, 24, 22, 8);
-    ctx.fill();
-    ctx.stroke();
     if (pressed) {
       ctx.strokeStyle = COLORS.glow;
       ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.9;
       ctx.beginPath();
-      ctx.arc(0, -6, 14, 0, Math.PI * 2);
+      ctx.arc(x, y, 16 + 4 * Math.sin(view.time * 10), 0, Math.PI * 2);
       ctx.stroke();
+      ctx.globalAlpha = 1;
     }
+    if (carrying) {
+      ctx.globalAlpha = 0.9;
+      const s = CELL_SPRITE * 0.8;
+      drawIngredient(ctx, carrying, x - s / 2, y - s * 0.75, s, pixelScale);
+      ctx.globalAlpha = 1;
+    }
+    const hand = getSprite('ui/tutorial_hand');
+    const h = HAND_HEIGHT * (pressed ? 0.92 : 1);
+    const w = hand ? (h * hand.width) / hand.height : h * 0.8;
+    const left = x - w * HAND_TIP.x;
+    const top = y - h * HAND_TIP.y;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+    ctx.beginPath();
+    ctx.ellipse(left + w * 0.55, top + h + 3, w * 0.4, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (hand) ctx.drawImage(hand, left, top, w, h);
+    else kit.roundRect(left, top, w, h, 8, COLORS.cream, COLORS.ink, 2.5);
     ctx.restore();
   }
 
@@ -886,15 +891,17 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       const from = center(layout.tray[hint.slot]);
       const to = center(target);
       const m = ease(clamp01((k - 0.15) / 0.6));
-      drawFinger(from.x + (to.x - from.x) * m, from.y + (to.y - from.y) * m, k < 0.15 || k > 0.75);
+      const carrying = k < 0.8 ? state.tray.slots[hint.slot] : null;
+      drawFinger(from.x + (to.x - from.x) * m, from.y + (to.y - from.y) * m, k < 0.15 || k > 0.75, carrying);
     } else if (hint.glowing) {
       const cells = [...state.glowing];
       if (cells.length === 0) return;
       const c = center(cellRect(layout, cells[0]));
       const press = k < 0.3;
       kit.roundRect(c.x - 36, c.y - 36, 72, 72, 10, null, COLORS.target, 3 + 2 * Math.sin(view.time * 8));
-      drawFinger(c.x + 6, c.y + (press ? 4 : 12), press);
-    } else if (hint.customer && state.customers.length > 0) {
+      drawFinger(c.x + 4, c.y + (press ? 2 : 10), press);
+    }
+    if (hint.customer && state.customers.length > 0) {
       const slot = layout.customers[state.customers[0].slot];
       const bob = Math.sin(view.time * 6) * 4;
       const ax = slot.x + slot.w + 8;

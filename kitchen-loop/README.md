@@ -11,6 +11,8 @@ npm run build           # versión de producción en dist/ (sin mocks)
 node scripts/simulateEconomy.js > docs/ECONOMY_REPORT.md   # simulación de economía
 node scripts/simulatePlaythrough.js skilled > docs/PLAYTHROUGH_REPORT.md   # un bot se pasa el juego (skilled|casual)
 python3 scripts/extract_sprites.py                        # regenerar sprites (Pillow + numpy)
+python3 scripts/card_art.py                               # ilustraciones de las cartas
+node scripts/simulateLoops.js 300                          # equilibrio de cada servicio (docs/LOOP_BALANCE.md)
 npm run build:android   # web + sincronizar el proyecto Android (Capacitor)
 python3 scripts/android_assets.py                         # icono y pantalla de inicio de Android
 ```
