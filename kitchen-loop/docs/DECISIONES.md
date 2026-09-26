@@ -491,3 +491,13 @@ Tres mejoras de feedback sobre la sartén, sin mecánicas nuevas ni efecto en pu
   - Al borrar la partida se vuelve a preguntar.
 - **Arreglo de paso:** al tocar la pantalla de resultados para saltar sus animaciones, la pantalla cogía la clase `skip`, la del botón "Saltar" de las escenas. Heredaba su forma de píldora y todo se recortaba en óvalo. Ahora la clase se llama `no-anim`.
 
+
+## 25. Datos de la Fase 7 (Daniel: plantilla con los datos de las cuentas, "lo que me tendrás que ir pidiendo paso a paso mañana")
+
+- La plantilla es genérica. Lo adaptado a KITCHEN LOOP está en `docs/FASE7_DATOS.md`, en 10 pasos: qué ya fija la especificación y qué hay que preguntar.
+- **Choques con la especificación** (manda la especificación hasta que Daniel la cambie):
+  - Banner e intersticial: no se usan (7.1 y 7.3).
+  - `premium_lifetime` y la donación consumible no existen. Los productos son los 5 de la sección 7.4, todos de compra única.
+  - "Los premium no inicializan AdMob": pendiente de decidir (paso 8). Por defecto, opción A: quien tenga el Pase puede seguir viendo anuncios voluntarios. No se regalan "Segunda oportunidad" ni "Probar", porque sería vender ventaja.
+- **D-7 (plugin de pagos):** la recomendación es un plugin propio sobre Google Play Billing Library 8.x, sin RevenueCat. Pendiente de la respuesta de Daniel.
+- Ningún dato se inventa: lo que falte queda en constantes vacías con `PENDIENTE`.
