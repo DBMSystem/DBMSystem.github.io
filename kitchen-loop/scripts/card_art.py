@@ -693,8 +693,20 @@ REF_WINDOWS = {  # card: its art window in assets/ref/cards_ref.jpg (inside the 
 }
 
 
-def ref_art(card, card_id, y=146):
-    """The reference illustration, whole: scaled to the card's width and framed like a picture."""
+REF_SUBJECTS = {  # the part of each window around its subject (window coordinates): it fills the card's width
+    "angry_vegan": (20, 0, 250, 174),
+    "burnt_egg": (10, 0, 240, 174),
+    "triple_bacon_master": (30, 0, 236, 150),  # without the check marks of the reference card
+    "bacon_dj": (5, 0, 245, 174),
+    "golden_truffle": (40, 0, 212, 174),
+    "exploding_tomato": (36, 0, 216, 174),
+}
+
+
+def ref_art(card, card_id, fade=22):
+    """The reference illustration filling the card's width (Daniel: the framed version looked out of proportion):
+    cropped around its subject, which is never cut, and fading at the top and bottom into the card's backdrop,
+    chosen to match the illustration's own background."""
     art = Image.open(REF_CARDS).convert("RGBA").crop(REF_WINDOWS[card_id])
     if card_id == "angry_vegan":  # the bubble said "NO MEAT!!" in English: a crossed-out bacon instead
         d = ImageDraw.Draw(art)
@@ -703,13 +715,17 @@ def ref_art(card, card_id, y=146):
         art.alpha_composite(bacon, (196, 11))
         d.line((196, 14, 236, 48), fill=rgba(PAL["r"]), width=5)
         d.line((236, 14, 196, 48), fill=rgba(PAL["r"]), width=5)
-    w = W - 16
-    art = art.resize((w, round(art.height * w / art.width)), Image.LANCZOS)
-    frame = Image.new("RGBA", (art.width + 8, art.height + 8), OUTLINE)
-    ImageDraw.Draw(frame).rectangle((2, 2, frame.width - 3, frame.height - 3), fill=rgba(PAL["c"]))
-    frame.alpha_composite(art, (4, 4))
-    card.layer(frame, W / 2, y)
-    card.last = (W / 2 - art.width / 2, y - art.height / 2, W / 2 + art.width / 2, y + art.height / 2)
+    art = art.crop(REF_SUBJECTS[card_id])
+    art = art.resize((W, round(art.height * W / art.width)), Image.LANCZOS)
+    a = np.asarray(art).astype(float)
+    ramp = np.ones(art.height)
+    if art.height < H:
+        edge = np.minimum(np.arange(art.height), np.arange(art.height)[::-1])
+        ramp = np.clip(edge / fade, 0, 1)
+    a[..., 3] *= ramp[:, None]
+    top = max(0, (H - art.height) // 2)
+    card.img.alpha_composite(Image.fromarray(a.astype("uint8"), "RGBA"), (0, top))
+    card.last = (0, top, W, top + art.height)
 
 
 # ---------------------------------------------------------------- the cards
@@ -1143,15 +1159,15 @@ def build_cards():
 
     @card("fallen_tip", "floor")
     def _(c):
-        # It rolled under the fridge: the fridge, the dark gap under it and the coin's glint.
+        # It rolled under the fridge: a whole fridge standing on the floor, the coin peeking out from under it.
+        c.pat(PROPS["coin"], 150, 158, p=6)
         fridge = ["ssssssssssssss", "szzzzzzzzzzzzS", "szzzzzzzzzzSzS", "szzzzzzzzzzSzS", "szzzzzzzzzzzzS", "sSSSSSSSSSSSSS",
-                  "szzzzzzzzzzzzS", "szzzzzzzzzzSzS", "szzzzzzzzzzSzS", "szzzzzzzzzzSzS", "szzzzzzzzzzzzS", "szzzzzzzzzzzzS",
-                  "sSSSSSSSSSSSSS", "qqqqqqqqqqqqqq"]
-        c.pat(fridge, 166, 108, p=11)
-        c.pat(PROPS["coin"], 150, 176, p=6)
-        c.pat(["q" * 26] * 2, 166, 168, outline=False, p=6)
-        c.pat(PROPS["sparkle"], 118, 180, outline=False, p=4)
-        c.put("pip/thinking", h=150, x=56, y=200)
+                  "szzzzzzzzzzzzS", "szzzzzzzzzzSzS", "szzzzzzzzzzSzS", "szzzzzzzzzzSzS", "szzzzzzzzzzzzS", "sSSSSSSSSSSSSS",
+                  "qqqqqqqqqqqqqq", ".d..........d."]
+        art = pattern(fridge, p=9)
+        c.layer(art, 168, 160 - art.height / 2 + 9)
+        c.pat(PROPS["sparkle"], 118, 166, outline=False, p=4)
+        c.put("pip/thinking", h=150, x=58, y=200)
 
     @card("steam_cloud", "dawn")
     def _(c):
@@ -1287,10 +1303,18 @@ def build_cards():
 
     @card("travel_souvenir", "dining")
     def _(c):
-        c.put("customers/tourist_happy", h=190, x=110, y=124)
-        photo = ["wwwwwwwwwww"] + ["wlllllllllw"] * 7 + ["wwwwwwwwwww"] * 3
-        c.pat(photo, 180, 214, p=6, rot=-8)
-        c.put("dishes/tomato_toast", w=52, x=180, y=204)
+        # He took a photo of his toast: he holds up the print, the toast on its plate inside the picture.
+        c.put("customers/tourist_happy", h=160, x=108, y=140)
+        photo = Image.new("RGBA", (96, 110), rgba(PAL["w"]))
+        d = ImageDraw.Draw(photo)
+        d.rectangle((8, 8, 87, 83), fill=rgba(PAL["l"]))
+        d.rectangle((8, 60, 87, 83), fill=(230, 70, 70, 255))
+        toast = sprite("dishes/tomato_toast")
+        toast = toast.resize((64, round(toast.height * 64 / toast.width)), Image.LANCZOS)
+        photo.alpha_composite(toast, (16, 83 - toast.height - 2))
+        photo = with_outline(photo).rotate(-12, Image.BICUBIC, expand=True)
+        c.layer(photo, 180, 86)
+        c.pat(PROPS["heart"], 212, 170, p=4)
 
     @card("happy_office", "dining")
     def _(c):
@@ -1574,9 +1598,10 @@ def build_cards():
 
     @card("full_house", "dining")
     def _(c):
-        c.put("customers/calm_happy", h=120, x=54, y=190)
-        c.put("customers/office_happy", h=120, x=186, y=190)
-        c.put("customers/student_happy", h=130, x=W / 2, y=150)
+        # Not a free chair: three happy customers at the table, all inside the card.
+        c.put("customers/calm_happy", h=112, x=58, y=196)
+        c.put("customers/office_happy", h=112, x=180, y=196)
+        c.put("customers/student_happy", h=124, x=W / 2, y=148)
 
     @card("mystery_lid", "magic")
     def _(c):
@@ -1718,6 +1743,33 @@ def build_cards():
     return cards
 
 
+# Cards whose art is meant to reach the edges: the reference illustrations and the fridge's light.
+FULL_BLEED = set(REF_WINDOWS) | {"midnight_snack"}
+MARGIN = 5
+
+
+def fit_inside(img):
+    """Nothing is cut off (Daniel): if the art reaches the card's edges, it is scaled down around its centre and
+    moved inside a small margin."""
+    box = img.getchannel("A").point(lambda a: 255 if a > 128 else 0).getbbox()
+    if not box:
+        return img
+    x0, y0, x1, y1 = box
+    if x0 >= MARGIN and y0 >= MARGIN and x1 <= W - MARGIN and y1 <= H - MARGIN:
+        return img
+    full = img.getbbox()
+    art = img.crop(full)
+    scale = min(1, (W - 2 * MARGIN) / (x1 - x0), (H - 2 * MARGIN) / (y1 - y0))
+    art = art.resize((round(art.width * scale), round(art.height * scale)), Image.LANCZOS)
+    left = round(full[0] + (full[2] - full[0]) * (1 - scale) / 2)
+    top = round(full[1] + (full[3] - full[1]) * (1 - scale) / 2)
+    left = min(max(left, MARGIN - round((x0 - full[0]) * scale)), W - MARGIN - round((x1 - full[0]) * scale))
+    top = min(max(top, MARGIN - round((y0 - full[1]) * scale)), H - MARGIN - round((y1 - full[1]) * scale))
+    out = Image.new("RGBA", (W, H))
+    out.alpha_composite(art, (max(0, left), max(0, top)))
+    return out
+
+
 def main(only):
     OUT.mkdir(parents=True, exist_ok=True)
     cards = build_cards()
@@ -1727,6 +1779,8 @@ def main(only):
             continue
         c = Card()
         draw(c)
+        if card_id not in FULL_BLEED:
+            c.img = fit_inside(c.img)
         for stale in OUT.glob(f"{card_id}.*"):
             stale.unlink()
         if bg:  # a palette PNG keeps the subject's transparency for the album silhouette at a fraction of the size

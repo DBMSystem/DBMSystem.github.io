@@ -536,3 +536,20 @@ Tres mejoras de feedback sobre la sartén, sin mecánicas nuevas ni efecto en pu
   - Al DJ de la referencia le faltaba el bacon del nombre: se le añaden dos lonchas en la sartén.
 - **Visitante Nocturno y Turista de Otro Mundo** usaban el mismo personaje. El Visitante se ve a oscuras, con ojos brillantes; el Turista lleva cámara y tostada.
 
+## 28. Correcciones de Daniel en 8 cartas (0.9.4)
+
+Daniel: «Chef rival error en sombrero, propina caída error línea, estudiante con prisa error corte pelo, recuerdo de viaje error fotografía, casa llena corte pelo, triple bacon, tomate explosivo y trufa dorada error proporción».
+
+- **Sombrero del Chef Rival:**
+  - **Causa:** al quitar el fondo blanco de la referencia se fue también el blanco del gorro.
+  - **Arreglo:** `repair_chef_hat` en `scripts/extract_sprites.py` rellena el gorro de blanco en sus tres poses. Se ve igual en las cartas y en la partida.
+- **Pelo del estudiante:**
+  - **Causa:** las poses de llegada y contento venían cortadas en recto por la rejilla de la hoja de referencia, con restos de otra figura encima.
+  - **Arreglo:** `repair_cut_hair` quita los restos y talla el corte en mechones con contorno.
+- **Propina Caída:** la nevera se dibuja entera, de pie en el suelo, con la moneda asomando por debajo. Antes, el hueco negro parecía una línea suelta.
+- **Recuerdo de Viaje:** la foto es una polaroid con la Tostada con Tomate en su plato, en la mano del turista.
+- **Cartas de la referencia:**
+  - **Proporción:** la ilustración llena la carta a lo ancho, recortada alrededor de su protagonista, y se funde arriba y abajo con un fondo del mismo color. Enmarcada quedaba pequeña.
+  - **Maestro del Triple Bacon:** se quitan las marcas «✓ ×3» de la carta original.
+- **Ninguna carta se sale del borde:** `fit_inside` reduce y recoloca el dibujo si toca el borde de la carta, salvo en las que llegan al borde a propósito.
+
