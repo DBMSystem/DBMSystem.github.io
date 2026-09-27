@@ -177,7 +177,9 @@ Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challe
   - "¡En su punto!" → "Perfectly done!", "Fiebre en la cocina" → "Kitchen fever", "Encargos de Pip" → "Pip's Orders", "Almacén de Brûlée" → "Brûlée's Warehouse".
   - Inglés británico ("favourite", "neighbourhood").
 
-## Arte de las cartas y tutorial (0.9.2, draft)
+## Arte de las cartas y tutorial (0.9.2 y 0.9.3, draft)
+
+- Revisión carta a carta en `docs/CARD_ART_REVIEW.md`.
 
 - **Ilustraciones de las 120 cartas** (`scripts/card_art.py`), dibujadas a juego con su nombre y su texto, sobre fondos en pixel art. Merece la pena revisar sobre todo las que interpretan el nombre:
   - Sartén Abollada, Reloj de Cocina (va hacia atrás), Propina Caída (debajo de la nevera) y Tapa Misteriosa (ojos debajo de la tapa).

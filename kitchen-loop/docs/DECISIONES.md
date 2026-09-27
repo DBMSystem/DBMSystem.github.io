@@ -526,3 +526,13 @@ Tres mejoras de feedback sobre la sartén, sin mecánicas nuevas ni efecto en pu
   - La mano es un sprite en pixel art (`ui/tutorial_hand`) que lleva el ingrediente hasta la casilla; antes era un dedo de dos rectángulos.
   - El primer pedido (pan, tomate y cocinar) va guiado con la mano, como el primer plato.
 
+## 27. Cartas revisadas una a una (Daniel: «analiza las cartas una a una, hay mucha incongruencia, rediséñalas una a una»)
+
+- La revisión completa, carta por carta, está en `docs/CARD_ART_REVIEW.md`: qué fallaba y qué muestra ahora cada una.
+- **Caras:** eran demasiado pequeñas para leerse. Ahora son más grandes (ojos con brillo, cejas y boca), y sobre objetos oscuros como las sartenes se dibujan en claro.
+- **Ilustraciones de la referencia:**
+  - Se ven enteras, escaladas al ancho de la carta y enmarcadas sobre un fondo a juego. Recortarlas para llenar la carta en vertical se comía hasta un 40 % de los lados.
+  - El bocadillo «NO MEAT!!» estaba en inglés y no se podía traducir: ahora muestra un bacon tachado.
+  - Al DJ de la referencia le faltaba el bacon del nombre: se le añaden dos lonchas en la sartén.
+- **Visitante Nocturno y Turista de Otro Mundo** usaban el mismo personaje. El Visitante se ve a oscuras, con ojos brillantes; el Turista lleva cámara y tostada.
+

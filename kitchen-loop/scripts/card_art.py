@@ -173,53 +173,61 @@ def shape(fn, gw, gh, color_fn, outline=True, p=P):
 
 # ---------------------------------------------------------------- faces and small props
 
+# Faces in the style of the reference cards (assets/ref/cards_ref.jpg): big eyes with a white shine, clear brows
+# and mouths. `mirror` eyes are drawn flipped on the right-hand side.
 EYES = {
-    "dot": ["wk", "kk"],
-    "big": [".kk.", "kwkk", "kkkk", ".kk."],
-    "happy": [".k.", "k.k"],
-    "closed": ["kkk"],
-    "side": ["kkk", ".kk"],
-    "o": [".k.", "k.k", ".k."],
-    "x": ["k.k", ".k.", "k.k"],
-    "swirl": ["kkk", "k.k", "k.."],
+    "dot": [".kk.", "kwkk", "kkkk", ".kk."],
+    "big": [".kkk.", "kwwkk", "kwkkk", "kkkkk", ".kkk."],
+    "happy": [".kk.", "k..k"],
+    "closed": ["k..k", ".kk."],
+    "side": ["kkkk", "..wk", "..kk"],
+    "o": [".kk.", "k..k", "k..k", ".kk."],
+    "x": ["k..k", ".kk.", ".kk.", "k..k"],
+    "swirl": ["kkkk", "k..k", "k.kk", "k..."],
+    "squint": ["k...", ".kk.", "...k", ".kk.", "k..."],
     "star": [".y.", "yyy", ".y."],
-    "wink": ["k.k", ".k."],
+    "wink": ["k..k", ".kk."],
+    "glow": ["yyy", "yYy", "yyy"],
 }
+MIRROR_EYES = {"side", "squint"}
 MOUTHS = {
-    "smile": ["k...k", ".kkk."],
-    "grin": ["kkkkk", "krrrk", ".kkk."],
-    "sad": [".kkk.", "k...k"],
-    "wavy": ["kk..k", "..kk."],
-    "o": [".k.", "k.k", ".k."],
-    "flat": ["kkk"],
-    "small": [".k.", "k.k"],
-    "shout": [".kkk.", "krrrk", "krrrk", ".kkk."],
-    "grit": ["kkkkk", "kwkwk", "kkkkk"],
-    "cat": ["k.k.k", ".k.k."],
+    "smile": ["k....k", ".kkkk."],
+    "grin": ["kkkkkk", "krrrrk", ".kkkk."],
+    "sad": [".kkkk.", "k....k"],
+    "wavy": ["kk..kk", "..kk.."],
+    "o": [".kk.", "k..k", ".kk."],
+    "flat": ["kkkk"],
+    "small": ["k..k", ".kk."],
+    "shout": [".kkkk.", "krrrrk", "krrrrk", ".kkkk."],
+    "grit": ["kkkkkk", "kwkwkk", "kkkkkk"],
+    "cat": ["k.kk.k", ".k..k."],
+    "pout": [".kk.", "k..k"],
 }
 BROWS = {
-    "angry": (["k..", ".kk"], ["..k", "kk."]),
-    "sad": ([".kk", "k.."], ["kk.", "..k"]),
-    "up": (["kk."], [".kk"]),
+    "angry": (["kk..", "..kk"], ["..kk", "kk.."]),
+    "sad": (["..kk", "kk.."], ["kk..", "..kk"]),
+    "up": ([".kkk", "k..."], ["kkk.", "...k"]),
 }
 
 
-def face(card, x, y, eyes="dot", mouth="smile", gap=6, brows=None, blush=True, p=P):
-    """A kawaii face centred on (x, y): eyes `gap` blocks apart, mouth below, pink cheeks."""
-    e = pattern(EYES[eyes], outline=False, p=p)
-    m = pattern(MOUTHS[mouth], outline=False, p=p)
+def face(card, x, y, eyes="dot", mouth="smile", gap=7, brows=None, blush=True, p=P, ink="k"):
+    """A kawaii face centred on (x, y): eyes `gap` blocks apart, mouth below, pink cheeks. `ink`: on dark things, 'z'."""
+    ink_map = {"k": ink, "w": "k" if ink != "k" else "w"}
+    e = pattern(EYES[eyes], outline=False, p=p, recolor=ink_map)
+    m = pattern(MOUTHS[mouth], outline=False, p=p, recolor=ink_map)
     dx = gap * p / 2
     card.layer(e, x - dx, y)
-    card.layer(e.transpose(Image.FLIP_LEFT_RIGHT) if eyes in ("side",) else e, x + dx, y)
+    card.layer(e.transpose(Image.FLIP_LEFT_RIGHT) if eyes in MIRROR_EYES else e, x + dx, y)
+    below = e.height / 2
     if blush:
-        cheek = pattern(["pp"], outline=False, p=p)
-        card.layer(cheek, x - dx - p, y + 3 * p)
-        card.layer(cheek, x + dx + p, y + 3 * p)
-    card.layer(m, x, y + 3.5 * p)
+        cheek = pattern(["ppp"], outline=False, p=p)
+        card.layer(cheek, x - dx - 1.5 * p, y + below + p)
+        card.layer(cheek, x + dx + 1.5 * p, y + below + p)
+    card.layer(m, x, y + below + 1.5 * p + m.height / 2)
     if brows:
         left, right = BROWS[brows]
-        card.layer(pattern(left, outline=False, p=p), x - dx, y - 2.5 * p)
-        card.layer(pattern(right, outline=False, p=p), x + dx, y - 2.5 * p)
+        card.layer(pattern(left, outline=False, p=p, recolor=ink_map), x - dx, y - below - 1.5 * p)
+        card.layer(pattern(right, outline=False, p=p, recolor=ink_map), x + dx, y - below - 1.5 * p)
 
 
 PROPS = {
@@ -571,15 +579,17 @@ def hearts_fn(i, j):
 
 
 def stage_fn(i, j):
-    base = mix((60, 30, 110), (30, 16, 60), j / GH)
-    for cx, color in ((10, (255, 120, 200)), (30, (120, 220, 255)), (50, (255, 230, 120))):
-        spread = (j + 4) * 0.28
-        if abs(i - cx) < spread and noise(i, j, cx) < 0.9:
-            base = mix(base, color, 0.28)
-    if j > 58:
-        return (90, 50, 150) if (i // 4 + j // 4) % 2 else (130, 80, 190)
-    if noise(i, j, 2) < 0.02:
-        return (255, 255, 255)
+    """A little dance floor: a disco ball's coloured light spots on a dark wall, tiled floor."""
+    if j > 56:
+        return (90, 50, 150) if (i // 4 + j // 4) % 2 else (140, 90, 200)
+    base = mix((50, 26, 96), (28, 14, 56), j / 56)
+    if i == 30 and j < 5:
+        return (180, 180, 190)
+    if (i - 30) ** 2 + (j - 8) ** 2 < 14:
+        return (230, 230, 240) if (i + j) % 2 else (150, 160, 190)
+    spot = (i * 5 + (j // 3) * 7) % 23
+    if j % 6 < 2 and spot < 2:
+        return ((255, 140, 210), (140, 220, 255), (255, 230, 130))[(i + j) % 3]
     return base
 
 
@@ -621,20 +631,30 @@ def brulee_fn(i, j):
 
 
 def sun_fn(i, j):
+    """A dojo morning for the samurai tomato: rising sun in a corner, bamboo, grass."""
     if j > 56:
         return (120, 170, 90) if (i + j) % 7 else (90, 140, 70)
-    if (i - 30) ** 2 + (j - 26) ** 2 < 280:
+    if (i - 48) ** 2 + (j - 12) ** 2 < 70:
         return (230, 70, 60)
+    if i in (4, 5, 9, 10) and j % 9 != 0:
+        return (110, 170, 90) if i in (4, 9) else (80, 140, 70)
     return mix((255, 244, 220), (250, 226, 196), j / 56)
 
 
 def floor_fn(i, j):
-    """Under the fridge: its bottom edge and a dark gap, then the kitchen floor."""
-    if j < 30:
-        return mix((220, 244, 240), (196, 226, 222), i / GW)
-    if j < 33:
-        return (60, 50, 50)
+    """Low view of the kitchen: wall with a skirting board, then the tiled floor."""
+    if j < 38:
+        return (250, 236, 214)
+    if j < 41:
+        return (170, 112, 66)
     return (200, 160, 120) if (i // 6 + j // 6) % 2 else (180, 140, 104)
+
+
+def sea_window_sky(i, j, w, h):
+    if j < h * 0.55:
+        return mix((140, 205, 250), (200, 235, 255), j / (h * 0.55))
+    wave = (j + int(1.5 * math.sin(i / 2))) % 4 == 0
+    return (220, 240, 255) if wave else (60, 150, 220)
 
 
 BACKDROPS = {
@@ -657,24 +677,39 @@ BACKDROPS = {
     "brulee": brulee_fn,
     "sun": sun_fn,
     "floor": floor_fn,
+    "seawindow": window_fn(sea_window_sky),
 }
 
 
 # ---------------------------------------------------------------- the reference illustrations
 
-REF_CROPS = {  # card: crop of its art in assets/ref/cards_ref.jpg (portrait, centred on the subject)
-    "angry_vegan": (150, 144, 300, 318),
-    "burnt_egg": (545, 144, 695, 318),
-    "triple_bacon_master": (918, 144, 1068, 318),
-    "bacon_dj": (176, 504, 326, 678),
-    "golden_truffle": (540, 504, 690, 678),
-    "exploding_tomato": (913, 504, 1063, 678),
+REF_WINDOWS = {  # card: its art window in assets/ref/cards_ref.jpg (inside the painted frame)
+    "angry_vegan": (114, 142, 364, 316),
+    "burnt_egg": (484, 142, 734, 316),
+    "triple_bacon_master": (854, 142, 1104, 316),
+    "bacon_dj": (114, 502, 364, 676),
+    "golden_truffle": (484, 502, 734, 676),
+    "exploding_tomato": (854, 502, 1104, 676),
 }
 
 
-def ref_scene(card_id):
-    crop = Image.open(REF_CARDS).convert("RGBA").crop(REF_CROPS[card_id])
-    return crop.resize((W, H), Image.LANCZOS)
+def ref_art(card, card_id, y=146):
+    """The reference illustration, whole: scaled to the card's width and framed like a picture."""
+    art = Image.open(REF_CARDS).convert("RGBA").crop(REF_WINDOWS[card_id])
+    if card_id == "angry_vegan":  # the bubble said "NO MEAT!!" in English: a crossed-out bacon instead
+        d = ImageDraw.Draw(art)
+        d.rounded_rectangle((188, 10, 244, 52), 8, fill=(255, 255, 255, 255))
+        bacon = sprite("ingredients/bacon").resize((40, 40), Image.LANCZOS)
+        art.alpha_composite(bacon, (196, 11))
+        d.line((196, 14, 236, 48), fill=rgba(PAL["r"]), width=5)
+        d.line((236, 14, 196, 48), fill=rgba(PAL["r"]), width=5)
+    w = W - 16
+    art = art.resize((w, round(art.height * w / art.width)), Image.LANCZOS)
+    frame = Image.new("RGBA", (art.width + 8, art.height + 8), OUTLINE)
+    ImageDraw.Draw(frame).rectangle((2, 2, frame.width - 3, frame.height - 3), fill=rgba(PAL["c"]))
+    frame.alpha_composite(art, (4, 4))
+    card.layer(frame, W / 2, y)
+    card.last = (W / 2 - art.width / 2, y - art.height / 2, W / 2 + art.width / 2, y + art.height / 2)
 
 
 # ---------------------------------------------------------------- the cards
@@ -733,7 +768,7 @@ def ing(card, name, h, x=W / 2, y=H / 2 + 10, rot=0, flip=False, fx=None, face_k
                 fxy = (1 - fxy[0], fxy[1])
         else:
             fxy = INGREDIENT_FACE[name]
-        put_face(card, name, *fxy, p=face_scale or max(3, min(6, round(h / 26))), **face_kw)
+        put_face(card, name, *fxy, p=face_scale or max(4, min(7, round(h / 25))), **face_kw)
     return card
 
 
@@ -751,27 +786,37 @@ def build_cards():
     # ---- commons
     @card("dubious_toast", "counter")
     def _(c):
-        c.put("ingredients/bread", h=150, y=160, fx=lambda im: tint(im, lambda rgb: rgb * 0.95 + np.array([10, 8, 0])))
-        put_face(c, "bread", 0.5, 0.55, eyes="side", mouth="wavy", brows="up")
-        c.pat(PROPS["question"], 190, 70)
-        c.pat(PROPS["question"], 60, 84, p=4)
+        # Nobody knows if it is done or raw: one half toasted, the other half still pale bread.
+        def half_toasted(im):
+            a = np.asarray(im).astype(float)
+            left = (np.arange(a.shape[1]) < a.shape[1] / 2)[None, :, None]
+            pale = a[..., :3] * 0.55 + np.array([255, 240, 205]) * 0.45
+            a[..., :3] = np.where(left, a[..., :3] * 0.72, pale)
+            return Image.fromarray(np.clip(a, 0, 255).astype("uint8"), "RGBA")
 
-    @card("burnt_egg", None)
+        ing(c, "bread", 160, y=160, fx=half_toasted, face_kw=dict(eyes="side", mouth="wavy", brows="up"))
+        c.pat(PROPS["question"], 200, 58)
+        c.pat(PROPS["question"], 46, 70, p=4)
+
+    @card("burnt_egg", "fire")
     def _(c):
-        c.img = ref_scene("burnt_egg")
+        ref_art(c, "burnt_egg")
 
     @card("sad_tomato", "counter")
     def _(c):
-        c.put("ingredients/bread", h=70, x=62, y=205, rot=8)
-        ing(c, "tomato", 130, x=140, y=150, fx=lambda im: tint(im, lambda rgb: rgb * np.array([0.9, 0.92, 1.0])),
-            face_kw=dict(eyes="dot", mouth="sad", brows="sad"))
-        x, y = c.at(0.5, 0.58)
-        c.pat(PROPS["tear"], x - 20, y + 22)
-        c.pat(PROPS["tear"], x + 26, y + 34, p=4)
+        plate = ["." + "s" * 14 + ".", "s" * 16, "S" * 16]
+        c.pat(plate, 58, 236, p=5)
+        c.put("ingredients/bread", h=62, x=58, y=210, rot=6, fx=lambda im: tint(im, lambda rgb: rgb * 0.8 + 30))
+        ing(c, "tomato", 150, x=146, y=152, face_kw=dict(eyes="dot", mouth="sad", brows="sad"))
+        x0, y0, x1, y1 = c.last
+        c.pat(PROPS["tear"], x0 + (x1 - x0) * 0.2, y0 + (y1 - y0) * 0.72)
+        c.pat(PROPS["tear"], x0 + (x1 - x0) * 0.82, y0 + (y1 - y0) * 0.78, p=5)
 
     @card("normal_bacon", "counter")
     def _(c):
-        ing(c, "bacon", 150, y=150, face_kw=dict(eyes="dot", mouth="small"))
+        ing(c, "bacon", 160, y=156, face_kw=dict(eyes="happy", mouth="smile"))
+        for x, y, p in ((44, 74, 4), (196, 64, 5), (206, 116, 3)):
+            c.pat(PROPS["heart"], x, y, p=p)
 
     @card("suspicious_potato", "pantry")
     def _(c):
@@ -780,41 +825,49 @@ def build_cards():
 
     @card("lazy_cheese", "counter")
     def _(c):
-        ing(c, "cheese", 120, y=180, rot=-80, face_kw=None)
-        face(c, 118, 176, eyes="closed", mouth="small")
-        c.pat(PROPS["z"], 170, 110, outline=False)
-        c.pat(PROPS["z"], 196, 80, outline=False, p=4)
-        c.pat(PROPS["z"], 214, 58, outline=False, p=3)
+        # Lying flat, half melted over the counter, asleep.
+        drip = ["yyyyyyyyyyyyyyyyyyyy", ".yyy.yyyyy..yyyyy.yy.", "..y...yyy....yyy..y..", "......y.......y......"]
+        c.pat(drip, W / 2, 222, p=6)
+        ing(c, "cheese", 120, y=172, face_kw=None)
+        face(c, W / 2 + 6, 180, eyes="closed", mouth="small", p=5)
+        for x, y, p in ((168, 104, 6), (196, 76, 5), (216, 52, 4)):
+            c.pat(PROPS["z"], x, y, outline=False, p=p)
 
     @card("shy_mushroom", "counter")
     def _(c):
-        ing(c, "mushroom", 110, x=150, y=140, rot=-10, face_kw=dict(eyes="closed", mouth="small"))
-        c.put("ingredients/egg", h=110, x=110, y=196)
-        c.pat(PROPS["heart"], 196, 86, p=4)
+        # Hiding under the fried egg, only its blushing cap peeking out.
+        ing(c, "mushroom", 120, x=132, y=116, rot=-8, face_kw=dict(eyes="closed", mouth="small", gap=6))
+        c.put("ingredients/egg", w=200, x=W / 2, y=208)
+        c.pat(PROPS["heart"], 204, 64, p=5)
 
     @card("crying_onion", "counter")
     def _(c):
-        ing(c, "onion", 150, y=150, face_kw=dict(eyes="closed", mouth="shout", brows="sad"))
-        x, y = c.at(0.5, 0.64)
-        for side in (-1, 1):
-            for k in range(4):
-                c.pat(["b"], x + side * 18, y + 12 + k * 8, outline=False)
-            c.pat(PROPS["tear"], x + side * 34, y + 36)
+        ing(c, "onion", 160, y=150, face_kw=dict(eyes="closed", mouth="shout", brows="sad"))
+        x0, y0, x1, y1 = c.last
+        for side, fx in ((-1, 0.33), (1, 0.67)):
+            x = x0 + (x1 - x0) * fx
+            for k in range(5):
+                c.pat(["b"], x + side * 4, y0 + (y1 - y0) * 0.66 + k * 7, outline=False, p=6)
+            c.pat(PROPS["tear"], x + side * 26, y0 + (y1 - y0) * 0.95)
 
-    @card("lost_herbs", "garden")
+    @card("lost_herbs", "counter")
     def _(c):
-        c.put("dishes/fish_stew", w=110, x=70, y=214)
-        ing(c, "herbs", 130, x=150, y=130, rot=-25, face_kw=dict(eyes="swirl", mouth="o", blush=False))
-        c.pat(PROPS["question"], 60, 80)
-        c.pat(PROPS["question"], 206, 196, p=4)
+        # Herbs landing, lost, on a plate that is not theirs (the cheesy scramble).
+        c.put("dishes/cheesy_scramble", w=190, y=212)
+        ing(c, "herbs", 120, x=124, y=112, rot=-30, face_kw=dict(eyes="swirl", mouth="o", blush=False))
+        c.pat(PROPS["question"], 44, 64)
+        c.pat(PROPS["question"], 204, 96, p=4)
 
-    @card("fish_out_of_water", "counter")
+    @card("fish_out_of_water", "seawindow")
     def _(c):
-        c.pat(["." + "l" * 26 + ".", "l" * 28, "." + "l" * 26 + "."], W / 2, 212, outline=False)
-        c.put("ingredients/fish", w=190, y=176, rot=8)
-        for x, y in ((60, 110), (186, 104), (206, 140)):
-            c.pat(PROPS["sweat"], x, y)
-        c.pat(PROPS["exclaim"], 120, 86)
+        # It has never seen a kitchen, and now it does not want to go back: a delighted fish on the counter.
+        c.put("ingredients/fish", w=196, y=186, rot=6)
+        x0, y0, x1, y1 = c.last
+        c.pat(["pp", "pp"], x0 + (x1 - x0) * 0.8, y0 + (y1 - y0) * 0.62, outline=False, p=5)
+        c.pat(["k....k", ".kkkk."], x0 + (x1 - x0) * 0.9, y0 + (y1 - y0) * 0.72, outline=False, p=3)
+        for x, y, p in ((150, 122, 5), (190, 104, 4), (206, 140, 3)):
+            c.pat(PROPS["heart"], x, y, p=p)
+        pan(c, 50, 236, w=76)
 
     @card("dancing_bread", "stage")
     def _(c):
@@ -825,32 +878,43 @@ def build_cards():
 
     @card("double_yolk", "counter")
     def _(c):
-        c.put("egg2", w=180, y=160, img=double_yolk_egg())
-        c.pat(PROPS["sparkle"], 44, 84, outline=False)
-        c.pat(PROPS["sparkle"], 200, 90, outline=False)
+        c.put("egg2", w=190, y=164, img=double_yolk_egg())
+        clover = [".gg.gg.", "gGggGgg", ".ggggg.", "gGggGgg", ".gg.gg.", "...n...", "...n..."]
+        c.pat(clover, 196, 66, p=5)
+        c.pat(PROPS["sparkle"], 44, 82, outline=False)
 
     @card("midnight_snack", "night")
     def _(c):
-        c.put("dishes/bacon_sandwich", w=170, y=196, fx=lambda im: bluish(im, 0.85))
-        c.pat(PROPS["z"], 196, 132, outline=False, p=4)
+        # Made in silence with the lights off: only the light of the open fridge.
+        cone = Image.new("RGBA", (W, H))
+        ImageDraw.Draw(cone).polygon([(W, 90), (W, 150), (30, 250), (60, 170)], fill=(255, 236, 160, 90))
+        c.img.alpha_composite(cone)
+        c.pat(["sssss", "sslss", "sslss", "sssss", "sssss", "sssss", "sssss", "sssss", "sssss", "sssss"], 222, 130, p=8)
+        c.put("dishes/bacon_sandwich", w=170, x=104, y=206)
+        c.pat(PROPS["z"], 40, 110, outline=False, p=4)
 
     @card("crispy_bacon", "counter")
     def _(c):
-        c.put("dishes/triple_bacon", w=190, y=170)
-        for x, y, r in ((40, 90, 0), (200, 86, 0), (120, 66, 0)):
-            c.pat(["y.y", ".y.", "y.y"], x, y, outline=False)
+        c.put("dishes/triple_bacon", w=200, y=176)
+        crunch = ["y...y", ".y.y.", "..y..", ".y.y.", "y...y"]
+        for x, y, p in ((36, 78, 6), (204, 70, 6), (120, 50, 5)):
+            c.pat(crunch, x, y, p=p)
 
     @card("happy_bravas", "dining")
     def _(c):
-        c.put("dishes/bravas", w=190, y=176)
-        c.pat(PROPS["heart"], 196, 76, p=4)
-        c.pat(PROPS["heart"], 44, 92, p=4)
+        c.put("dishes/bravas", w=200, y=186)
+        pick = ["..........yy", "..........yy", ".........n..", "........n...", ".......n....", "......n.....",
+                ".....n......", "....n.......", "...n........", "..n........."]
+        c.pat(pick, 86, 130, p=4)
+        c.pat(pick, 156, 130, p=4, flip=True)
+        c.pat(PROPS["heart"], 120, 58, p=6)
 
     @card("grandma_tortilla", "dining")
     def _(c):
-        c.put("dishes/spanish_omelette", w=180, y=172)
-        c.put("ingredients/onion", h=60, x=196, y=100)
-        c.pat(PROPS["red_heart"], 50, 80, p=4)
+        # Grandma's tortilla, with onion: she stands behind it and nobody argues.
+        c.put("customers/calm_angry", h=150, x=74, y=110)
+        c.put("dishes/spanish_omelette", w=170, x=138, y=208)
+        c.put("ingredients/onion", h=58, x=208, y=132)
 
     @card("lonely_salad", "dining")
     def _(c):
@@ -860,22 +924,24 @@ def build_cards():
 
     @card("pip_apron", "counter")
     def _(c):
-        c.put("pip/thumbs_up", h=220, y=150)
-        rng = R(4)
+        c.put("pip/thumbs_up", h=226, y=146)
         x0, y0, x1, y1 = c.last
-        for colour in "roynrg":
+        rng = R(4)
+        for colour in "roynrgy":
             x = rng.uniform(x0 + (x1 - x0) * 0.4, x0 + (x1 - x0) * 0.62)
-            y = rng.uniform(y0 + (y1 - y0) * 0.62, y0 + (y1 - y0) * 0.8)
-            c.pat([".%s%s" % (colour, colour), colour * 3, "%s%s." % (colour, colour)], x, y, outline=False, p=5)
+            y = rng.uniform(y0 + (y1 - y0) * 0.66, y0 + (y1 - y0) * 0.86)
+            c.pat([".%s%s" % (colour, colour), colour * 3, "%s%s." % (colour, colour)], x, y, outline=False, p=4)
 
     @card("dented_pan", "counter")
     def _(c):
-        pan(c, W / 2, 160, w=210, rot=20)
-        x, y = c.at(0.36, 0.42)
-        c.pat(["..zzz..", ".zSSSs.", "zSdddSs", "zSdqdSs", ".sSdSs.", "..sss.."], x, y, outline=False, p=6)
-        for dx, dy in ((-40, -46), (30, -56), (-54, 4)):
-            c.pat(["y.y", ".y.", "y.y"], x + dx, y + dy, outline=False)
-        c.pat(PROPS["question"], 200, 80)
+        # Nobody remembers what dented it: a bump on the rim and a plaster over it.
+        pan(c, W / 2, 168, w=214, rot=18)
+        x, y = c.at(0.2, 0.3)
+        plaster = ["..ttt..", ".ttttt.", "tttTttt", "ttTTTtt", "tttTttt", ".ttttt.", "..ttt.."]
+        c.pat(plaster, x + 26, y + 34, p=6, rot=45)
+        for dx, dy in ((-10, -30), (40, -44), (-34, 10)):
+            c.pat(["y.y", ".y.", "y.y"], x + dx, y + dy, outline=False, p=5)
+        c.pat(PROPS["question"], 206, 70)
 
     @card("kitchen_clock", "counter")
     def _(c):
@@ -900,8 +966,11 @@ def build_cards():
 
     @card("twin_tomatoes", "counter")
     def _(c):
-        ing(c, "tomato", 110, x=80, y=170, face_kw=dict(eyes="happy", mouth="smile"))
-        ing(c, "tomato", 110, x=166, y=156, rot=10, face_kw=dict(eyes="x", mouth="wavy", blush=False))
+        # One sweet, one sour: they take turns being the favourite.
+        ing(c, "tomato", 120, x=74, y=172, face_kw=dict(eyes="happy", mouth="grin"))
+        c.pat(PROPS["heart"], 44, 90, p=5)
+        ing(c, "tomato", 120, x=170, y=160, rot=8, face_kw=dict(eyes="squint", mouth="pout", blush=False))
+        c.pat(["y.y.y", ".y.y."], 206, 86, outline=False, p=5)
 
     @card("cheese_moon", "night")
     def _(c):
@@ -913,20 +982,28 @@ def build_cards():
         put_face(c, "moon", 0.5, 0.5, eyes="closed", mouth="small")
         c.put("ingredients/cheese", h=64, x=190, y=210)
 
-    @card("mushroom_umbrella", "rain")
+    @card("mushroom_umbrella", "counter")
     def _(c):
-        ing(c, "mushroom", 180, y=150, face_kw=dict(eyes="dot", mouth="smile"))
-        for x in (40, 70, 170, 200, 110):
-            c.pat(["l", "l", "b"], x, 40 + (x % 3) * 12, outline=False)
-        for x in (84, 150):
-            c.pat(["tT", "TT"], x, 244)
-            face(c, x + 1, 238, eyes="dot", mouth="small", gap=2, blush=False, p=2)
+        # The tap drips; the crumbs run to shelter under the mushroom's cap.
+        tap = ["sssssss..", "sSSSSSSs.", ".....sSs.", ".....sSs.", "......b.."]
+        c.pat(tap, 150, 30, p=6)
+        for y in (62, 84):
+            c.pat(["l", "b"], 186, y, outline=False, p=5)
+        ing(c, "mushroom", 170, x=W / 2, y=160, face_kw=dict(eyes="dot", mouth="smile"))
+        for x in (82, 118, 156):
+            c.pat(["tTt", "TtT", "tTt"], x, 250, p=6)
+            face(c, x, 247, eyes="closed", mouth="small", gap=2, blush=False, p=2)
 
     @card("onion_rings", "counter")
     def _(c):
-        for x, y in ((70, 214), (164, 214), (118, 170), (78, 124), (160, 128)):
-            c.layer(ring_shape(), x, y)
-        c.put("ingredients/onion", h=62, x=204, y=60)
+        # "Three onions in a row": three battered rings in a row on a plate. If you cry, they are perfect.
+        plate = ["." + "s" * 34 + ".", "s" * 36, "S" * 36]
+        c.pat(plate, W / 2, 210, p=6)
+        for x in (58, 120, 182):
+            c.layer(ring_shape(), x, 180)
+        c.put("ingredients/onion", h=70, x=196, y=74)
+        c.pat(PROPS["tear"], 50, 90)
+        c.pat(PROPS["tear"], 74, 64, p=4)
 
     @card("herb_bouquet", "garden")
     def _(c):
@@ -936,12 +1013,13 @@ def build_cards():
 
     @card("jumping_fish", "counter")
     def _(c):
-        pan(c, 160, 222, w=140)
-        c.put("ingredients/fish", w=150, x=96, y=110, rot=-35)
-        for k in range(5):
-            c.pat(["S"], 150 + k * 10, 120 + k * 14, outline=False)
-        for x, y in ((50, 180), (70, 196)):
-            c.pat(PROPS["sweat"], x, y, p=4)
+        # From the basket to the pan without anyone asking.
+        basket = ["n.nnnnnnnn.n", ".n........n.", "NnNnNnNnNnNn", "nNnNnNnNnNnN", "NnNnNnNnNnNn", ".nNnNnNnNnN."]
+        c.pat(basket, 60, 228, p=7)
+        pan(c, 180, 232, w=110)
+        c.put("ingredients/fish", w=140, x=118, y=112, rot=-25)
+        for k in range(6):
+            c.pat(["S"], 54 + k * 12, 184 - k * 14 + k * k, outline=False, p=5)
 
     @card("bacon_wave", "counter")
     def _(c):
@@ -972,11 +1050,11 @@ def build_cards():
 
     @card("forest_omelette", "garden")
     def _(c):
-        c.put("dishes/mushroom_omelette", w=196, y=184)
-        c.put("ingredients/mushroom", h=58, x=80, y=110, rot=-10)
-        put_face(c, "mushroom", 0.5, 0.36, eyes="dot", mouth="o", gap=4, blush=False, p=3)
-        c.put("ingredients/mushroom", h=46, x=170, y=104, rot=12)
-        put_face(c, "mushroom", 0.5, 0.36, eyes="closed", mouth="small", gap=4, blush=False, p=3)
+        # The mushrooms hid inside so nobody would see them. It did not work: they peek out of the omelette.
+        for x, rot, eyes in ((80, -12, "dot"), (130, 6, "closed"), (176, 14, "side")):
+            c.put("ingredients/mushroom", h=62, x=x, y=132, rot=rot)
+            put_face(c, "mushroom", 0.5, 0.36, eyes=eyes, mouth="small", gap=4, blush=False, p=3)
+        c.put("dishes/mushroom_omelette", w=210, y=190)
 
     @card("skewer_parade", "garden")
     def _(c):
@@ -1004,16 +1082,18 @@ def build_cards():
 
     @card("sandwich_tower", "counter")
     def _(c):
-        sandwich(c, W / 2, 262)
-        for x, y in ((34, 90), (206, 140)):
-            c.pat(PROPS["sweat"], x, y)
+        sandwich(c, 104, 262)
+        c.put("pip/surprised", h=120, x=196, y=204)
+        c.pat(PROPS["exclaim"], 196, 118)
 
     @card("pip_confused", "counter")
     def _(c):
-        c.put("pip/confused", h=210, y=140)
-        salt = [".sss.", "sSsSs", "wwwww", "wwwww", "wwwww", "wwwww"]
-        c.pat(salt, 40, 230)
-        c.pat(["wwww", "wzzw", "wwww"], 206, 236)
+        # Was that salt or sugar?
+        c.put("pip/confused", h=216, y=140)
+        salt = ["..sss..", ".sSsSs.", ".sssss.", "wwwwwww", "wwwwwww", "wwwwwww", "wwwwwww", "wwwwwww", ".wwwww."]
+        c.pat(salt, 34, 222, p=6)
+        sugar = [".z.z.z.", "zwzwzwz", "sssssss", "sbbbbbs", ".sbbbs.", "..sss.."]
+        c.pat(sugar, 206, 236, p=6)
 
     @card("pip_winking", "counter")
     def _(c):
@@ -1023,10 +1103,16 @@ def build_cards():
 
     @card("pip_worried", "counter")
     def _(c):
-        c.put("pip/worried", h=210, y=150)
-        c.put("decor/wall_clock", w=64, x=200, y=60)
-        for x, y in ((50, 90), (40, 130)):
-            c.pat(PROPS["sweat"], x, y)
+        # Three customers waiting and the bread still in the oven.
+        oven = ["ssssssssssss", "sddddddddddS", "sdooooooooqS", "sdoyyyyyyoqS", "sdoooooooodS", "sddddddddddS", "sSSSSSSSSSSS",
+                "s.s.s...s.sS"]
+        c.pat(oven, 186, 206, p=7)
+        c.put("ingredients/bread", h=26, x=184, y=203)
+        c.put("pip/worried", h=196, x=86, y=158)
+        for k in range(3):
+            speech(c, 60 + k * 62, 40, gw=8, gh=6)
+            c.put("dishes/tomato_toast", w=34, x=60 + k * 62, y=36)
+        c.pat(PROPS["sweat"], 30, 110)
 
     @card("regular_customer", "dining")
     def _(c):
@@ -1037,7 +1123,9 @@ def build_cards():
     def _(c):
         c.put("customers/student_arrive", h=210, x=140, y=140)
         motion(c, 36, 110, n=4, length=7, gap=6)
-        c.put("ingredients/clock", h=56, x=206, y=232)
+        book = ["bbbbbbbb", "bwwwwwwb", "bwSSSSwb", "bwwwwwwb", "bwSSSwwb", "bbbbbbbb", "BBBBBBBB"]
+        c.pat(book, 50, 232, p=6, rot=-10)
+        c.put("ingredients/clock", h=58, x=204, y=232)
 
     @card("coffee_break", "dining")
     def _(c):
@@ -1055,17 +1143,22 @@ def build_cards():
 
     @card("fallen_tip", "floor")
     def _(c):
-        c.put("pip/thinking", h=160, x=78, y=190)
-        c.pat(PROPS["coin"], 176, 136, p=7)
-        c.pat(["q" * 60] * 3, W / 2, 126, outline=False)
-        c.pat(PROPS["sparkle"], 206, 150, outline=False, p=4)
-        for k in range(4):
-            c.pat(["S"], 150 - k * 14, 184 + (k % 2) * 6, outline=False)
+        # It rolled under the fridge: the fridge, the dark gap under it and the coin's glint.
+        fridge = ["ssssssssssssss", "szzzzzzzzzzzzS", "szzzzzzzzzzSzS", "szzzzzzzzzzSzS", "szzzzzzzzzzzzS", "sSSSSSSSSSSSSS",
+                  "szzzzzzzzzzzzS", "szzzzzzzzzzSzS", "szzzzzzzzzzSzS", "szzzzzzzzzzSzS", "szzzzzzzzzzzzS", "szzzzzzzzzzzzS",
+                  "sSSSSSSSSSSSSS", "qqqqqqqqqqqqqq"]
+        c.pat(fridge, 166, 108, p=11)
+        c.pat(PROPS["coin"], 150, 176, p=6)
+        c.pat(["q" * 26] * 2, 166, 168, outline=False, p=6)
+        c.pat(PROPS["sparkle"], 118, 180, outline=False, p=4)
+        c.put("pip/thinking", h=150, x=56, y=200)
 
     @card("steam_cloud", "dawn")
     def _(c):
-        c.put("vfx/smoke", w=190, y=100, fx=lambda im: tint(im, lambda rgb: rgb * 0.35 + 150))
-        pan(c, W / 2, 222, w=150, key="ui/icon_cook")
+        # Something burnt: Pip opens the window and calls it a "smoky touch".
+        c.put("vfx/smoke", w=170, x=132, y=86, fx=lambda im: tint(im, lambda rgb: rgb * 0.35 + 150))
+        c.put("ui/icon_cook", w=130, x=150, y=226)
+        c.put("pip/embarrassed", h=130, x=54, y=206)
 
     @card("fridge_note", "fridge")
     def _(c):
@@ -1077,8 +1170,8 @@ def build_cards():
 
     @card("morning_kitchen", "dawn")
     def _(c):
-        c.put("ingredients/bread", h=110, y=210)
-        steam(c, W / 2, 140, n=3, spread=20, length=6)
+        c.put("ingredients/bread", h=120, y=212)
+        steam(c, W / 2, 150, n=3, spread=22, length=5)
 
     @card("potato_family", "pantry")
     def _(c):
@@ -1091,48 +1184,62 @@ def build_cards():
         ing(c, "potato", 60, x=124, y=238, face_kw=dict(eyes="dot", mouth="small", gap=4), face_scale=3)
 
     # ---- rares
-    @card("angry_vegan", None)
+    @card("angry_vegan", "garden")
     def _(c):
-        c.img = ref_scene("angry_vegan")
+        ref_art(c, "angry_vegan")
 
-    @card("bacon_dj", None)
+    @card("bacon_dj", "stage")
     def _(c):
-        c.img = ref_scene("bacon_dj")
+        # The reference DJ spins a pan: two sizzling rashers of bacon go on it, the DJ of bacon.
+        ref_art(c, "bacon_dj")
+        x0, y0, x1, y1 = c.last
+        for dx, rot in ((-0.12, 12), (0.1, -10)):
+            c.put("ingredients/bacon", h=34, x=x0 + (x1 - x0) * (0.5 + dx), y=y0 + (y1 - y0) * 0.6, rot=rot)
+        for x in (60, 120, 180):
+            c.pat(PROPS["note"], x, 38, outline=False, p=4, recolor={"k": "Y"})
 
     @card("samurai_tomato", "sun")
     def _(c):
-        ing(c, "tomato", 150, y=160, face_kw=dict(eyes="dot", mouth="flat", brows="angry", blush=False))
+        # Headband, and a katana on its back: the hilt shows over its shoulder.
+        sword = ["z" + "s" * 26 + "y" + "nknknk"]
+        c.pat(sword, 130, 120, p=6, rot=40)
+        ing(c, "tomato", 160, y=170, face_kw=dict(eyes="dot", mouth="flat", brows="angry", blush=False))
         x0, y0, x1, y1 = c.last
-        band_y = y0 + (y1 - y0) * 0.4
-        cols = int((x1 - x0) * 0.86 / 5)
+        band_y = y0 + (y1 - y0) * 0.38
+        cols = int((x1 - x0) * 0.9 / 5)
         c.pat(["r" * cols, "R" * cols], W / 2, band_y, p=5)
-        c.pat(["rr..", ".rr.", "..rr", "..rr"], x1 - 2, band_y + 18, p=5)
-        sword = ["kk" + "s" * 22 + "z", "nn" + "S" * 22 + "."]
-        c.pat(sword, 76, 234, p=5, rot=30)
+        c.pat(["rr..", ".rr.", "..rr", "..rr"], x1 - 4, band_y + 20, p=5)
 
     @card("astronaut_egg", "space")
     def _(c):
-        ing(c, "egg", 120, y=150, rot=-15, face_kw=dict(eyes="big", mouth="o"))
-        c.layer(bubble_helmet(), W / 2, 150)
-        c.pat(PROPS["star"], 40, 60, outline=False, p=4)
-        c.pat(PROPS["star"], 204, 236, outline=False, p=4)
+        # It wanted to see the kitchen from above: an egg in its helmet over a frying pan planet.
+        pan(c, 150, 238, w=150)
+        ing(c, "egg", 110, x=104, y=110, rot=-15, face_kw=dict(eyes="big", mouth="o"))
+        c.layer(bubble_helmet(), 104, 110)
+        c.pat(PROPS["star"], 206, 56, outline=False, p=4)
+        c.pat(PROPS["star"], 34, 204, outline=False, p=3)
 
     @card("grumpy_grandma", "dining")
     def _(c):
-        c.put("customers/calm_angry", h=200, y=130)
-        for x in (90, 110):
-            c.pat(PROPS["coin"], x, 240, p=6)
+        c.put("customers/calm_angry", h=210, y=130)
+        for x, y in ((150, 236), (172, 240), (194, 236)):
+            c.pat(PROPS["coin"], x, y, p=6)
 
     @card("sleepy_pip", "night")
     def _(c):
-        c.put("pip/sleeping", h=200, y=160)
-        for x, y, p in ((170, 90, 4), (196, 66, 3), (214, 46, 2)):
-            c.pat(PROPS["z"], x, y, outline=False, p=p)
+        # Asleep on the counter, murmuring names of recipes: one in a dream bubble.
+        c.put("pip/sleeping", h=196, x=100, y=170)
+        for x, y, p in ((160, 96, 3), (176, 80, 4)):
+            c.pat([".ww.", "wwww", ".ww."], x, y, p=p)
+        speech(c, 196, 50, gw=10, gh=8)
+        c.put("dishes/full_breakfast", w=46, x=196, y=44)
 
     @card("alien_tourist", "space")
     def _(c):
-        c.put("customers/tourist", h=210, y=150)
-        c.put("dishes/tomato_toast", w=80, x=196, y=230)
+        c.put("customers/tourist", h=210, x=110, y=150)
+        camera = ["..ss......", "kkkkkkkkkk", "kSSSllSSSk", "kSSlbblSSk", "kSSlbblSSk", "kSSSllSSSk", "kkkkkkkkkk"]
+        c.pat(camera, 200, 186, p=5)
+        c.put("dishes/tomato_toast", w=70, x=196, y=240)
 
     @card("champions_breakfast", "dining")
     def _(c):
@@ -1154,10 +1261,10 @@ def build_cards():
     @card("midnight_kitchen", "night")
     def _(c):
         pan(c, 64, 216, w=104, rot=0, flip=True)
-        put_face(c, "pan", 0.62, 0.5, eyes="happy", mouth="grin", p=5)
+        put_face(c, "pan", 0.62, 0.5, eyes="happy", mouth="grin", p=4, ink="z")
         pan(c, 176, 216, w=104)
-        put_face(c, "pan", 0.38, 0.5, eyes="dot", mouth="o", p=5)
-        speech(c, 120, 130, gw=13, gh=8)
+        put_face(c, "pan", 0.38, 0.5, eyes="dot", mouth="o", p=4, ink="z")
+        speech(c, 120, 128, gw=13, gh=8)
         c.pat(PROPS["star"], 104, 118, outline=False, p=4)
         c.pat(["..yy", ".y..", ".y..", "..yy"], 138, 118, outline=False, p=5)
 
@@ -1195,29 +1302,34 @@ def build_cards():
         c.put("customers/student_happy", h=190, y=120)
         c.put("dishes/full_breakfast", w=150, x=W / 2, y=226)
 
-    @card("quiet_afternoon", "dawn")
+    @card("quiet_afternoon", "dining")
     def _(c):
-        c.put("customers/calm_idle", h=200, x=110, y=132)
-        paper = ["wwwwwwwww", "wSSSwSSSw", "wwwwwwwww", "wSSSwSSSw", "wSSSwSSSw", "wwwwwwwww"]
-        c.pat(paper, 70, 238, rot=6)
-        cup = ["..wwwww..", "..wnnnw..", "..wwwwwww", "..wwwww.w", "..wwwwwww", "wwwwwwwww"]
-        c.pat(cup, 184, 236)
-        steam(c, 180, 196, n=2, spread=12, length=5)
+        c.put("customers/calm_idle", h=200, x=110, y=130)
+        paper = ["wwwwwwwwww", "wSSSSwSSSw", "wwwwwwwwww", "wSSSSwSSSw", "wSSSSwSSSw", "wwwwwwwwww", "wSSSSwSSSw", "wwwwwwwwww"]
+        c.pat(paper, 62, 236, p=6, rot=8)
+        cup = ["..wwwwww...", "..wnnnnw...", "..wwwwwwww.", "..wwwwww.w.", "..wwwwwwww.", "wwwwwwwwwww"]
+        c.pat(cup, 184, 240, p=6)
+        steam(c, 180, 196, n=2, spread=14, length=5)
 
     @card("sea_king", "sea")
     def _(c):
-        c.put("ingredients/fish", w=200, y=170, rot=-8)
-        x, y = c.at(0.8, 0.12)
-        c.pat(PROPS["crown"], x, y - 10, p=6, rot=-14)
+        c.put("ingredients/fish", w=200, y=176, rot=-8)
+        a = np.asarray(c.img)[..., 3]
+        cols = np.nonzero(a.max(axis=0) > 0)[0]
+        head_x = cols.max() - 36  # the head is on the right; its top edge is where the crown sits
+        head_y = np.nonzero(a[:, head_x] > 0)[0].min()
+        c.pat(PROPS["crown"], head_x, head_y - 14, p=6, rot=-10)
 
     @card("sneaky_fondue", "night")
     def _(c):
-        pot = ["...yyyyyyyy...", ".yYYyyyyyyyyy.", "rrrrrrrrrrrrrr", "rRrrrrrrrrrrRr", ".rRrrrrrrrrRr.", "..rrrrrrrrrr..",
-               "...nn....nn...", "..nn......nn.."]
-        c.pat(pot, W / 2, 210, p=9)
-        c.pat(["..o..", ".oyo.", "oyYyo", ".yoy."], W / 2, 262, outline=False)
-        ing(c, "cheese", 80, x=W / 2, y=120, rot=-10, face_kw=None)
-        face(c, W / 2 + 6, 128, eyes="side", mouth="cat", blush=False)
+        # The cheese melted by itself while nobody watched: a round fondue pot, and a wedge sneaking in.
+        pot = ["....yyyyyyyyyyyy....", "..yyYYyyyyyyyyyyyy..", ".rrrrrrrrrrrrrrrrrr.", "rrRRrrrrrrrrrrrrrRrr", "rrRrrrrrrrrrrrrrrRrr",
+               ".rrRrrrrrrrrrrrRrrr.", "..rrrrrrrrrrrrrrrr..", "....rrrrrrrrrrrr....", ".....nnn....nnn.....", "....nn........nn...."]
+        c.pat(pot, W / 2, 206, p=8)
+        c.pat(["..o..", ".oyo.", "oyYyo", ".yoy."], W / 2, 262, outline=False, p=5)
+        c.pat(["s" * 24 + "yy"], 170, 128, p=4, rot=-60)
+        c.put("ingredients/cheese", h=80, x=76, y=132, rot=20)
+        face(c, 76, 140, eyes="side", mouth="cat", blush=False, p=4)
 
     @card("truffle_hunter", "garden")
     def _(c):
@@ -1234,69 +1346,94 @@ def build_cards():
 
     @card("dawn_bravas", "night")
     def _(c):
-        c.put("dishes/bravas", w=180, y=200)
-        c.put("decor/wall_clock", w=60, x=200, y=60)
-        c.pat(PROPS["z"], 40, 150, outline=False, p=4)
+        # Nobody orders bravas at four in the morning. Until somebody does: the clock says four.
+        clock = Image.new("RGBA", (84, 84))
+        d = ImageDraw.Draw(clock)
+        d.ellipse((2, 2, 81, 81), fill=rgba(PAL["c"]), outline=OUTLINE, width=5)
+        d.line((42, 42, 42, 16), fill=OUTLINE, width=5)
+        d.line((42, 42, 60, 52), fill=OUTLINE, width=5)
+        c.layer(with_outline(clock), 190, 64)
+        c.put("dishes/bravas", w=190, y=196)
 
     @card("contest_omelette", "dining")
     def _(c):
-        c.put("dishes/spanish_omelette", w=190, y=184)
-        rosette = [".bbb.", "bbybb", "byyyb", "bbybb", ".bbb.", ".b.b.", "b...b"]
+        c.put("dishes/spanish_omelette", w=190, y=190)
+        rosette = [".bbbbb.", "bbyyybb", "byyyyyb", "byyyyyb", "bbyyybb", ".bbbbb.", ".bb.bb.", ".b...b."]
         c.pat(rosette, 196, 100, p=7)
-        flags = "rygbpv"
-        for k, col in enumerate(flags):
+        chalk(c, "1", 196, 86, p=4, color="O")
+        c.put("ingredients/onion", h=56, x=46, y=120)
+        for k, col in enumerate("rygbpv"):
             c.pat([col * 3, "." + col + "."], 26 + k * 38, 38 + (k % 2) * 4, outline=False)
 
     @card("herb_wizard", "magic")
     def _(c):
-        c.put("ingredients/herbs", h=150, y=176)
+        c.put("ingredients/herbs", h=150, y=184)
         hat = ["......v..", ".....vv..", "....vvy..", "...vvvv..", "..vvyvvv.", "..vvvvvv.", ".vvvvvvyv", "vvvvvvvvvv",
                "yyyyyyyyyy"]
-        c.pat(hat, 140, 72, p=9)
-        twinkles(c, R(75), n=6, avoid=(60, 40, 190, 250))
+        c.pat(hat, 124, 100, p=9)
+        twinkles(c, R(75), n=6, avoid=(50, 40, 200, 260))
 
     @card("egg_tower", "counter")
     def _(c):
+        # A perfect balance: whole eggs stacked one on top of another, a little crooked.
         egg = egg_shape()
-        for x, y in ((56, 224), (120, 224), (184, 224), (88, 158), (152, 158), (120, 92)):
-            c.layer(egg, x, y)
-        for x, y in ((40, 110), (206, 90)):
+        for k, dx in enumerate((0, 6, -4, 5)):
+            c.layer(egg, W / 2 + dx, 232 - k * 62)
+        for x, y in ((40, 100), (200, 80)):
             c.pat(PROPS["sweat"], x, y)
 
     @card("tomato_rain", "dawn")
     def _(c):
-        crate = ["nnnnnnnnnnnnnn", "NNNNNNNNNNNNNN", "n.n.n......n.n", "nnnnnn...nnnnn", "NNNNNNNNNNNNNN"]
-        c.pat(crate, W / 2, 244, p=8)
-        for x, y, h in ((60, 70, 60), (170, 50, 56), (110, 130, 64), (190, 160, 54), (50, 180, 50)):
+        # The market crate broke: an open crate with a loose slat and tomatoes falling.
+        crate = ["n..............n", "nnnnnnnnnnnnnnnn", "NNNNNNNNNNNNNNNN", "n..n..n..n..n..n", "nnnnnnnnnn......", "NNNNNNNNNN..nn..",
+                 "n..n..n..n...nn."]
+        c.pat(crate, W / 2, 238, p=8)
+        for x, y, h in ((60, 60, 60), (170, 44, 56), (110, 124, 64), (190, 142, 54), (46, 160, 50)):
             c.put("ingredients/tomato", h=h, x=x, y=y, rot=(x % 30) - 15)
             c.pat(["S", "S", ".", "S"], x, y - h / 2 - 16, outline=False)
 
     @card("coin_shower", "dining")
     def _(c):
         rng = R(78)
-        for _ in range(16):
-            c.pat(PROPS["coin"], rng.randrange(20, 220), rng.randrange(20, 170), p=rng.choice((3, 4)))
-        c.put("pip/surprised", h=130, x=W / 2, y=214)
+        for _ in range(14):
+            c.pat(PROPS["coin"], rng.randrange(20, 220), rng.randrange(20, 130), p=rng.choice((4, 5)))
+        c.put("pip/surprised", h=140, x=W / 2, y=196)
+        for x, y in ((60, 250), (84, 256), (170, 252), (196, 256), (120, 262)):
+            c.pat(PROPS["coin"], x, y, p=5)
 
     @card("love_letter", "hearts")
     def _(c):
+        # Not a letter: a recipe, written with love, sticking out of the envelope.
+        paper = ["cccccccccc", "cNNNNNNccc", "cccccccccc", "cNNNNNNNNc", "cccccccccc", "cNNNNcrrcc", "ccccccrrrc"]
+        c.pat(paper, W / 2, 124, p=10, rot=6)
         letter = ["cccccccccccccc", "cTcccccccccTcc", "ccTcccccccTccc", "cccTccrrcTcccc", "ccccTrrrrccccc",
-                  "cccccrrrrccccc", "ccccccrrcccccc", "cccccccccccccc", "cccccccccccccc"]
-        c.pat(letter, W / 2, 170, p=10)
-        for x, y in ((50, 70), (190, 60), (206, 240)):
+                  "cccccrrrrccccc", "ccccccrrcccccc", "cccccccccccccc"]
+        c.pat(letter, W / 2, 196, p=10)
+        for x, y in ((40, 60), (200, 56), (212, 250)):
             c.pat(PROPS["red_heart"], x, y, p=4)
 
     @card("last_second", "dining")
     def _(c):
-        c.put("ingredients/clock", h=110, x=80, y=90)
-        c.pat(["rr", "rr"], 80, 90, outline=False)
-        c.put("dishes/bacon_egg", w=140, x=150, y=206)
-        motion(c, 40, 180, n=3, length=7, gap=6)
+        # The clock said zero when the plate reached the table: a stopwatch at zero and a plate sliding in.
+        watch = Image.new("RGBA", (100, 116))
+        d = ImageDraw.Draw(watch)
+        d.rectangle((42, 0, 58, 12), fill=rgba(PAL["S"]))
+        d.ellipse((4, 14, 95, 105), fill=rgba(PAL["w"]), outline=rgba(PAL["S"]), width=8)
+        d.line((50, 60, 50, 26), fill=rgba(PAL["r"]), width=6)
+        c.layer(with_outline(watch), 70, 86)
+        c.put("dishes/bacon_egg", w=150, x=148, y=210)
+        motion(c, 40, 184, n=3, length=7, gap=6)
 
     # discovery rares
     @card("bacon_crown", "gold")
     def _(c):
-        c.put("dishes/bacon_crown", w=200, y=160)
+        # Two rashers protect the most fragile one: bacon, crowned egg, bacon (the recipe's line).
+        plate = ["." + "s" * 34 + ".", "s" * 36, "S" * 36]
+        c.pat(plate, W / 2, 214, p=6)
+        c.put("ingredients/bacon", h=96, x=62, y=170, rot=-70)
+        c.put("ingredients/bacon", h=96, x=178, y=170, rot=70)
+        ing(c, "egg", 100, x=W / 2, y=172, face_kw=dict(eyes="happy", mouth="small"), face_scale=4)
+        c.pat(PROPS["crown"], W / 2, 108, p=6)
 
     @card("mystic_scramble", "magic")
     def _(c):
@@ -1373,7 +1510,11 @@ def build_cards():
 
     @card("rival_chef", "dining")
     def _(c):
-        c.put("customers/rival_chef", h=220, y=150)
+        # Comes to taste your dishes to copy them: a notebook in the other hand.
+        c.put("customers/rival_chef", h=220, x=110, y=150)
+        book = ["wwwwwwww", "wSSSSSSw", "wwwwwwww", "wSSSSSww", "wwwwwwww", "wSSSSSSw", "wwwwwwww"]
+        c.pat(book, 200, 206, p=7, rot=8)
+        c.pat(PROPS["question"], 206, 120, p=4)
 
     @card("pan_on_fire", "fire")
     def _(c):
@@ -1381,12 +1522,12 @@ def build_cards():
 
     @card("spice_whirl", "magic")
     def _(c):
-        for k in range(22):
-            a = k * 0.5
-            r = 44 + k * 3.4
+        for k in range(46):
+            a = k * 0.34
+            r = 34 + k * 1.9
             col = "royPgvY"[k % 7]
-            c.pat([col + col, col + col], W / 2 + math.cos(a) * r, 150 + math.sin(a) * r * 1.05, p=5)
-        c.put("ingredients/spice", h=130, y=150)
+            c.pat([col + col, col + col], W / 2 + math.cos(a) * r, 150 + math.sin(a) * r, p=4)
+        c.put("ingredients/spice", h=120, y=150)
 
     @card("brulee_smile", "brulee")
     def _(c):
@@ -1395,17 +1536,20 @@ def build_cards():
 
     @card("pastry_jealousy", "brulee")
     def _(c):
-        c.put("brulee/jealous", h=210, x=110, y=140)
+        c.put("brulee/jealous", h=206, x=104, y=140)
         flan = ["....NNNNNN....", "...NOOOOOON...", "...yyyyyyyy...", "..yYyyyyyyyy..", "..yyyyyyyyyy..", ".yyyyyyyyyyyy.",
-                "ssssssssssssss"]
-        c.pat(flan, 186, 232, p=8)
+                "ssssssssssssss", ".SSSSSSSSSSSS."]
+        c.pat(flan, 180, 230, p=7)
+        c.pat(PROPS["sparkle"], 214, 176, outline=False, p=4)
 
     @card("brulee_laugh", "brulee")
     def _(c):
-        c.put("brulee/laughing", h=210, x=112, y=140)
-        lid = ["....ss....", "..ssssss..", ".ssssssss.", "SSSSSSSSSS"]
-        c.pat(lid, 190, 226, p=8, rot=-20)
-        motion(c, 206, 176, n=2, length=4)
+        # His laugh sounds like a pot lid hitting the floor.
+        c.put("brulee/laughing", h=206, x=106, y=138)
+        lid = [".....ss.....", "....sSSs....", "..ssssssss..", ".ssssssssss.", "SSSSSSSSSSSS"]
+        c.pat(lid, 186, 236, p=7, rot=-14)
+        for dx, dy in ((-44, -10), (44, -18), (0, -40)):
+            c.pat(["y", "y", "y"], 186 + dx, 214 + dy, outline=False, p=5)
 
     @card("sweet_truce", "brulee")
     def _(c):
@@ -1415,8 +1559,12 @@ def build_cards():
 
     @card("golden_egg", "gold")
     def _(c):
-        c.layer(egg_shape(gw=16, gh=21, ramp=("Y", "y", "o"), p=8), W / 2, 150)
-        twinkles(c, R(99), n=6, avoid=(70, 80, 170, 220))
+        # It cannot be fried: Pip tried three times (the pan and its three question marks).
+        c.layer(egg_shape(gw=16, gh=21, ramp=("Y", "y", "o"), p=7), 110, 130)
+        pan(c, 170, 238, w=110)
+        for x, y in ((150, 200), (182, 186), (212, 200)):
+            c.pat(PROPS["question"], x, y, p=3)
+        twinkles(c, R(99), n=4, avoid=(40, 40, 180, 230))
 
     @card("fever_dream", "fire")
     def _(c):
@@ -1446,29 +1594,38 @@ def build_cards():
         for x, y in ((40, 60), (200, 70), (210, 230), (30, 220)):
             c.pat(PROPS["star"], x, y, outline=False, p=4)
 
-    @card("triple_bacon_master", None)
+    @card("triple_bacon_master", "fire")
     def _(c):
-        c.img = ref_scene("triple_bacon_master")
+        ref_art(c, "triple_bacon_master")
 
-    @card("exploding_tomato", None)
+    @card("exploding_tomato", "fire")
     def _(c):
-        c.img = ref_scene("exploding_tomato")
+        ref_art(c, "exploding_tomato")
 
     @card("impossible_omelette", "magic")
     def _(c):
-        c.put("dishes/impossible_omelette", w=200, y=170)
-        twinkles(c, R(106), n=5, avoid=(30, 100, 210, 240))
+        # Four eggs in a square: the books said it could not be done.
+        plate = ["." + "s" * 34 + ".", "s" * 36, "S" * 36]
+        c.pat(plate, W / 2, 236, p=6)
+        for x, y in ((84, 110), (156, 110), (84, 180), (156, 180)):
+            c.put("ingredients/egg", w=92, x=x, y=y)
+        twinkles(c, R(106), n=5, avoid=(30, 60, 210, 240))
 
     @card("void_chef", "magic")
     def _(c):
+        # When the bell rings the counter is almost clean: one crumb.
         board = Image.new("RGBA", (180, 110))
         d = ImageDraw.Draw(board)
         for i in range(5):
             for j in range(3):
                 d.rectangle((i * 36 + 2, j * 36 + 2, i * 36 + 33, j * 36 + 33), fill=(255, 243, 214, 200), outline=OUTLINE, width=2)
-        c.layer(board, W / 2, 210)
-        c.pat(PROPS["crumb"], 150, 214)
-        c.put("pip/surprised", h=130, x=W / 2, y=86)
+        c.layer(board, W / 2, 214)
+        c.pat(PROPS["crumb"], 150, 218)
+        c.put("pip/surprised", h=130, x=96, y=90)
+        bell = ["...y...", "..yyy..", ".yyYyy.", ".yyyyy.", "yyyyyyy", "sssssss"]
+        c.pat(bell, 190, 90, p=7)
+        for dx in (-34, 34):
+            c.pat(["y", "y"], 190 + dx, 70, outline=False, p=5)
 
     @card("double_fever", "fire")
     def _(c):
@@ -1477,14 +1634,19 @@ def build_cards():
 
     @card("combo_ten", "chalk")
     def _(c):
-        chalk(c, "x10", W / 2, 90, p=10)
-        pan(c, W / 2, 210, w=150, key="pans/default")
+        # Ten dishes in a row; the pan asked for a holiday: tired, sweating.
+        chalk(c, "x10", W / 2, 84, p=10)
+        pan(c, W / 2, 206, w=160)
+        put_face(c, "pan", 0.36, 0.5, eyes="swirl", mouth="o", blush=False, p=4, ink="z")
+        c.pat(PROPS["sweat"], 44, 170)
+        c.pat(PROPS["sweat"], 72, 150, p=4)
 
     @card("rival_defeated", "dining")
     def _(c):
-        c.put("customers/rival_chef_happy", h=210, x=104, y=140)
-        c.put("ui/icon_recipe", h=60, x=196, y=110, rot=-10)
-        c.put("pip/thumbs_up", h=90, x=196, y=230)
+        # He came to criticise and left asking for the recipe, without looking you in the eye.
+        c.put("customers/rival_chef_happy", h=210, x=96, y=140, flip=True)
+        c.put("ui/icon_recipe", h=64, x=196, y=100, rot=-10)
+        c.put("pip/thumbs_up", h=96, x=196, y=226)
 
     @card("high_score", "chalk")
     def _(c):
@@ -1492,9 +1654,9 @@ def build_cards():
         c.put("pip/proud", h=130, x=W / 2, y=204)
 
     # ---- legendaries
-    @card("golden_truffle", None)
+    @card("golden_truffle", "gold")
     def _(c):
-        c.img = ref_scene("golden_truffle")
+        ref_art(c, "golden_truffle")
 
     @card("first_recipe", "gold")
     def _(c):
@@ -1518,17 +1680,28 @@ def build_cards():
     @card("old_master_seal", "gold")
     def _(c):
         ribbon = ["rr......rr", ".rr....rr.", "..rr..rr.."]
-        c.pat(ribbon, W / 2, 230, p=8)
-        c.pat(seal(), W / 2, 140, p=12)
+        c.pat(ribbon, W / 2, 232, p=8)
+        wax = ["....rrrrrr....", "..rrrrrrrrrr..", ".rrRRRRRRRRrr.", ".rRrrrrrrrrRr.", "rrRrrRRRrrrRrr", "rRrrRRRRRrrrRr",
+               "rRrrRRRRRRRRRr", "rRrrRRRRRrrrRr", "rrRrrRRRrrrRrr", ".rRrrrrrrrrRr.", ".rrRRRRRRRRrr.", "..rrrrrrrrrr..",
+               "....rrrrrr...."]
+        c.pat(wax, W / 2, 140, p=12)
 
     @card("lost_recipe", "magic")
     def _(c):
-        c.put("dishes/lost_recipe", w=200, y=170)
-        twinkles(c, R(117), n=6, avoid=(20, 90, 220, 250))
+        # The recipe nobody finished, until today: the old torn page behind the finished dish.
+        paper = ["tccccccccct", "cNNNNNNcccc", "ccccccccccT", "cNNNNNNNNcc", "cccccccc...", "cNNNNcc....", "ccccc......"]
+        c.pat(paper, 150, 86, p=10, rot=-8)
+        c.put("dishes/lost_recipe", w=190, x=110, y=190)
+        twinkles(c, R(117), n=5, avoid=(10, 40, 230, 260))
 
     @card("night_visitor_card", "night")
     def _(c):
-        c.put("customers/night_visitor", h=220, y=156)
+        # Arrives when the lights go out: seen in the dark, only its glowing eyes and an old recipe.
+        c.put("customers/night_visitor", h=220, y=156, fx=lambda im: tint(im, lambda rgb: rgb * np.array([0.3, 0.32, 0.5])))
+        x0, y0, x1, y1 = c.last
+        for fx in (0.41, 0.59):
+            c.pat(EYES["glow"], x0 + (x1 - x0) * fx, y0 + (y1 - y0) * 0.5, outline=False, p=5)
+        c.put("ui/icon_recipe", h=60, x=196, y=220, rot=10)
 
     @card("legendary_critic_card", "gold")
     def _(c):
@@ -1557,7 +1730,7 @@ def main(only):
         for stale in OUT.glob(f"{card_id}.*"):
             stale.unlink()
         if bg:  # a palette PNG keeps the subject's transparency for the album silhouette at a fraction of the size
-            c.img.quantize(128, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(OUT / f"{card_id}.png", optimize=True)
+            c.img.quantize(192, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(OUT / f"{card_id}.png", optimize=True)
         else:  # the reference scenes are paintings: a JPEG
             c.img.convert("RGB").save(OUT / f"{card_id}.jpg", quality=88, optimize=True)
         used.add(bg)
