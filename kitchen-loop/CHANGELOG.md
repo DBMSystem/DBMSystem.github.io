@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.4 — Correcciones de Daniel en las cartas
+
+- **El Chef Rival:** su gorro volvía a ser una nube gris; ahora es blanco. Se nota también en la partida.
+- **El estudiante:** el pelo estaba cortado en recto; ahora tiene su forma de pelo. Se ve en la carta Estudiante con Prisa, en Casa Llena y en la partida.
+- **Propina Caída:** la nevera entera en el suelo y la moneda asomando por debajo, sin la línea suelta.
+- **Recuerdo de Viaje:** la foto se ve de verdad: una polaroid con la tostada en su plato.
+- **Maestro del Triple Bacon, Tomate Explosivo y Trufa Dorada** (y las otras tres de la referencia): la ilustración llena la carta con su proporción, en vez de ir en un marco pequeño.
+- **Ninguna carta se sale del borde:** el dibujo se ajusta solo dentro de la carta.
+
 ## 0.9.3 — Cartas revisadas una a una
 
 - Las 120 cartas, revisadas una a una con su texto: 65 rediseñadas (`docs/CARD_ART_REVIEW.md`). Ejemplos:

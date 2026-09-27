@@ -7,6 +7,7 @@ surrounded by the reference's plain background. Outputs:
   assets/pan_<id>.png                   pan skins (spec 9.1)
   public/                               favicon and app icons
 """
+import math
 from collections import deque
 from pathlib import Path
 
@@ -17,6 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 REF = ROOT / "assets" / "ref"
 ORIGINALS = REF / "originals"
 SPRITES = ROOT / "src" / "assets" / "sprites"
+OUTLINE_RGB = (59, 42, 32)
 
 # group/id: (reference file, crop box, output size, source-pixel scale mode)
 SHEET = 305  # cell pitch of the 4-column reference sheets
@@ -927,3 +929,43 @@ def generate_tutorial_hand():
         "..sssssssssss..",
     ]
     save(pattern(rows, p=6), SPRITES / "ui" / "tutorial_hand.png")
+
+
+def repair_cut_hair(key, top, left, right, depth=7, tuft=11):
+    """The student's arrive and happy poses were cut flat through the hair in the reference sheet, with bits of
+    the sprite above stuck on top (Daniel: "error corte pelo"). Removes the bits and carves the flat cut into
+    spiky tufts with rounded sides and a dark outline, so the top of the hair looks drawn, not cut."""
+    a = np.asarray(sprite(key)).astype(int)
+    out = a.copy()
+    for x in range(left, right + 1):
+        k = ((x - left) % tuft) / tuft
+        spike = depth * (1 - abs(2 * k - 1))  # triangle wave: tips of the tufts reach the old cut
+        side = min(x - left, right - x)
+        corner = max(0, 12 - side) * 0.9  # rounded sides
+        edge = top + depth - spike + corner
+        for y in range(top - 2, top + depth + 14):
+            px = a[y, x]
+            stray = px[3] > 0 and y < top + 9 and (px[:3].sum() > 480 or abs(px[0] - px[2]) < 22)
+            if y < edge or stray:
+                out[y, x, 3] = 0
+        column = np.nonzero(out[top - 2:top + depth + 16, x, 3] > 200)[0]
+        if len(column):
+            y0 = top - 2 + column[0]
+            out[y0:y0 + 2, x, :3], out[y0:y0 + 2, x, 3] = OUTLINE_RGB, 255
+    save(Image.fromarray(out.clip(0, 255).astype("uint8"), "RGBA"), SPRITES / f"{key}.png")
+
+
+def repair_chef_hat(key, band_top):
+    """The rival chef's toque lost its white when the reference's white background was removed, leaving a grey
+    cloud (Daniel: "error en sombrero"). Fills the inside of the puff with white, row by row, above its band."""
+    img = sprite(key)
+    a = np.asarray(img).astype(int)
+    out = a.copy()
+    for y in range(band_top):
+        xs = np.nonzero(a[y, :, 3] > 60)[0]
+        if len(xs) < 2:
+            continue
+        for x in range(xs.min(), xs.max() + 1):
+            if a[y, x, 3] < 250 or (a[y, x, :3].min() > 150 and abs(a[y, x, 0] - a[y, x, 2]) < 30):
+                out[y, x] = (248, 249, 252, 255)
+    save(Image.fromarray(out.clip(0, 255).astype("uint8"), "RGBA"), SPRITES / f"{key}.png")

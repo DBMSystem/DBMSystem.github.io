@@ -105,7 +105,7 @@ Resultado: 65 cartas rediseñadas y 55 que ya eran coherentes.
 | 89 | Nadie se Queda sin Comer | Correcta. | Sin cambios: ocho platos servidos. |
 | 90 | Pan Galáctico | Correcta. | Sin cambios. |
 | 91 | Gallo Rey | Correcta. | Sin cambios. |
-| 92 | El Chef Rival | Faltaba que viene a copiar. | Libreta para apuntar tus recetas. |
+| 92 | El Chef Rival | Faltaba que viene a copiar; gorro gris. | Libreta para apuntar tus recetas y gorro blanco. |
 | 93 | Sartén en Llamas | Correcta. | Sin cambios. |
 | 94 | Remolino de Especias | Puntos dispersos, sin remolino. | Espiral de especias de colores alrededor del tarro. |
 | 95 | La Sonrisa de Brûlée | Correcta. | Sin cambios: sonrisa y huevo frito. |
