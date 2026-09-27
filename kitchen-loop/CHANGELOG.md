@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.3 — Cartas revisadas una a una
+
+- Las 120 cartas, revisadas una a una con su texto: 65 rediseñadas (`docs/CARD_ART_REVIEW.md`). Ejemplos:
+  - La Tostada Dudosa está medio hecha y medio cruda, el Champiñón Tímido asoma por detrás del huevo y el Pez Fuera del Agua está feliz en la cocina.
+  - La Corona de Bacon por fin tiene su huevo, la Tortilla Imposible son cuatro huevos en cuadrado y el Tomate Samurái lleva la katana a la espalda.
+  - El Visitante Nocturno ya no es igual que el Turista de Otro Mundo.
+- Caras más grandes y expresivas, al estilo de la referencia.
+- Las seis ilustraciones de la referencia se ven enteras, enmarcadas, y sin texto en inglés.
+- 171 tests.
+
 ## 0.9.2 — Cartas coherentes, servicios parejos y mejor tutorial
 
 - **Las 120 cartas, redibujadas a juego con su nombre**, con fondo propio y sin nada recortado (`scripts/card_art.py`). Ejemplos:
