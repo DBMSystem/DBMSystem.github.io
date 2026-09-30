@@ -1,0 +1,51 @@
+# Papeles (document assistant app): M0 local CI, run on GitHub because the Android SDK is needed.
+# Same gate as a contributor runs locally: the strings script tests and `./gradlew test lint`.
+name: Papeles CI
+
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths:
+      - 'papeles/**'
+      - '.github/workflows/papeles-android.yml'
+  pull_request:
+    paths:
+      - 'papeles/**'
+      - '.github/workflows/papeles-android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: papeles-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: papeles
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Strings script tests
+        run: python3 -m unittest discover -s tools -p 'test_*.py'
+
+      - name: Tests and lint
+        run: ./gradlew test lint --no-daemon --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: papeles-reports-${{ github.run_number }}
+          path: papeles/**/build/reports/
+          if-no-files-found: ignore
