@@ -29,5 +29,32 @@ python3 -m unittest discover -s tools -p 'test_*.py'
 
 **Pendiente**
 
-- Validación de Daniel para pasar a M1.
 - Decidir nombre y `applicationId` antes de M10 (`docs/DECISIONES.md`, punto 2).
+
+Validado por Daniel el 30-09-2026.
+
+## M1 — Modelo de datos y procedencia
+
+**Hecho**
+
+- `core/model` (Kotlin puro): `Origin` de más débil a más fuerte y `weakest(...)` para datos derivados;
+  `DocumentType`, `ChangeKind`, `EventKind`, `ReminderKind`/`ReminderStatus` y `BoundingBox`.
+- `core/db` (Room): entidades `Series`, `Document`, `Page`, `Field`, `Change`, `Event`, `Reminder` y
+  `AppSetting`, con sus DAOs, claves ajenas en cascada, `PapelesDatabase` (sin migración destructiva) y el módulo
+  de Hilt que la inyecta.
+- Migraciones: esquema exportado en `core/db/schemas`, lista `MIGRATIONS` y `SchemaTest`.
+- Tests: procedencia (JVM) y DAOs con Robolectric.
+
+**Listo cuando** — ningún `Field` se puede guardar sin origen, confianza y `ruleId`: lo comprueba
+`FieldProvenanceTest`, tanto al construir el objeto como con inserciones SQL directas.
+
+**Cómo probarlo**
+
+```
+cd papeles
+./gradlew :core:model:test :core:db:testDebugUnitTest
+```
+
+**Pendiente**
+
+- Validación de Daniel para pasar a M2.

@@ -43,6 +43,18 @@ jobs:
       - name: Tests and lint
         run: ./gradlew test lint --no-daemon --stacktrace
 
+      # Room exports the schema on compile; it must be committed so SchemaTest and future migrations use it.
+      - name: Room schema committed
+        if: success() || failure()
+        run: |
+          changed=$(git status --porcelain --untracked-files=all core/db/schemas)
+          if [ -n "$changed" ]; then
+            echo "The Room schema changed and is not committed:"
+            echo "$changed"
+            for f in $(git ls-files --others --modified core/db/schemas); do echo "===== $f"; cat "$f"; done
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
