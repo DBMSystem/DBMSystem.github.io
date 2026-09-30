@@ -73,8 +73,10 @@ Validado por Daniel el 30-09-2026.
 - Manifiesto sin permisos de red, con una comprobación enlazada a `lint`.
 - CI: nuevo trabajo `device-tests` que ejecuta los tests de dispositivo en un emulador.
 
-**Listo cuando** — `SameTextPageTest` genera una página de nómina sintética como PDF con texto, como PDF escaneado
+**Listo cuando** — cumplido. `SameTextPageTest` genera una página de nómina sintética como PDF con texto, como PDF escaneado
 y como foto, y comprueba que las tres dan el mismo `TextPage`: mismas líneas, mismo orden y zonas a menos de un 2 %.
+[Papeles CI n.º 6](https://github.com/DBMSystem/DBMSystem.github.io/actions/runs/36701635520): el test pasa en un
+emulador Android 14, y `./gradlew test lint` pasa en local y en CI.
 
 **Cómo probarlo**
 
