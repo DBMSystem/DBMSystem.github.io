@@ -45,8 +45,10 @@ Validado por Daniel el 30-09-2026.
 - Migraciones: esquema exportado en `core/db/schemas`, lista `MIGRATIONS` y `SchemaTest`.
 - Tests: procedencia (JVM) y DAOs con Robolectric.
 
-**Listo cuando** — ningún `Field` se puede guardar sin origen, confianza y `ruleId`: lo comprueba
+**Listo cuando** — cumplido: ningún `Field` se puede guardar sin origen, confianza y `ruleId`. Lo comprueba
 `FieldProvenanceTest`, tanto al construir el objeto como con inserciones SQL directas.
+[Papeles CI n.º 4](https://github.com/DBMSystem/DBMSystem.github.io/actions/runs/36698369239): `./gradlew test lint`
+en verde, con 10 tests JVM en `core/model` y 15 con Robolectric en `core/db`.
 
 **Cómo probarlo**
 
