@@ -14,6 +14,10 @@
 - ktlint en todos los módulos a través de `lint`.
 - CI: `.github/workflows/papeles-android.yml` ejecuta los tests del script y `./gradlew test lint`.
 
+**Listo cuando** — cumplido: [Papeles CI n.º 1](https://github.com/DBMSystem/DBMSystem.github.io/actions/runs/36694734660)
+compila (incluida la app con Hilt) y pasa `./gradlew test lint` en los 14 módulos, con ktlint y el script de cadenas
+enlazados.
+
 **Cómo probarlo**
 
 ```
