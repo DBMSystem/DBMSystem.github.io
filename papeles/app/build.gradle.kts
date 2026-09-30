@@ -1,3 +1,5 @@
+import com.android.build.api.artifact.SingleArtifact
+
 plugins {
     id("papeles.android.application")
     alias(libs.plugins.ksp)
@@ -46,4 +48,30 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
+}
+
+/** Fails if the merged manifest asks for network access (CLAUDE.md, rules 1 and 8): no traffic without counters. */
+abstract class CheckNoNetworkPermission : DefaultTask() {
+    @get:InputFile
+    abstract val manifest: RegularFileProperty
+
+    @TaskAction
+    fun check() {
+        val found = NETWORK_PERMISSIONS.filter { it in manifest.get().asFile.readText() }
+        check(found.isEmpty()) { "The merged manifest requests network access: $found" }
+    }
+
+    private companion object {
+        val NETWORK_PERMISSIONS = listOf("android.permission.INTERNET", "android.permission.ACCESS_NETWORK_STATE")
+    }
+}
+
+androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        val check =
+            tasks.register<CheckNoNetworkPermission>("checkNoNetworkPermission") {
+                manifest.set(variant.artifacts.get(SingleArtifact.MERGED_MANIFEST))
+            }
+        tasks.matching { it.name == "lint" }.configureEach { dependsOn(check) }
+    }
 }

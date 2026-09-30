@@ -2,5 +2,4 @@
 <resources>
     <!-- Provisional name: the final one is a human decision (docs/DECISIONES.md). -->
     <string name="app_name">Papeles al día</string>
-    <string name="app_promise">Sube tus documentos. Nosotros detectamos lo importante.</string>
 </resources>

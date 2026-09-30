@@ -8,7 +8,7 @@ Estado: se construye y publica la V1 sin pruebas con personas. Las puertas 0 y 1
 
 El proyecto vive en la carpeta `papeles/` del repositorio de la web (DBMSystem.github.io); todas las rutas de este archivo son relativas a ella.
 
-**Hito actual: M1 — Modelo de datos y procedencia** (M0 validado el 30-09-2026). Daniel actualiza esta línea al validar cada hito (registro en `docs/HITOS.md`).
+**Hito actual: M2 — Captura y texto** (M0 y M1 validados el 30-09-2026). Daniel actualiza esta línea al validar cada hito (registro en `docs/HITOS.md`).
 
 ## Reglas no negociables
 

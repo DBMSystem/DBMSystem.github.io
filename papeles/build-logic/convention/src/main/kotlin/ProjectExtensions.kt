@@ -26,6 +26,7 @@ internal fun Project.configureAndroid(android: CommonExtension<*, *, *, *, *, *>
     android.apply {
         compileSdk = libs.version("compile-sdk").toInt()
         defaultConfig.minSdk = libs.version("min-sdk").toInt()
+        defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         compileOptions {
             sourceCompatibility = javaVersion
             targetCompatibility = javaVersion

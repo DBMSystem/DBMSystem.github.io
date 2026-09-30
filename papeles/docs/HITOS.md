@@ -57,6 +57,35 @@ cd papeles
 ./gradlew :core:model:test :core:db:testDebugUnitTest
 ```
 
+Validado por Daniel el 30-09-2026.
+
+## M2 — Captura y texto
+
+**Hecho**
+
+- `core/model`: `TextPage` y `TextBlock` (línea, zona normalizada y confianza), orden de lectura y normalización de
+  zonas.
+- `core/text`: capa de texto del PDF (PdfBox-Android), páginas escaneadas convertidas en imagen (`PdfRenderer`) y
+  leídas con OCR (ML Kit, modelo latino incluido), fotos con su giro EXIF, y `DocumentReader`, que copia la entrada a
+  la caché privada, la lee y la borra. Detecta PDF con contraseña.
+- `feature/capture`: escanear con la cámara (escáner de ML Kit), elegir fotos (selector de fotos del sistema), elegir
+  un PDF y recibir PDF compartidos o abiertos con la app. Sin permisos de almacenamiento ni de cámara.
+- Manifiesto sin permisos de red, con una comprobación enlazada a `lint`.
+- CI: nuevo trabajo `device-tests` que ejecuta los tests de dispositivo en un emulador.
+
+**Listo cuando** — `SameTextPageTest` genera una página de nómina sintética como PDF con texto, como PDF escaneado
+y como foto, y comprueba que las tres dan el mismo `TextPage`: mismas líneas, mismo orden y zonas a menos de un 2 %.
+
+**Cómo probarlo**
+
+```
+cd papeles
+./gradlew test lint                           # JVM y Robolectric
+./gradlew :core:text:connectedDebugAndroidTest   # con un emulador o un móvil conectado
+./gradlew :app:installDebug                   # y probar las cuatro entradas en el móvil
+```
+
 **Pendiente**
 
-- Validación de Daniel para pasar a M2.
+- Validación de Daniel para pasar a M3.
+- Decidir si se piden contraseñas de PDF (`docs/DECISIONES.md`, punto 24).

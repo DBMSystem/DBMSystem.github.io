@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="capture_title">Subir documento</string>
+    <string name="capture_intro">Sube tus documentos. Nosotros detectamos lo importante.</string>
+    <string name="capture_privacy">El documento se lee en tu móvil y no sale de él.</string>
+    <string name="capture_scan">Escanear con la cámara</string>
+    <string name="capture_pick_photo">Elegir una foto</string>
+    <string name="capture_pick_pdf">Elegir un PDF</string>
+    <string name="capture_share_hint">También puedes compartir un PDF desde el correo o desde Archivos y elegir esta app.</string>
+    <string name="capture_reading">Leyendo el documento…</string>
+    <plurals name="capture_read_pages">
+        <item quantity="one">Hemos leído %1$d página.</item>
+        <item quantity="other">Hemos leído %1$d páginas.</item>
+    </plurals>
+    <string name="capture_page_from_pdf">Página %1$d · texto del PDF</string>
+    <string name="capture_page_from_image">Página %1$d · texto reconocido en la imagen</string>
+    <string name="capture_page_empty">No hemos encontrado texto en esta página.</string>
+    <string name="capture_another">Subir otro documento</string>
+    <string name="capture_no_text">No hemos encontrado texto. Parece que no es un documento; puedes probar con otra imagen.</string>
+    <string name="capture_password">Este PDF está protegido con contraseña. Por ahora no podemos abrirlo.</string>
+    <string name="capture_unreadable">No hemos podido leer este archivo. Puedes probar con otro.</string>
+    <string name="capture_scanner_unavailable">El escáner no está disponible en este móvil. Puedes elegir una foto o un PDF.</string>
+</resources>

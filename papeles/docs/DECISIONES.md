@@ -58,3 +58,36 @@ Decisiones tomadas al construir, con su motivo. Las marcadas **pendiente humano*
     si falta una migración, la app falla en vez de borrar los datos.
 15. **SQLCipher (pendiente).** `CLAUDE.md` pide evaluarlo; se deja para M8, junto con la exportación cifrada.
     Recordatorio: la clave del Keystore no viaja al cambiar de móvil.
+
+## M2
+
+16. **Texto de PDF con PdfBox-Android** (Apache 2.0). Android no extrae la capa de texto de un PDF antes de la API 35,
+    así que se usa esta librería, que trabaja en el móvil. `PdfRenderer` (del sistema) solo se usa para convertir en
+    imagen las páginas escaneadas.
+17. **Página escaneada o con texto, página a página.** Una página cuya capa de texto tiene menos de 25 letras y cifras
+    se trata como escaneada y pasa por OCR; así un sello o un «Pág. 1» no hacen pasar por texto una página que es
+    una imagen. Umbral, resolución (250 ppp) y tamaño máximo de imagen (3.000 px) están en `TextExtractionConfig`
+    y son hipótesis que se ajustarán con el conjunto sintético (M9).
+18. **Bloques = líneas.** Tanto del PDF como del OCR salen líneas con su zona. En el PDF, un hueco ancho dentro de una
+    línea (más de 1,5 veces la altura de la línea) abre un bloque nuevo, como hace el OCR con las columnas de una
+    tabla. Todo se ordena igual: de arriba abajo y de izquierda a derecha.
+19. **OCR con el modelo latino incluido en la app** (`com.google.mlkit:text-recognition`), no el que descarga Google
+    Play: funciona sin red desde el primer uso. Cuesta unos MB de tamaño.
+20. **Sin permisos de red.** ML Kit declara `INTERNET` para enviar estadísticas de uso a Google. El manifiesto de la
+    app lo elimina (y también `ACCESS_NETWORK_STATE`), y la tarea `checkNoNetworkPermission`, enlazada a `lint`,
+    falla si el manifiesto final vuelve a pedirlos. El escáner de documentos se ejecuta dentro de Google Play
+    services, no en la app. `INTERNET` volverá solo con los contadores opcionales (M8).
+21. **Entrada «Elegir un PDF».** Además del escáner, el selector de fotos y los PDF compartidos, la pantalla ofrece
+    abrir un PDF con el selector del sistema (sin permisos). Motivo: la persona simulada 2 no sabe compartir un
+    PDF desde el correo. Se puede quitar si no encaja.
+22. **Copia temporal.** El archivo recibido se copia a la caché privada de la app para leerlo (las URI compartidas
+    pueden caducar) y se borra al terminar. Guardar las páginas para enseñarlas como fuente llegará con el guardado
+    del documento (M5 y M6).
+23. **Límite de 10 páginas** por escaneo o selección de fotos. Hipótesis.
+24. **PDF con contraseña (pendiente).** Muchas nóminas llegan protegidas con el DNI. En M2 la app lo detecta y lo
+    explica; pedir la contraseña sería una función nueva y queda pendiente de tu decisión.
+25. **Pantalla provisional.** Hasta que exista la revisión de campos (M5), la pantalla de captura enseña el texto
+    leído página a página, para poder comprobar el OCR a simple vista.
+26. **Registros de librerías (pendiente para M10).** PdfBox-Android escribe avisos en el registro del sistema. Antes de
+    publicar, R8 eliminará todas las llamadas a `android.util.Log` en la versión de publicación
+    (`-assumenosideeffects`), y la auditoría de registros de la puerta 1 lo comprobará.
