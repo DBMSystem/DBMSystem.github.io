@@ -108,6 +108,8 @@ Validado por Daniel el 30-09-2026.
 **Listo cuando** — cumplido en el conjunto sintético: 300 de 300 documentos con el tipo correcto (100 %, umbral
 95 %) y todos los documentos con motivos, también los clasificados como OTHER. Informe en
 `core/classify/build/reports/classification.json`. Ver la advertencia del punto 28 de `docs/DECISIONES.md`.
+[Papeles CI n.º 8](https://github.com/DBMSystem/DBMSystem.github.io/actions/runs/36704252928): en verde, también el
+emulador.
 
 **Cómo probarlo**
 
