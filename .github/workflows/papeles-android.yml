@@ -51,6 +51,7 @@ jobs:
           if [ -n "$changed" ]; then
             echo "The Room schema changed and is not committed:"
             echo "$changed"
+            git diff core/db/schemas
             for f in $(git ls-files --others --modified core/db/schemas); do echo "===== $f"; cat "$f"; done
             exit 1
           fi
