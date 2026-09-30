@@ -87,7 +87,36 @@ cd papeles
 ./gradlew :app:installDebug                   # y probar las cuatro entradas en el móvil
 ```
 
+Validado por Daniel el 30-09-2026.
+
 **Pendiente**
 
-- Validación de Daniel para pasar a M3.
 - Decidir si se piden contraseñas de PDF (`docs/DECISIONES.md`, punto 24).
+
+## M3 — Clasificador
+
+**Hecho**
+
+- `tools/synthetic`: generador del conjunto sintético a nivel de texto (15 formatos × 20 documentos, verdad conocida
+  y ruido de OCR), adelantado de M9 (`docs/DECISIONES.md`, punto 27).
+- `core/classify`: clasificación por reglas en los ocho tipos, con confianza, motivos (regla, página, zona y línea)
+  y las tres opciones más probables.
+- `core/model`: normalización de texto común (minúsculas, sin tildes).
+- `feature/capture`: tras leer el documento, muestra «Parece: Nómina» y de qué se ha deducido; si la confianza es
+  menor de 0,7, pregunta «¿Qué es este documento?» con tres opciones y «Ninguno de estos».
+
+**Listo cuando** — cumplido en el conjunto sintético: 300 de 300 documentos con el tipo correcto (100 %, umbral
+95 %) y todos los documentos con motivos, también los clasificados como OTHER. Informe en
+`core/classify/build/reports/classification.json`. Ver la advertencia del punto 28 de `docs/DECISIONES.md`.
+
+**Cómo probarlo**
+
+```
+cd papeles
+./gradlew :core:classify:test
+./gradlew :app:installDebug   # sube una nómina, una factura y algo que no sea un documento
+```
+
+**Pendiente**
+
+- Validación de Daniel para pasar a M4.

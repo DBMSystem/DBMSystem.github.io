@@ -1,7 +1,10 @@
 package com.dbmsystem.papeles.feature.capture
 
 import android.net.Uri
+import com.dbmsystem.papeles.core.classify.DocumentClassifier
 import com.dbmsystem.papeles.core.model.BoundingBox
+import com.dbmsystem.papeles.core.model.DocumentType
+import com.dbmsystem.papeles.core.model.Origin
 import com.dbmsystem.papeles.core.model.TextBlock
 import com.dbmsystem.papeles.core.model.TextPage
 import com.dbmsystem.papeles.core.model.TextSource
@@ -17,6 +20,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,6 +40,7 @@ class CaptureViewModelTest {
                     return result
                 }
             },
+            DocumentClassifier(),
         )
 
     @Before
@@ -48,13 +53,35 @@ class CaptureViewModelTest {
         TextPage(1, TextSource.OCR, lines.map { TextBlock(it, BoundingBox(0f, 0f, 1f, 0.1f), 0.9f) })
 
     @Test
-    fun `shows the pages that were read`() =
+    fun `a clear document is read with its detected type`() =
         runTest(dispatcher) {
-            result = ReadResult.Read(listOf(page("Nómina de septiembre")))
+            val payslip =
+                page("Nómina de septiembre", "Total devengado 2.000,00", "Líquido a percibir 1.650,00", "IRPF 12 %")
+            result = ReadResult.Read(listOf(payslip))
             viewModel.read(pdf)
             assertEquals(CaptureState.Reading, viewModel.state.value)
             advanceUntilIdle()
-            assertEquals(CaptureState.Read(listOf(page("Nómina de septiembre"))), viewModel.state.value)
+            val state = viewModel.state.value as CaptureState.Read
+            assertEquals(listOf(payslip), state.pages)
+            assertEquals(DocumentType.PAYSLIP, state.type)
+            assertEquals(Origin.DETECTED, state.typeOrigin)
+        }
+
+    @Test
+    fun `an unclear document asks the user, whose answer is confirmed`() =
+        runTest(dispatcher) {
+            result = ReadResult.Read(listOf(page("Seguro de automóvil", "Póliza 44-1200987", "Matrícula 1234 KLM")))
+            viewModel.read(pdf)
+            advanceUntilIdle()
+            val asking = viewModel.state.value as CaptureState.AskType
+            assertEquals(3, asking.classification.options.size)
+
+            viewModel.chooseType(DocumentType.INSURANCE)
+
+            val state = viewModel.state.value as CaptureState.Read
+            assertEquals(DocumentType.INSURANCE, state.type)
+            assertEquals(Origin.USER_CONFIRMED, state.typeOrigin)
+            assertTrue(state.classification.reasons.isNotEmpty())
         }
 
     @Test

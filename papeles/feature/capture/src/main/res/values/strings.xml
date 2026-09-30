@@ -20,4 +20,17 @@
     <string name="capture_password">Este PDF está protegido con contraseña. Por ahora no podemos abrirlo.</string>
     <string name="capture_unreadable">No hemos podido leer este archivo. Puedes probar con otro.</string>
     <string name="capture_scanner_unavailable">El escáner no está disponible en este móvil. Puedes elegir una foto o un PDF.</string>
+    <string name="capture_question">¿Qué es este documento?</string>
+    <string name="capture_none_of_these">Ninguno de estos</string>
+    <string name="capture_type_detected">Parece: %1$s</string>
+    <string name="capture_type_confirmed">%1$s · confirmado por ti</string>
+    <string name="capture_type_reasons">Lo hemos deducido de: %1$s</string>
+    <string name="doc_type_payslip">Nómina</string>
+    <string name="doc_type_utility_bill">Factura de suministro</string>
+    <string name="doc_type_purchase">Compra</string>
+    <string name="doc_type_subscription">Suscripción</string>
+    <string name="doc_type_insurance">Seguro</string>
+    <string name="doc_type_vehicle">Vehículo</string>
+    <string name="doc_type_contract_dates">Contrato</string>
+    <string name="doc_type_other">Otro documento</string>
 </resources>

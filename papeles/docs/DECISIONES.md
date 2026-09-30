@@ -91,3 +91,29 @@ Decisiones tomadas al construir, con su motivo. Las marcadas **pendiente humano*
 26. **Registros de librerías (pendiente para M10).** PdfBox-Android escribe avisos en el registro del sistema. Antes de
     publicar, R8 eliminará todas las llamadas a `android.util.Log` en la versión de publicación
     (`-assumenosideeffects`), y la auditoría de registros de la puerta 1 lo comprobará.
+
+## M3
+
+27. **Conjunto sintético adelantado.** M3 exige un 95 % sobre el conjunto sintético, que el plan construye en M9. Se
+    adelanta la parte de texto en `tools/synthetic` (módulo Kotlin): los 15 formatos de la puerta 0 (5 nóminas,
+    3 de luz, 2 de gas, 1 de agua, 2 de telefonía, 1 seguro y 1 suscripción), 20 documentos por formato, con
+    valores aleatorios reproducibles (semilla fija), su verdad conocida y cuatro niveles de ruido de OCR en el texto
+    (limpio, sin tildes, confusiones leves y fuertes). M9 añadirá sobre las mismas plantillas la conversión a PDF o
+    imagen y el ruido de foto. Todos los emisores y personas son inventados.
+28. **El 100 % del conjunto sintético no demuestra nada sobre documentos reales.** Las plantillas y las reglas son del
+    mismo autor, así que el resultado solo prueba que las reglas son coherentes con estas plantillas y que el ruido
+    de texto no las rompe. `build/reports/classification.json` lo dice expresamente. La precisión real se verá con
+    tus documentos (probados en el móvil, nunca subidos al repositorio).
+29. **Tipos fuera de los 15 formatos.** Compra, vehículo y contrato no tienen formato en el conjunto de la puerta 0
+    (así lo fija la especificación). Se prueban con casos escritos a mano en `DocumentClassifierTest`, junto con los
+    casos negativos (texto sin señales, documento vacío, documento ambiguo y texto con errores de OCR).
+30. **Reglas.** Cada señal es una palabra clave o una estructura (el CUPS, el IBAN…) con su peso y su `ruleId`
+    (`classify.<tipo>.<señal>`), y cuenta una sola vez. Los motivos guardan la página, la zona y la línea donde
+    coincidió la regla. Pesos y umbrales (`ClassifierConfig`) son hipótesis.
+31. **Confianza** = margen sobre el segundo tipo × evidencia (puntuación / 10, hasta 1). Por debajo de 4 puntos el
+    documento es OTHER; si no hay ninguna señal, OTHER con confianza 0,8. Por debajo de 0,7 la app pregunta «¿Qué es
+    este documento?» con los tres tipos más probables y un «Ninguno de estos», que lo guarda como «Otro documento».
+    La respuesta queda como `USER_CONFIRMED`.
+32. **Nombres de los tipos en la interfaz** (en `feature/capture` por ahora): Nómina, Factura de suministro, Compra,
+    Suscripción, Seguro, Vehículo, Contrato y Otro documento. Se moverán a un sitio común cuando los use otra
+    pantalla.

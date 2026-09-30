@@ -19,6 +19,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -28,6 +29,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dbmsystem.papeles.core.classify.Classification
+import com.dbmsystem.papeles.core.model.DocumentType
+import com.dbmsystem.papeles.core.model.Origin
 import com.dbmsystem.papeles.core.model.TextPage
 import com.dbmsystem.papeles.core.model.TextSource
 import com.dbmsystem.papeles.core.text.DocumentInput
@@ -93,7 +97,20 @@ fun CaptureScreen(
                 CircularProgressIndicator()
                 Text(stringResource(R.string.capture_reading))
             }
+            is CaptureState.AskType -> {
+                Text(stringResource(R.string.capture_question), style = MaterialTheme.typography.titleLarge)
+                for (option in current.classification.options) {
+                    OutlinedButton(onClick = { viewModel.chooseType(option) }, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(option.label))
+                    }
+                }
+                TextButton(onClick = { viewModel.chooseType(DocumentType.OTHER) }, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.capture_none_of_these))
+                }
+                ReadPages(current.pages)
+            }
             is CaptureState.Read -> {
+                DocumentTypeSummary(current.type, current.typeOrigin, current.classification)
                 ReadPages(current.pages)
                 Button(onClick = viewModel::reset, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.capture_another))
@@ -127,6 +144,46 @@ fun CaptureScreen(
         }
     }
 }
+
+@Composable
+private fun DocumentTypeSummary(
+    type: DocumentType,
+    origin: Origin,
+    classification: Classification,
+) {
+    val name = stringResource(type.label)
+    if (origin == Origin.USER_CONFIRMED) {
+        Text(stringResource(R.string.capture_type_confirmed, name), style = MaterialTheme.typography.titleLarge)
+        return
+    }
+    Text(stringResource(R.string.capture_type_detected, name), style = MaterialTheme.typography.titleLarge)
+    val evidence =
+        classification.reasons
+            .mapNotNull { it.text }
+            .distinct()
+            .take(MAX_REASONS_SHOWN)
+    if (evidence.isNotEmpty()) {
+        Text(
+            stringResource(R.string.capture_type_reasons, evidence.joinToString(", ") { "«$it»" }),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+}
+
+private const val MAX_REASONS_SHOWN = 3
+
+private val DocumentType.label: Int
+    get() =
+        when (this) {
+            DocumentType.PAYSLIP -> R.string.doc_type_payslip
+            DocumentType.UTILITY_BILL -> R.string.doc_type_utility_bill
+            DocumentType.PURCHASE -> R.string.doc_type_purchase
+            DocumentType.SUBSCRIPTION -> R.string.doc_type_subscription
+            DocumentType.INSURANCE -> R.string.doc_type_insurance
+            DocumentType.VEHICLE -> R.string.doc_type_vehicle
+            DocumentType.CONTRACT_DATES -> R.string.doc_type_contract_dates
+            DocumentType.OTHER -> R.string.doc_type_other
+        }
 
 /** What was read, page by page, so the text step can be checked by eye until the review screen exists (M5). */
 @Composable

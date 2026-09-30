@@ -32,4 +32,5 @@ include(
     ":feature:review",
     ":feature:changes",
     ":feature:settings",
+    ":tools:synthetic",
 )

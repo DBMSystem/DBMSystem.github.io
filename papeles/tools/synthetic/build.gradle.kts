@@ -4,7 +4,4 @@ plugins {
 
 dependencies {
     api(project(":core:model"))
-    implementation(libs.javax.inject)
-
-    testImplementation(project(":tools:synthetic"))
 }

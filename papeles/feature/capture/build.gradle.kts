@@ -9,6 +9,7 @@ android {
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:text"))
+    implementation(project(":core:classify"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.mlkit.document.scanner)
 
