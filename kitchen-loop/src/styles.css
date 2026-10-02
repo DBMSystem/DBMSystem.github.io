@@ -1887,6 +1887,91 @@ body {
   box-shadow: inset 0 -8px 0 #5d3a26, 0 0 0 2px rgba(255, 213, 79, 0.6);
 }
 
+.pass-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.pass-head h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.pass-pan {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(255, 213, 79, 0.7));
+}
+
+.pass-previews {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.pass-preview {
+  margin: 0;
+}
+
+.pass-preview figcaption {
+  display: block;
+  margin-top: 4px;
+}
+
+.night-shot {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 0 0 2px #283593;
+}
+
+.night-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 40% 55%;
+}
+
+.night-shot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 10%, rgba(255, 200, 120, 0.35), rgba(0, 0, 0, 0) 55%);
+}
+
+.pass-preview .card-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin: 0;
+}
+
+.pass-preview .card-name {
+  display: none;
+}
+
+.golden-frame {
+  padding: 6px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255, 224, 130, 0.22), rgba(201, 162, 39, 0.12));
+  animation: golden-border 3s ease-in-out infinite;
+}
+
+.reduced-motion .golden-frame {
+  animation: none;
+  box-shadow: 0 0 0 3px #ffd54f;
+}
+
+.pass-pitch {
+  margin: 0 0 8px;
+  font-style: italic;
+}
+
 .shelf.chest .card-grid {
   grid-template-columns: repeat(5, 1fr);
   margin: 6px 0;

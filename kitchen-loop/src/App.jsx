@@ -13,6 +13,7 @@ import { LanguagePicker } from './screens/LanguagePicker.jsx';
 import { setLanguage } from './utils/i18n.js';
 import { setRootBackHandler, useBackButton } from './utils/backButton.js';
 import { pendingScenes, markSceneSeen } from './systems/story.js';
+import { storyOrder } from './data/dialogues.js';
 import { availableSpecialties } from './systems/specialty.js';
 import { finalizeLoop } from './economy/rewards.js';
 import { addXp, xpToNext } from './economy/progression.js';
@@ -35,7 +36,8 @@ export function App({ services }) {
   const [run, setRun] = useState({ id: 0, tutorial: false, specialty: null, trial: null });
   const [picking, setPicking] = useState(false); // choosing the daily specialty before a loop
   const [scene, setScene] = useState(dueAtStart ? { id: dueAtStart, then: () => setScreen('menu') } : null); // { id, then }
-  const [returnTo, setReturnTo] = useState(null); // where a replayed story or a rename goes back to
+  const [returnTo, setReturnTo] = useState(null); // where a rename goes back to
+  const [replay, setReplay] = useState(null); // { ids, index }: the story so far, replayed from Settings
   const [confirmExit, setConfirmExit] = useState(false);
   const [, setVersion] = useState(0);
 
@@ -111,6 +113,7 @@ export function App({ services }) {
   const goBack = () => {
     if (screen === 'menu') setConfirmExit(true);
     else if (screen === 'album' || screen === 'settings') setScreen('menu');
+    else if (screen === 'replay') setScreen('settings');
     else if (screen === 'warehouse' || screen === 'results') toMenu();
     else if (['name', 'intro', 'premise'].includes(screen) && returnTo) {
       setScreen(returnTo);
@@ -155,7 +158,7 @@ export function App({ services }) {
       case 'language':
         return <LanguagePicker onPick={pickLanguage} />;
       case 'intro':
-        return <Story key="intro" scene="intro" playerName={playerName} onDone={() => setScreen(returnTo ? 'premise' : 'name')} />;
+        return <Story key="intro" scene="intro" playerName={playerName} onDone={() => setScreen('name')} />;
       case 'name':
         return <NameInput initial={returnTo ? playerName : ''} onDone={saveName} />;
       case 'premise':
@@ -188,6 +191,11 @@ export function App({ services }) {
         return <Results result={result} playerName={playerName} services={services} onAgain={() => proceed(() => play(false))} onMenu={toMenu} />;
       case 'scene':
         return <Story key={scene.id} scene={scene.id} playerName={playerName} onDone={finishScene} />;
+      case 'replay': {
+        const id = replay.ids[replay.index];
+        const next = () => (replay.index + 1 < replay.ids.length ? setReplay({ ...replay, index: replay.index + 1 }) : setScreen('settings'));
+        return <Story key={`replay-${id}`} scene={id} playerName={playerName} onDone={next} />;
+      }
       case 'album':
         return <Album services={services} onClose={() => setScreen('menu')} />;
       case 'warehouse':
@@ -204,8 +212,10 @@ export function App({ services }) {
             }}
             onTutorial={() => play(true)}
             onStory={() => {
-              setReturnTo('settings');
-              setScreen('intro');
+              // The story so far: the first session's scenes and every chapter already seen, in order.
+              const seen = saveManager.get().story.seenScenes;
+              setReplay({ ids: storyOrder.filter((id) => id === 'intro' || id === 'premise' || seen.includes(id)), index: 0 });
+              setScreen('replay');
             }}
             onDeleted={async () => {
               await saveManager.reset();

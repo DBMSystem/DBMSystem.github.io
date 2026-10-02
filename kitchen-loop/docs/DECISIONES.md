@@ -553,3 +553,16 @@ Daniel: «Chef rival error en sombrero, propina caída error línea, estudiante 
   - **Maestro del Triple Bacon:** se quitan las marcas «✓ ×3» de la carta original.
 - **Ninguna carta se sale del borde:** `fit_inside` reduce y recoloca el dibujo si toca el borde de la carta, salvo en las que llegan al borde a propósito.
 
+## 29. Historia, cartas y vitrina (Daniel: «perfecciona todo el juego para que tenga una historia coherente, entretenida y divertida… perfecciona la monetización… perfecciona las cartas… haz de este un juegazo»)
+
+- **Qué no se ha hecho:** ningún sistema ni mecánica nuevos (regla 1). Todo es contenido, presentación y el reparto de diálogos por capítulo que ya prevé la especificación (6.3: «cada capítulo desbloquea diálogos»). La monetización sigue siendo la de la sección 7: solo estética, sin avisos fuera del Almacén, sin ventajas.
+- **Historia:** el canon está en `docs/HISTORIA.md` (personajes, voces, capítulos, ganchos y diario). Sigue la propuesta D-1 y todo queda `draft` hasta que Daniel la apruebe. Decisiones de escritura:
+  - El olor a azúcar quemado es la pista que une la hoja del jugador con Brûlée (su nombre es un postre de caramelo quemado). Aparece en la intro, en el capítulo 2, en el aviso de resultados y en la Tapa Misteriosa.
+  - La Receta Perdida «no se termina a solas»: es la razón por la que Brûlée nunca la terminó y por la que la cocinan Pip y el jugador juntos. Da sentido al final sin cambiar nada de la especificación.
+  - El diario lo cuenta la cocina en primera persona. Las 12 páginas se han movido a cartas que encajan con cada recuerdo (tabla en `HISTORIA.md` §6); 11 están en comunes o raras y la 12 en una épica, para que la última página sea una meta alcanzable.
+- **Diálogos por capítulo:** `fromChapter` en `src/data/dialogues.js`; `storyStage(save)` en `systems/story.js` es el capítulo, u 8 tras el epílogo. Afecta a Pip en partida, a Brûlée en el Almacén y a la frase de resultados.
+- **Resultados:** `endTrigger` elige, por este orden: récord, desborde, dos o más quemados, nadie se fue (con 6 pedidos o más), dos fiebres o más, flojo, normal.
+- **Cartas:** nombres sin cambios (el arte depende de ellos). Las 120 descripciones son nuevas; las pistas de las de descubrimiento se mantienen porque describen bien su condición.
+- **Vitrina:** el Pase se presenta con lo que se ve (captura de la Cocina Nocturna y tres cartas con el marco del Álbum Dorado), lo que incluye y «pago único». Cada sartén lleva una línea. Tras un «Probar», la pantalla de resultados dice una sola vez dónde está lo probado. Sigue sin haber menciones de compra en ninguna otra pantalla.
+- **«Ver la historia»** (Ajustes) repite todas las escenas ya vistas, en orden. Antes solo repetía la presentación.
+

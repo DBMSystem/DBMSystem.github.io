@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.10.0 — Historia, cartas y vitrina
+
+- **Historia** (`docs/HISTORIA.md`): todas las escenas reescritas con un hilo claro: la hoja que huele a azúcar quemado, el maestro, el baúl, la cocina que recuerda, la prueba, la noche y el perdón. Cada escena acaba con un gancho o con una risa.
+- **Diario de la cocina:** las 12 páginas, contadas por la propia cocina, en cartas que encajan con cada recuerdo (11 comunes o raras y la última en la Tapa Misteriosa).
+- **Pip habla según el capítulo:** desde el 3 siente que Brûlée mira, desde el 5 nota que la cocina apunta los platos y, tras el epílogo, ya no se esconde. Brûlée también cambia en el Almacén.
+- **Resultados:** Pip comenta lo que de verdad ha pasado (platos quemados, nadie se fue, dos fiebres, desborde).
+- **Más vida:** saludo de Pip según la hora del día, tercera reacción de cada cliente y «Ver la historia» en Ajustes repite todo lo visto, en orden.
+- **Cartas:** las 120 descripciones reescritas: cada una es un chiste, un cliente de siempre o una pista de la historia.
+- **Vitrina del Pase del Maestro:** se ve antes de pagar (la Cocina Nocturna y el Álbum Dorado), con lo que incluye en claro y una frase de Pip. Cada sartén explica cómo es. Tras probar algo con un anuncio, Pip dice dónde está. Sin ventajas, sin avisos fuera del Almacén.
+- 173 tests.
+
 ## 0.9.4 — Correcciones de Daniel en las cartas
 
 - **El Chef Rival:** su gorro volvía a ser una nube gris; ahora es blanco. Se nota también en la partida.

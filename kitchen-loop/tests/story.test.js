@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createDefaultSave, validateSave } from '../src/save/schema.js';
-import { advanceStory, pendingScenes, markSceneSeen } from '../src/systems/story.js';
+import { advanceStory, pendingScenes, markSceneSeen, storyStage } from '../src/systems/story.js';
 import { utensilState, treeTotalCost, treeComplete } from '../src/systems/utensils.js';
 import { buyUtensil, buyDecor, placeDecor, buyPack, addCoins, addFragments } from '../src/inventory/inventory.js';
 import { availableSpecialties, rollSpecialties } from '../src/systems/specialty.js';
@@ -8,7 +8,7 @@ import { unlocksBetween } from '../src/economy/progression.js';
 import { finalizeLoop } from '../src/economy/rewards.js';
 import { utensils } from '../src/data/utensils.js';
 import { decorItems } from '../src/data/decor.js';
-import { chapterScenes } from '../src/data/dialogues.js';
+import { chapterScenes, storyOrder, storyScenes, AFTER_FINALE } from '../src/data/dialogues.js';
 import { balance } from '../src/data/balance.js';
 import { createRng } from '../src/utils/rng.js';
 import { hasKey } from '../src/utils/i18n.js';
@@ -64,6 +64,19 @@ describe('story chapters (spec 6.3)', () => {
     expect(pendingScenes(save)).toEqual([]);
     save.recipes.lost_recipe = { discovered: true, timesCooked: 1 };
     expect(pendingScenes(save)).toEqual(['finale']);
+  });
+
+  it('the story stage is the chapter, or "after the epilogue" once the finale was seen; the replay follows the order told', () => {
+    const save = fresh();
+    expect(storyStage(save)).toBe(1);
+    save.story.chapter = 4;
+    expect(storyStage(save)).toBe(4);
+    save.story.chapter = 7;
+    markSceneSeen(save, 'finale');
+    expect(storyStage(save)).toBe(AFTER_FINALE);
+    expect(AFTER_FINALE).toBeGreaterThan(7);
+    expect(storyOrder).toEqual(['intro', 'premise', ...Object.keys(chapterScenes)]);
+    for (const id of storyOrder) expect(Boolean(storyScenes[id] || chapterScenes[id]), id).toBe(true);
   });
 
   it('every scene has at most 3 bubbles with texts', () => {

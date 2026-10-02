@@ -6,8 +6,9 @@ const PASS_TRIGGERS = ['loopStart', 'cook', 'combo'];
 
 // Turns loop events into Pip's lines (spec 3.6). `tips` = tip ids already seen (shown once ever).
 // `pass`: with the Maestro Pass, some everyday lines become one of its 15 special lines.
-export function createPip({ engine, balance, rng, tips = new Set(), onTipSeen = () => {}, pass = false }) {
-  const dialogue = createDialogue({ triggers: pipTriggers, rng, minInterval: balance.pipLineInterval, historySize: balance.dialogueHistory });
+// `chapter`: the story stage reached (systems/story.js storyStage), which unlocks lines (spec 6.3).
+export function createPip({ engine, balance, rng, tips = new Set(), onTipSeen = () => {}, pass = false, chapter = 1 }) {
+  const dialogue = createDialogue({ triggers: pipTriggers, rng, minInterval: balance.pipLineInterval, historySize: balance.dialogueHistory, chapter });
   let line = null;
 
   const say = (trigger) => {
@@ -61,8 +62,12 @@ export function createPip({ engine, balance, rng, tips = new Set(), onTipSeen = 
   return { handle, say, show, current };
 }
 
-// Line for the results screen (spec 8.5).
+// Line for the results screen (spec 8.5): what really happened, the most remarkable thing first.
 export function endTrigger(result, balance) {
   if (result.newRecord) return 'endRecord';
+  if (result.endReason === 'overflow') return 'endOverflow';
+  if (result.burntCount >= 2) return 'endBurnt';
+  if (result.customersLost === 0 && result.ordersServed >= 6) return 'endNoLoss';
+  if (result.feverCount >= 2) return 'endFever';
   return result.score < balance.weakLoopScore ? 'endWeak' : 'endNormal';
 }
