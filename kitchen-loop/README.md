@@ -1,6 +1,6 @@
 # KITCHEN LOOP
 
-Juego móvil de puzle de cocina + colección de cartas. Especificación: `docs/KITCHEN_LOOP_SPEC.md`. Decisiones: `docs/DECISIONES.md`.
+Juego móvil de puzle de cocina + colección de cartas. Especificación: `docs/KITCHEN_LOOP_SPEC.md`. Decisiones: `docs/DECISIONES.md`. Historia: `docs/HISTORIA.md`.
 
 ```bash
 npm install

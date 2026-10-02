@@ -13,6 +13,10 @@ import { spriteUrl } from '../assets/manifest.js';
 import { contentFor } from '../systems/unlocks.js';
 import { decorById } from '../data/decor.js';
 import { panById } from '../data/products.js';
+import { menuGreetings } from '../data/dialogues.js';
+
+// morning | afternoon | night, by the device's clock.
+const timeOfDay = (hour = new Date().getHours()) => (hour < 6 ? 'night' : hour < 14 ? 'morning' : hour < 21 ? 'afternoon' : 'night');
 
 let calendarShownThisSession = false;
 
@@ -33,6 +37,10 @@ export function Menu({ services, onPlay, onAlbum, onWarehouse, onSettings, onDev
   useAds(adManager);
   useEffect(() => adManager.start(), [adManager]);
   const warehouseOpen = contentFor(save).features.includes('warehouse');
+  const [greeting] = useState(() => {
+    const options = menuGreetings[timeOfDay()];
+    return options[Math.floor(Math.random() * options.length)].key;
+  });
 
   return (
     <div className="screen menu">
@@ -66,7 +74,7 @@ export function Menu({ services, onPlay, onAlbum, onWarehouse, onSettings, onDev
         })}
       </div>
       <p className="slogan">{t('game.slogan')}</p>
-      <p className="greeting">{t('menu.greeting', { nombre: name })}</p>
+      <p className="greeting">{t(greeting, { nombre: name })}</p>
       <Button icon="icon_cook" onClick={onPlay}>
         {t('menu.play')}
       </Button>

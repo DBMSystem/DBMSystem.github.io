@@ -574,13 +574,15 @@ Los utensilios desbloquean **contenido y pequeños cambios estratégicos**, nunc
 - La primera aparición de Brûlée ocurre en la pantalla de resultados, nunca interrumpiendo un loop. Frase de entrada: "Así que por fin has encontrado a alguien que aguanta una cocina."
 - Cada capítulo desbloquea diálogos y, según la tabla de desbloqueos, cartas, decoración o recetas.
 - Escenas de diálogo: como máximo 3 bocadillos por escena, saltables, nunca durante el gameplay (en partida solo frases sueltas de Pip).
+- Las frases de Pip en partida, las de Brûlée en el Almacén y la de resultados pueden llevar un capítulo mínimo (`fromChapter`): así cada capítulo cambia lo que dicen. El canon de la historia está en `docs/HISTORIA.md`.
+- «Ver la historia» (Ajustes) repite todas las escenas ya vistas, en orden.
 
 ### 6.4 Fragmentos de historia (la segunda narrativa)
 
 - 12 fragmentos de historia repartidos en cartas (`storyFragment: 1…12`).
 - Al menos 8 de los 12 están en cartas comunes o raras, para que la historia sea accesible sin suerte.
 - El álbum tiene una pestaña **Diario de la cocina** que muestra los fragmentos conseguidos en orden, con huecos para los que faltan.
-- Leídos en orden, los fragmentos cuentan el secreto (sección 6.5).
+- Leídos en orden, los fragmentos cuentan el secreto (sección 6.5). Los cuenta la propia cocina; qué carta lleva cada página está en `docs/HISTORIA.md` §6.
 
 ### 6.5 El secreto de la historia **[DECISIÓN D-1 — PROPUESTA, requiere aprobación]**
 
@@ -705,6 +707,7 @@ No se puede saltar la primera vez (es corto). Se puede repetir desde Ajustes.
 ### 8.5 Pantalla de resultados
 
 - Secuencia animada de ≤ 4 s, saltable con un toque: puntuación (y "¡Nuevo récord!" si procede), mejor combo, pedidos completados, barra de XP, monedas, cartas obtenidas, progreso del álbum, nuevos desbloqueos y frase de Pip.
+- La frase de Pip comenta lo más llamativo del servicio: récord, desborde, platos quemados, nadie se fue, fiebres, servicio flojo o normal. Si se ha probado algo con un anuncio, una línea dice dónde está (vitrina o estantería).
 - Botones: **OTRA VEZ** (grande, principal) y **MENÚ**. Del resultado a un loop nuevo en 1 toque.
 
 ### 8.6 Álbum
@@ -716,7 +719,7 @@ Pestañas: **Cartas** · **Recetas** · **Diario de la cocina**. Incluye el bot�
 Una habitación llena de objetos, no una tienda web. Brûlée está presente y comenta.
 
 - **Estantería de utensilios**: el árbol de 9 utensilios presentado como objetos físicos por tiers (monedas).
-- **Vitrina**: sartenes y Pase del Maestro (dinero real). Cada objeto muestra sprite, nombre, precio, estado y botón comprar / equipar / probar.
+- **Vitrina**: sartenes y Pase del Maestro (dinero real). Cada objeto muestra sprite, nombre, una línea de descripción, precio, estado y botón comprar / equipar / probar. El Pase enseña antes lo que se ve (la Cocina Nocturna y el Álbum Dorado), lo que incluye y que es un pago único.
 - **Rincón de decoración**: objetos para la cocina (monedas).
 - **Baúl pequeño**: Pack de Inicio (una sola vez).
 - Los precios en monedas y en euros deben distinguirse a simple vista (icono de moneda frente a "€" y botones de color distinto).

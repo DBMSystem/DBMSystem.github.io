@@ -186,3 +186,14 @@ Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challe
   - Sello del Maestro Antiguo (sello de cera con una sartén), La Primera Receta (papel escrito a mano) y Cadena de Diez / Noche de Récord (pizarra con "x10" y "3000").
 - **Tutorial** (`tutorial.orderTomato`, `tutorial.orderCook`): "Ahora el tomate, pegado al pan." y "¡Brillan! Tócalos: el plato va a la sartén de su cliente."
 
+## Historia, cartas y vitrina (0.10.0, todo draft)
+
+- **Historia:** `docs/HISTORIA.md` y las claves `story.*`, `fragment.1–12` y `results.bruleeTeaser` en `src/data/i18n/es.js`.
+- **Pip en partida:** frases nuevas `pip.loopStart.5–10`, `pip.cook.6–11`, `pip.combo.4–6`, `pip.closeCall.5`, `pip.perfect.3–4`, `pip.fever.3`, `pip.customerLeft.4`, `pip.burnt.4`, `pip.gridNearlyFull.3`, `pip.overflow.3`, `pip.secret.2` y las de resultados `pip.end*`. Las que llevan `fromChapter` solo salen desde ese capítulo.
+- **Brûlée en el Almacén:** `warehouse.brulee.6–14`.
+- **Menú:** `menu.greeting.<mañana|tarde|noche>.1–3`.
+- **Clientes:** `react.<cliente>.3`.
+- **Cartas:** las 120 `card.<id>.lore` (≤ 140 caracteres) y las pistas `card.<id>.hint`.
+- **Vitrina:** `pass.*`, `pan.<id>.desc`, `results.trial.*` y `shop.purchased`.
+- Todo tiene traducción al inglés en `en.js`, pendiente de revisión.
+

@@ -9,12 +9,14 @@ import { utensilCost, utensilState, treeComplete, utensilsOwned } from '../syste
 import { buyUtensil, buyDecor, placeDecor, buyPack, equipPan, ownsPan, ownsCard } from '../inventory/inventory.js';
 import { balance } from '../data/balance.js';
 import { useAds } from '../monetization/useAds.js';
-import { advanceStory } from '../systems/story.js';
+import { advanceStory, storyStage } from '../systems/story.js';
+import { linesFor } from '../systems/dialogue.js';
 import { createRng } from '../utils/rng.js';
 import { spriteUrl } from '../assets/manifest.js';
 import { t, formatNumber } from '../utils/i18n.js';
 
 const TABS = ['utensils', 'decor', 'packs', 'showcase'];
+const PASS_PREVIEW_CARDS = ['golden_truffle', 'dream_pan']; // shown golden, as the Álbum Dorado frames them
 const PACKS = ['standard', 'special'];
 const TIERS = [1, 2, 3, 4];
 
@@ -44,7 +46,8 @@ export function Warehouse({ services, onClose, onTrial }) {
   const [tab, setTab] = useState('utensils');
   const [, refresh] = useReducer((n) => n + 1, 0);
   const rng = useMemo(() => createRng(), []);
-  const [line, setLine] = useState(() => rng.pick(warehouseLines).key);
+  const bruleeLines = linesFor(warehouseLines, storyStage(save));
+  const [line, setLine] = useState(() => rng.pick(bruleeLines).key);
   const done = treeComplete(save);
 
   async function buy(kind, id) {
@@ -56,7 +59,7 @@ export function Warehouse({ services, onClose, onTrial }) {
     if (!ok) return;
     audio.play('purchase');
     haptics.vibrate('medium');
-    setLine(kind === 'utensil' && treeComplete(saveManager.get()) ? 'warehouse.bruleeDone' : rng.pick(warehouseLines).key);
+    setLine(kind === 'utensil' && treeComplete(saveManager.get()) ? 'warehouse.bruleeDone' : rng.pick(bruleeLines).key);
     refresh();
   }
 
@@ -142,7 +145,7 @@ export function Warehouse({ services, onClose, onTrial }) {
           <Price coins={save.fragments} fragments />
         </span>
       </div>
-      <button type="button" className="brulee-says" onClick={() => setLine(rng.pick(warehouseLines).key)}>
+      <button type="button" className="brulee-says" onClick={() => setLine(rng.pick(bruleeLines).key)}>
         <img src={spriteUrl(done ? 'brulee/happy' : 'brulee/explaining')} alt={t('story.brulee')} />
         <span className="speech small">{t(done ? 'warehouse.bruleeDone' : line)}</span>
       </button>
@@ -250,6 +253,7 @@ export function Warehouse({ services, onClose, onTrial }) {
                   <div key={pan.id} className={`item ${owned ? 'owned' : 'available'}`}>
                     <img className="decor-img" src={spriteUrl(pan.sprite)} alt="" />
                     <strong>{t(`pan.${pan.id}`)}</strong>
+                    <span className="hint small">{t(`pan.${pan.id}.desc`)}</span>
                     {owned ? (
                       save.equippedPan === pan.id ? (
                         <span className="badge ok">{t('warehouse.equipped')}</span>
@@ -271,13 +275,37 @@ export function Warehouse({ services, onClose, onTrial }) {
               })}
             </div>
           </section>
+          {/* The Maestro Pass (spec 7.4): what it looks like before what it costs; cosmetic, honest, one payment. */}
           <section className="shelf pass">
-            <h3>{t(`product.${PASS}.name`)}</h3>
+            <div className="pass-head">
+              <img className="pass-pan" src={spriteUrl('pans/golden')} alt={t('pan.golden')} />
+              <div>
+                <h3>{t(`product.${PASS}.name`)}</h3>
+                <span className="hint small">{t('pass.forever')}</span>
+              </div>
+            </div>
+            <div className="pass-previews">
+              <figure className="pass-preview">
+                <div className="night-shot">
+                  <img src={spriteUrl('ui/kitchen_night')} alt="" />
+                </div>
+                <figcaption className="hint small">{t('pass.preview.night')}</figcaption>
+              </figure>
+              <figure className="pass-preview">
+                <div className="card-grid golden-frame">
+                  {PASS_PREVIEW_CARDS.map((id) => (
+                    <CardView key={id} cardId={id} />
+                  ))}
+                </div>
+                <figcaption className="hint small">{t('pass.preview.album')}</figcaption>
+              </figure>
+            </div>
             <ul className="pass-list">
-              {['album', 'pack', 'night', 'pan', 'pip'].map((k) => (
+              {['night', 'album', 'pan', 'pack', 'pip'].map((k) => (
                 <li key={k}>{t(`pass.${k}`)}</li>
               ))}
             </ul>
+            <p className="hint small pass-pitch">{t('pass.pitch')}</p>
             {save.entitlements.maestroPass ? (
               <span className="badge ok">{t('warehouse.passActive')}</span>
             ) : (

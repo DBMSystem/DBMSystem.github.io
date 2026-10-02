@@ -15,6 +15,7 @@ import { calendarToday } from '../components/Calendar.jsx';
 import { todayChallenges, progressWith } from '../systems/challenges.js';
 import { unlockContext } from '../systems/unlocks.js';
 import { hasMaestroPass } from '../inventory/inventory.js';
+import { storyStage } from '../systems/story.js';
 import { useAds } from '../monetization/useAds.js';
 import { onAppLifecycle } from '../utils/lifecycle.js';
 import { useBackButton } from '../utils/backButton.js';
@@ -55,7 +56,7 @@ export function Game({ tutorial = false, specialty = null, trial = null, service
       discoveredSecrets: discoveredSecrets(save),
       seed: Date.now(),
       onOverflow: setOverflow,
-      onEnd: (result) => onEndRef.current({ ...result, tutorial, loopId }),
+      onEnd: (result) => onEndRef.current({ ...result, tutorial, loopId, trial }),
       ...(tutorial && { ingredientQueue: tutorialScript.ingredientQueue, timerRunning: false }),
     });
     const tips = new Set(save.story.seenScenes.filter((id) => id.startsWith(TIP_PREFIX)).map((id) => id.slice(TIP_PREFIX.length)));
@@ -70,6 +71,7 @@ export function Game({ tutorial = false, specialty = null, trial = null, service
         tips,
         playerName: save.player.name,
         pass: hasMaestroPass(save),
+        chapter: storyStage(save),
         onTipSeen: (tip) =>
           saveManager.update((s) => {
             s.story.seenScenes.push(TIP_PREFIX + tip);

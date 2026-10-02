@@ -1,6 +1,6 @@
 // Album (spec 4.2–4.4): 120 cards (the spec's 48 launch cards, expanded: DECISIONES.md D-8). Names, lore and hints live in i18n/es.js (`card.<id>.name|lore|hint`).
 // source: 'pack' (packs, loop drops, calendar, crafting) | 'discovery' (only by doing something, `unlock`).
-// storyFragment: 1–12, the kitchen diary (spec 6.4). Art: sprites cards/<id> on the backdrop cards/bg_<theme> of
+// storyFragment: 1–12, the kitchen diary (spec 6.4, docs/HISTORIA.md §6). Art: sprites cards/<id> on the backdrop cards/bg_<theme> of
 // src/assets/cardBackdrops.json, both drawn by scripts/card_art.py to match each card's name.
 // draft: true = invented by Claude Code, pending review (docs/CONTENT_REVIEW.md).
 
@@ -20,9 +20,9 @@ export const cards = [
   },
   { id: 'sad_tomato', rarity: 'common', source: 'pack' },
   { id: 'normal_bacon', rarity: 'common', source: 'pack' },
-  { id: 'suspicious_potato', rarity: 'common', source: 'pack', storyFragment: 3 },
+  { id: 'suspicious_potato', rarity: 'common', source: 'pack' },
   { id: 'lazy_cheese', rarity: 'common', source: 'pack', draft: true },
-  { id: 'shy_mushroom', rarity: 'common', source: 'pack', draft: true, storyFragment: 4 },
+  { id: 'shy_mushroom', rarity: 'common', source: 'pack', draft: true },
   { id: 'crying_onion', rarity: 'common', source: 'pack', draft: true },
   { id: 'lost_herbs', rarity: 'common', source: 'pack', draft: true },
   { id: 'fish_out_of_water', rarity: 'common', source: 'pack', draft: true },
@@ -37,16 +37,15 @@ export const cards = [
     rarity: 'common',
     source: 'pack',
     draft: true,
-    storyFragment: 5,
   },
   { id: 'midnight_snack', rarity: 'common', source: 'pack', draft: true },
   { id: 'crispy_bacon', rarity: 'common', source: 'pack', draft: true },
   { id: 'happy_bravas', rarity: 'common', source: 'pack', draft: true },
-  { id: 'grandma_tortilla', rarity: 'common', source: 'pack', draft: true, storyFragment: 6 },
+  { id: 'grandma_tortilla', rarity: 'common', source: 'pack', draft: true },
   { id: 'lonely_salad', rarity: 'common', source: 'pack', draft: true },
-  { id: 'pip_apron', rarity: 'common', source: 'pack', draft: true, storyFragment: 7 },
-  { id: 'dented_pan', rarity: 'common', source: 'pack', draft: true },
-  { id: 'kitchen_clock', rarity: 'common', source: 'pack', draft: true },
+  { id: 'pip_apron', rarity: 'common', source: 'pack', storyFragment: 4, draft: true },
+  { id: 'dented_pan', rarity: 'common', source: 'pack', storyFragment: 6, draft: true },
+  { id: 'kitchen_clock', rarity: 'common', source: 'pack', storyFragment: 7, draft: true },
 
   {
     id: 'brave_egg',
@@ -93,7 +92,7 @@ export const cards = [
     draft: true,
   },
   { id: 'perfect_toast', rarity: 'common', source: 'pack', draft: true },
-  { id: 'house_toast', rarity: 'common', source: 'pack', draft: true },
+  { id: 'house_toast', rarity: 'common', source: 'pack', storyFragment: 3, draft: true },
   { id: 'sunday_scramble', rarity: 'common', source: 'pack', draft: true },
   { id: 'forest_omelette', rarity: 'common', source: 'pack', draft: true },
   { id: 'skewer_parade', rarity: 'common', source: 'pack', draft: true },
@@ -108,18 +107,19 @@ export const cards = [
   { id: 'sandwich_tower', rarity: 'common', source: 'pack', draft: true },
   { id: 'pip_confused', rarity: 'common', source: 'pack', draft: true },
   { id: 'pip_winking', rarity: 'common', source: 'pack', draft: true },
-  { id: 'pip_worried', rarity: 'common', source: 'pack', draft: true },
+  { id: 'pip_worried', rarity: 'common', source: 'pack', storyFragment: 8, draft: true },
   { id: 'regular_customer', rarity: 'common', source: 'pack', draft: true },
   { id: 'student_rush', rarity: 'common', source: 'pack', draft: true },
   { id: 'coffee_break', rarity: 'common', source: 'pack', draft: true },
   { id: 'lost_tourist', rarity: 'common', source: 'pack', draft: true },
   { id: 'fallen_tip', rarity: 'common', source: 'pack', draft: true },
   { id: 'steam_cloud', rarity: 'common', source: 'pack', draft: true },
-  { id: 'fridge_note', rarity: 'common', source: 'pack', draft: true },
+  { id: 'fridge_note', rarity: 'common', source: 'pack', storyFragment: 10, draft: true },
   {
     id: 'morning_kitchen',
     rarity: 'common',
     source: 'pack',
+    storyFragment: 11,
     draft: true,
   },
   {
@@ -141,11 +141,11 @@ export const cards = [
     rarity: 'rare',
     source: 'pack',
   },
-  { id: 'grumpy_grandma', rarity: 'rare', source: 'pack', draft: true, storyFragment: 8 },
-  { id: 'sleepy_pip', rarity: 'rare', source: 'pack', draft: true, storyFragment: 9 },
+  { id: 'grumpy_grandma', rarity: 'rare', source: 'pack', draft: true },
+  { id: 'sleepy_pip', rarity: 'rare', source: 'pack', draft: true },
   { id: 'alien_tourist', rarity: 'rare', source: 'pack', draft: true },
   { id: 'champions_breakfast', rarity: 'rare', source: 'pack', draft: true },
-  { id: 'batter_king', rarity: 'rare', source: 'pack', draft: true, storyFragment: 10 },
+  { id: 'batter_king', rarity: 'rare', source: 'pack', draft: true },
   {
     id: 'kitchen_in_love',
     rarity: 'rare',
@@ -156,6 +156,7 @@ export const cards = [
     id: 'midnight_kitchen',
     rarity: 'rare',
     source: 'pack',
+    storyFragment: 9,
     draft: true,
   },
   {
@@ -244,6 +245,7 @@ export const cards = [
     id: 'love_letter',
     rarity: 'rare',
     source: 'pack',
+    storyFragment: 5,
     draft: true,
   },
   {
@@ -304,7 +306,7 @@ export const cards = [
 
   // Epics (14 packs + 8 discovery)
   { id: 'galactic_bread', rarity: 'epic', source: 'pack' },
-  { id: 'rooster_king', rarity: 'epic', source: 'pack', draft: true, storyFragment: 11 },
+  { id: 'rooster_king', rarity: 'epic', source: 'pack', draft: true },
   { id: 'rival_chef', rarity: 'epic', source: 'pack', draft: true },
   { id: 'pan_on_fire', rarity: 'epic', source: 'pack', draft: true },
   { id: 'spice_whirl', rarity: 'epic', source: 'pack', draft: true },
@@ -335,7 +337,7 @@ export const cards = [
     source: 'pack',
     draft: true,
   },
-  { id: 'mystery_lid', rarity: 'epic', source: 'pack', draft: true },
+  { id: 'mystery_lid', rarity: 'epic', source: 'pack', storyFragment: 12, draft: true },
   {
     id: 'star_breakfast',
     rarity: 'epic',
@@ -404,7 +406,6 @@ export const cards = [
     id: 'first_recipe',
     rarity: 'legendary',
     source: 'pack',
-    storyFragment: 12,
   },
   {
     id: 'dream_pan',

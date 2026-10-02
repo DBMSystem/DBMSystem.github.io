@@ -6,6 +6,8 @@ import { CardReveal } from '../components/CardReveal.jsx';
 import { t, formatNumber } from '../utils/i18n.js';
 import { pipTriggers } from '../data/dialogues.js';
 import { endTrigger } from '../systems/pip.js';
+import { linesFor } from '../systems/dialogue.js';
+import { storyStage } from '../systems/story.js';
 import { balance } from '../data/balance.js';
 import { xpToNext } from '../economy/progression.js';
 import { createRng } from '../utils/rng.js';
@@ -19,13 +21,17 @@ const unlockName = ({ kind, id }) =>
 // Results (spec 8.5): new cards first, then score, XP bar (with level-ups), coins, unlocks and Pip.
 // Everything animates in under 4 s and can be skipped with a tap; PLAY AGAIN is one tap away.
 export function Results({ result, playerName, services, onAgain, onMenu }) {
-  const { audio, haptics } = services;
+  const { audio, haptics, saveManager } = services;
   const [showCards, setShowCards] = useState(result.cards.length > 0);
   const [skip, setSkip] = useState(false);
   const pip = useMemo(() => {
     const trigger = pipTriggers[endTrigger(result, balance)];
-    return { expression: trigger.expression, key: createRng().pick(trigger.lines).key };
-  }, [result]);
+    return { expression: trigger.expression, key: createRng().pick(linesFor(trigger.lines, storyStage(saveManager.get()))).key };
+  }, [result, saveManager]);
+  // Something tried with an ad (spec 7.5): Pip says where it is, once, after the service it was lent for.
+  const trial = result.trial
+    ? t(`results.trial.${result.trial.kind}`, { name: t(result.trial.kind === 'pan' ? `pan.${result.trial.id}` : `utensil.${result.trial.id}.name`) })
+    : null;
   const leveled = result.levels.length > 0;
   const endShare = result.levelAfter >= balance.maxLevel ? 1 : result.xpAfter / xpToNext(result.levelAfter);
   const startShare = leveled ? 0 : result.xpBefore / xpToNext(result.levelBefore);
@@ -33,10 +39,13 @@ export function Results({ result, playerName, services, onAgain, onMenu }) {
 
   useEffect(() => {
     if (showCards) return undefined;
-    const timer = setTimeout(() => {
-      setXpShare(endShare);
-      audio.play(leveled ? 'levelUp' : 'coin');
-    }, skip ? 0 : 300);
+    const timer = setTimeout(
+      () => {
+        setXpShare(endShare);
+        audio.play(leveled ? 'levelUp' : 'coin');
+      },
+      skip ? 0 : 300,
+    );
     return () => clearTimeout(timer);
   }, [showCards, skip, endShare, leveled, audio]);
 
@@ -149,6 +158,7 @@ export function Results({ result, playerName, services, onAgain, onMenu }) {
           <Typewriter text={t(pip.key, { nombre: playerName })} skip={skip} voice="pip" />
         </p>
       </div>
+      {trial && <p className="hint small pop-in">{trial}</p>}
       <Button icon="icon_cook" onClick={onAgain}>
         {t('results.again')}
       </Button>

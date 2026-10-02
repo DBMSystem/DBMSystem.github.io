@@ -1,10 +1,12 @@
 import { balance } from '../data/balance.js';
-import { chapterScenes } from '../data/dialogues.js';
+import { chapterScenes, AFTER_FINALE } from '../data/dialogues.js';
 import { contentFor } from './unlocks.js';
 import { treeComplete, utensilsOwned } from './utensils.js';
 import { track } from '../analytics/analytics.js';
 
 export const LAST_CHAPTER = 7;
+// The stage the dialogue is at: the chapter reached, or AFTER_FINALE once the epilogue has been seen.
+export const storyStage = (save) => (save.story.seenScenes.includes('finale') ? AFTER_FINALE : save.story.chapter);
 const discoveredSecretCount = (save) => Object.values(save.recipes).filter((r) => r.discovered).length;
 
 // Whether chapter n (2–7) opens, given the save after a loop or a purchase (spec 6.3).
