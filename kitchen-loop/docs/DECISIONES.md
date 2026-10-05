@@ -603,3 +603,10 @@ Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloq
   - Misma mecánica y mismas opciones (sección 2.12); solo cambia la presentación.
   - Cada especialidad lleva en sus datos un color y una etiqueta que dice de qué va.
   - El texto la sitúa en el mundo del juego: «La cocina recuerda tres especialidades».
+
+## 32. Tocar cocina lo que indica el color (Daniel: «si pulsas el verde, se cocina esa combinación; si pulsas el amarillo, la otra, por si se entrelazan varias recetas»)
+
+- Cambia la prioridad de la sección 2 de la especificación (ya actualizada). Antes ganaba la receta más grande, después la pedida y después la de más puntos. Ahora gana la pedida, después la más grande y después la de más puntos.
+- Así lo que se cocina coincide con el color: una casilla en verde pertenece a una receta que pide un cliente en espera y cocina esa; una en amarillo solo está en recetas fuera de carta y cocina la mayor de ellas.
+- Las recetas secretas se siguen descubriendo al tocar, pero en casillas que no estén en verde: si la secreta comparte casillas con un pedido, el pedido manda en esas casillas.
+

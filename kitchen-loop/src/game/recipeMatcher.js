@@ -86,10 +86,12 @@ export function findMatches(grid, recipes, maxSize, { wildcard = null, wildcardM
   return matches;
 }
 
-// Which match a tap on `cellIndex` cooks (spec 2.5): biggest, then one with an active order, then most points.
+// Which match a tap on `cellIndex` cooks: one with an active order first, then the biggest, then most points.
+// The order goes first so a tap cooks what the cell's colour shows (DECISIONES 32, Daniel: "si pulsas el verde, se
+// cocina esa combinación; si pulsas el amarillo, la otra"): green cells are those of an ordered recipe.
 export function pickMatchAt(matches, cellIndex, orderedRecipeIds) {
   let best = null;
-  const rank = (m) => [m.cells.length, orderedRecipeIds.has(m.recipe.id) ? 1 : 0, m.recipe.points];
+  const rank = (m) => [orderedRecipeIds.has(m.recipe.id) ? 1 : 0, m.cells.length, m.recipe.points];
   for (const match of matches) {
     if (!match.cells.includes(cellIndex)) continue;
     if (!best) {

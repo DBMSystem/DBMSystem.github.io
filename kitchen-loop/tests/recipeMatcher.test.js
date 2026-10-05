@@ -66,13 +66,21 @@ describe('findMatches — patterns', () => {
 describe('pickMatchAt — priorities', () => {
   const all = recipes;
 
-  it('1) the biggest recipe wins', () => {
+  it('1) a recipe with an active order wins (the cell glows green), even against a bigger one', () => {
+    const grid = gridFrom(['bread tomato . .', 'cheese . . .', '. . . .', '. . . .']);
+    const matches = findMatches(grid, only('tomato_toast', 'special_toast'), 4);
+    expect(pickMatchAt(matches, 0, new Set(['tomato_toast'])).recipe.id).toBe('tomato_toast');
+    // the cheese is only in the other recipe: tapping it cooks that one (the cell glows gold)
+    expect(pickMatchAt(matches, 4, new Set(['tomato_toast'])).recipe.id).toBe('special_toast');
+  });
+
+  it('2) without an order, the biggest recipe wins', () => {
     const grid = gridFrom(['bread tomato . .', 'cheese . . .', '. . . .', '. . . .']);
     const matches = findMatches(grid, only('tomato_toast', 'special_toast'), 4);
     expect(pickMatchAt(matches, 0, new Set()).recipe.id).toBe('special_toast');
   });
 
-  it('2) with the same size, the one with an active order', () => {
+  it('only one of two same-size recipes ordered: that one', () => {
     const grid = gridFrom(['tomato bread . .', 'potato . . .', '. . . .', '. . . .']);
     const matches = findMatches(grid, only('tomato_toast', 'bravas'), 4);
     expect(pickMatchAt(matches, 0, new Set(['bravas'])).recipe.id).toBe('bravas');
@@ -85,10 +93,11 @@ describe('pickMatchAt — priorities', () => {
     expect(pickMatchAt(matches, 0, new Set()).recipe.id).toBe('bravas'); // 60 > 50
   });
 
-  it('secret recipe is cooked when it is the biggest one containing the cell', () => {
+  it('secret recipe is cooked when it is the biggest one containing the cell and nothing there is ordered', () => {
     const grid = gridFrom(['bacon egg bacon .', '. . . .', '. . . .', '. . . .']);
     const matches = findMatches(grid, all, 4);
-    expect(pickMatchAt(matches, 1, new Set(['bacon_egg'])).recipe.id).toBe('bacon_crown');
+    expect(pickMatchAt(matches, 1, new Set()).recipe.id).toBe('bacon_crown');
+    expect(pickMatchAt(matches, 1, new Set(['bacon_egg'])).recipe.id).toBe('bacon_egg');
   });
 
   it('returns null when the cell is in no recipe', () => {
