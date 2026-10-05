@@ -625,8 +625,14 @@ Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloq
   - Nada flota: fuera interrogaciones, corazones, notas, chispas, mini-Pips, libros, relojes o sartenes de adorno.
   - Lo que sí se dibuja va pegado al sujeto: lágrimas en la cara, la capa del huevo, la tirita de la sartén, la cámara colgada del cuello.
 - **Personajes:** algunas poses del juego traen elementos sueltos pegados al contorno (corazones, una moneda, destellos). En las cartas, `card_art.py` los quita:
-  - por color, solo en la esquina superior derecha del sprite, para no tocar la cara;
-  - y quedándose con la figura principal.
+  - Primera versión: por color en la esquina superior derecha y quedándose con la figura principal. Cortaba gorros, el pelo del estudiante y el moño de la abuela, y Daniel lo señaló.
+  - Ahora se hace pose a pose:
+    - corazones (rosas) solo en las poses que los traen;
+    - la moneda dorada, el destello azul y el confeti en las de Pip;
+    - el contorno que deja cada corazón;
+    - los huecos que quedan dentro de la figura se rellenan con el color vecino.
+  - El resto del sprite queda intacto.
+  - El gorro del Chef Rival viene recortado en el sprite original: en las cartas se completa reflejando la mitad izquierda.
   - Los sprites del juego no se modifican.
 - **Rediseños:**
   - Turista Perdido: con cámara al cuello; el sprite del turista parecía un DJ.

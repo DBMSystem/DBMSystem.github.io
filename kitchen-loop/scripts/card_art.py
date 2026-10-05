@@ -51,52 +51,103 @@ _cache = {}
 CHARACTERS = ("customers/", "pip/", "brulee/")
 
 
-def main_body(img, keep=0.15):
-    """The character alone: drops the loose bits drawn around it (hearts, puffs, sparkles, a coin), i.e. every
-    separate blob much smaller than the figure (Daniel: "que no haya elementos sueltos")."""
-    a = np.asarray(img).copy()
-    solid = a[..., 3] > 40
-    labels = np.zeros(solid.shape, np.int32)
-    sizes = [0]
-    h, w = solid.shape
-    for y0, x0 in zip(*np.nonzero(solid)):
-        if labels[y0, x0]:
+def grow(mask, px):
+    return np.asarray(Image.fromarray((mask * 255).astype("uint8")).filter(ImageFilter.MaxFilter(2 * px + 1))) > 0
+
+
+def blobs(mask):
+    """Connected regions of a mask (8-neighbourhood) as lists of (y, x)."""
+    seen = np.zeros(mask.shape, bool)
+    h, w = mask.shape
+    for y0, x0 in zip(*np.nonzero(mask)):
+        if seen[y0, x0]:
             continue
-        n = len(sizes)
-        labels[y0, x0] = n
-        stack, size = [(y0, x0)], 0
+        seen[y0, x0] = True
+        stack, pixels = [(y0, x0)], []
         while stack:
             y, x = stack.pop()
-            size += 1
+            pixels.append((y, x))
             for ny in (y - 1, y, y + 1):
                 for nx in (x - 1, x, x + 1):
-                    if 0 <= ny < h and 0 <= nx < w and solid[ny, nx] and not labels[ny, nx]:
-                        labels[ny, nx] = n
+                    if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not seen[ny, nx]:
+                        seen[ny, nx] = True
                         stack.append((ny, nx))
-        sizes.append(size)
-    sizes = np.array(sizes)
-    small = np.nonzero(sizes < sizes.max() * keep)[0]
-    a[np.isin(labels, small) | ~solid] = 0
-    out = Image.fromarray(a, "RGBA")
-    return out.crop(out.getbbox())
+        yield pixels
+
+
+HEARTS = {"customers/office_happy", "customers/calm_happy", "customers/critic_happy", "customers/legendary_critic_happy",
+          "customers/rival_chef_happy"}
 
 
 def strip_extras(img, key):
-    """The hearts, sparkles and coins some poses draw touching the head (so they are not separate blobs): their
-    colours, in the sprite's top right corner, are erased together with a few pixels of outline around them."""
+    """Takes off the loose bits some poses draw around the character (Daniel: "que no haya elementos sueltos"),
+    touching nothing of the character itself (hair, hats and buns stay whole):
+      - the hearts of the happy poses: their saturated pink (not skin, which has less blue than green, nor lilac),
+      - Pip's golden coin and blue sparkle (Pip has neither colour) and his confetti,
+      - with the dark outline around them where it borders empty space, and the crumbs left nearby."""
     a = np.asarray(img).astype(int)
-    r, g, b = a[..., 0], a[..., 1], a[..., 2]
-    loose = (r > 200) & (r - g > 25) & (b > g - 5)  # pink hearts and their highlights (skin has less blue than green)
-    if key.startswith("pip/"):  # Pip has no gold or blue on him: the coin and the sparkles
-        loose |= ((r > 190) & (g > 140) & (b < 120) & (r - b > 90)) | ((b > 170) & (b - r > 60))
-    loose[int(a.shape[0] * 0.5):] = False  # only the top right corner, where these poses draw them: never the face
-    loose[:, : int(a.shape[1] * 0.7)] = False
-    if not loose.any():
+    r, g, b, alpha = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
+    solid = alpha > 40
+    loose = np.zeros(solid.shape, bool)
+    if key in HEARTS:  # the poses that draw hearts around the head
+        loose |= solid & (r > 120) & (r - g > 40) & (r - b > 20) & (b > g + 10)  # pinks, light to dark
+    if key.startswith("pip/"):  # gold has far more green than blue; skin does not
+        loose |= solid & (((r > 200) & (g > 170) & (g - b > 50)) | ((b > 180) & (b - r > 50)))
+    loose[int(a.shape[0] * 0.55):] = False  # they float around the head: an apron's flowers stay
+    if not loose.any() and not key.startswith("pip/"):
         return img
-    grown = np.asarray(Image.fromarray((loose * 255).astype("uint8")).filter(ImageFilter.MaxFilter(11))) > 0
+    near = grow(loose, 4)
+    light = np.minimum(np.minimum(r, g), b) > 200
+    dark = (r + g + b) / 3 < 90
+    edge = grow(~solid, 3)
+    reddish = (r - g > 20) & (r >= b)  # a heart's darker rim
+    drop = loose | (near & (dark | light | reddish) & edge)
+    zone = grow(loose, 10)
+    if key.startswith("pip/"):  # the coin's pale golden glow, and the faint specks of its sparkle
+        drop |= zone & solid & (g - b > 40) & (r > 180)
+    drop |= zone & ~solid
+    rest = solid & ~drop
+    for pixels in blobs(rest):  # what is left of a heart's outline (all of it next to one), and Pip's confetti
+        ys, xs = zip(*pixels)
+        if zone[ys, xs].all() or (len(pixels) < 80 and key.startswith("pip/")):
+            drop[ys, xs] = True
     out = a.copy()
-    out[grown] = 0
+    keep = solid & ~drop
+    out[drop] = 0
+    # A heart drawn over the hat or the coat leaves a hole inside the figure: fill it from its neighbours (only
+    # holes fully enclosed by the figure, never the empty space around it).
+    outside = np.zeros(drop.shape, bool)
+    for pixels in blobs(~keep):
+        ys, xs = map(np.array, zip(*pixels))
+        if ys.min() == 0 or xs.min() == 0 or ys.max() == drop.shape[0] - 1 or xs.max() == drop.shape[1] - 1 or len(pixels) > 400:
+            outside[ys, xs] = True
+    todo = ~keep & ~outside
+    known = keep.copy()
+    pad = lambda m: np.pad(m, 1)
+    while todo.any():
+        grown = False
+        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            src = pad(known)[1 + dy: 1 + dy + known.shape[0], 1 + dx: 1 + dx + known.shape[1]]
+            take = todo & src
+            if take.any():
+                shifted = np.pad(out, ((1, 1), (1, 1), (0, 0)))[1 + dy: 1 + dy + out.shape[0], 1 + dx: 1 + dx + out.shape[1]]
+                out[take] = shifted[take]
+                known |= take
+                todo &= ~take
+                grown = True
+        if not grown:
+            break
     return Image.fromarray(out.astype("uint8"), "RGBA")
+
+
+def whole_hat(img, centre=63, rows=34):
+    """The rival chef's sprite has the puffy top of its hat cut straight on the right: the hat is symmetric about
+    its band, so the right half of those rows is redrawn as the mirror of the left half."""
+    a = np.asarray(img).copy()
+    for x in range(centre, a.shape[1]):
+        src = 2 * centre - x
+        a[:rows, x] = a[:rows, src] if src >= 0 else 0
+    return Image.fromarray(a, "RGBA")
 
 
 def sprite(key):
@@ -106,7 +157,12 @@ def sprite(key):
             path = ROOT / "assets" / f"pan_{key.split('/')[1]}.png"
         img = Image.open(path).convert("RGBA")
         img = img.crop(img.getbbox())
-        _cache[key] = main_body(strip_extras(img, key)) if key.startswith(CHARACTERS) else img
+        if key.startswith("customers/rival_chef"):
+            img = whole_hat(img)
+        if key.startswith(CHARACTERS):
+            img = strip_extras(img, key)
+            img = img.crop(img.getbbox())
+        _cache[key] = img
     return _cache[key].copy()
 
 
@@ -1140,9 +1196,10 @@ def build_cards():
 
     @card("steam_cloud", "dawn")
     def _(c):
-        # Something burnt: a cloud of smoke rising from the pan on the stove.
-        c.put("vfx/smoke", w=200, x=W / 2, y=104, fx=lambda im: tint(im, lambda rgb: rgb * 0.35 + 150))
-        pan(c, W / 2, 222, w=200)
+        # Something burnt: a cloud of smoke rising out of the pan, in front of it.
+        pan(c, W / 2 + 24, 228, w=200)
+        x0, y0, x1, y1 = c.last
+        c.put("vfx/smoke", w=170, x=x0 + (x1 - x0) * 0.33, y=y0 - 36, fx=lambda im: tint(im, lambda rgb: rgb * 0.35 + 150))
 
     @card("fridge_note", "fridge")
     def _(c):

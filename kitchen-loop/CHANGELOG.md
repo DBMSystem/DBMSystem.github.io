@@ -15,6 +15,9 @@
   - El Chef Rival: sobre fuego, como un desafío.
   - Rival Convencido: sonriendo, sin sushi suelto, libro ni Pip.
   - Maestro del Triple Bacon: con el brazo entero.
+  - Los personajes conservan su pixel art original entero: gorros, pelo del estudiante, moño de la abuela y cresta del gallo. Solo se quitan los corazones, la moneda y los destellos, y los huecos que dejan dentro de la figura se rellenan.
+  - El gorro del Chef Rival viene recortado en el sprite: se completa por simetría.
+  - Nube de Humo: el humo sale de la sartén, por delante.
 - **Pip en el menú:** es el Pip del juego, más grande, y está de pie detrás de la sartén que cocina (las piernas quedan tras ella). Antes era pequeño y flotaba delante del mueble.
 
 ## 0.11.0 — Leyenda de recetas, sonido de premio, fondo pixel art y especialidad épica
