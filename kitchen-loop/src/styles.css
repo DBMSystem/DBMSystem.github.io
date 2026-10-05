@@ -61,7 +61,7 @@ body {
   flex: none;
   width: calc(100% + 32px);
   max-width: 480px;
-  max-height: 44dvh;
+  max-height: 54dvh; /* tall enough to show the pan cooking at the bottom of the art */
   margin: 0 -16px;
   overflow: hidden;
   border-radius: 0 0 18px 18px;
@@ -1989,9 +1989,121 @@ body {
 }
 
 .menu-pan {
-  left: 80%;
-  top: calc(36.5 * var(--scene-ratio) * 1cqw);
-  width: 23%;
+  /* standing on the window sill (its top is 49.2 % down the art); the sprite's pan ends 78 % down the image */
+  left: 83%;
+  top: calc(49.2 * var(--scene-ratio) * 1cqw - 12.5cqw);
+  width: 16%;
+}
+
+/* ---------- The pan cooking at the bottom of the menu art ---------- */
+
+.sizzle {
+  position: absolute;
+  left: 6%;
+  width: 80%;
+  top: calc(70 * var(--scene-ratio) * 1cqw);
+  height: calc(30 * var(--scene-ratio) * 1cqw);
+  pointer-events: none;
+  overflow: visible;
+}
+
+.sizzle > span {
+  position: absolute;
+}
+
+.sizzle-glow {
+  inset: 35% 0 -10% 0;
+  background: radial-gradient(ellipse at 50% 70%, rgba(255, 183, 77, 0.75), rgba(255, 112, 67, 0.3) 45%, transparent 70%);
+  mix-blend-mode: screen;
+  animation: sizzle-flicker 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes sizzle-flicker {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.sizzle-ember {
+  bottom: 25%;
+  width: var(--size);
+  height: var(--size);
+  background: var(--color);
+  box-shadow:
+    0 0 8px 2px var(--color),
+    0 0 2px 1px #fff8e1;
+  opacity: 0;
+  animation: sizzle-ember var(--dur) linear var(--delay) infinite;
+}
+
+@keyframes sizzle-ember {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--drift), calc(-1 * var(--rise) * 1.6));
+  }
+}
+
+.sizzle-twinkle {
+  width: var(--size);
+  height: var(--size);
+  background: #fff8c4;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  filter: drop-shadow(0 0 6px #ffd54f) drop-shadow(0 0 2px #ffffff);
+  transform: scale(0);
+  animation: sizzle-twinkle var(--dur) ease-in-out var(--delay) infinite;
+}
+
+@keyframes sizzle-twinkle {
+  0%,
+  60%,
+  100% {
+    transform: scale(0) rotate(0deg);
+  }
+  75% {
+    transform: scale(1) rotate(45deg);
+  }
+}
+
+.sizzle-steam {
+  bottom: 40%;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(rgba(255, 255, 255, 0.45), transparent 70%);
+  opacity: 0;
+  animation: sizzle-steam var(--dur) ease-out var(--delay) infinite;
+}
+
+@keyframes sizzle-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+  25% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-120%) scale(1.8);
+  }
+}
+
+.reduced-motion .sizzle > span:not(.sizzle-glow) {
+  display: none;
+}
+
+.reduced-motion .sizzle-glow {
+  animation: none;
 }
 
 /* ---------- Language ---------- */

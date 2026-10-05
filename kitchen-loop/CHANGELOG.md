@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.11.1 — La sartén del menú, viva
+
+- **Menú:** el dibujo de portada ya no tiene la sartén que flotaba delante de la ventana (`scripts/menu_scene.py` la borra y rehace la ventana a partir de la propia ventana). Se ve entera la sartén que cocina abajo, con un resplandor que parpadea, brasas que suben, destellos dorados y vapor. Con «menos movimiento» solo queda el resplandor, quieto.
+- **Sartén equipada:** se apoya de pie en el alféizar, más pequeña, en lugar de flotar en la ventana.
+
 ## 0.11.0 — Leyenda de recetas, sonido de premio, fondo pixel art y especialidad épica
 
 - **Guía de recetas durante la partida:** el libro del marcador la activa o la desactiva sin pausar. Aparece translúcida sobre la cocina, justo debajo de los pedidos (que siempre se leen), y se desliza con el dedo. Muestra las recetas desbloqueadas de la que más puntos da a la que menos, con su plato e ingredientes en su forma (línea o cuadrado), pero sin los puntos: esos se ven al acabar la receta en la sartén. Las secretas solo aparecen si ya se han descubierto. El juego recuerda si la dejaste activada. La misma lista, sin puntos, está en la pausa (Encargos y recetas). La guía es de cristal azul noche con una franja de color por tipo de receta, para que no se pierda entre la madera de la cocina.

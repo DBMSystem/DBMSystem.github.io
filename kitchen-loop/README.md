@@ -13,6 +13,7 @@ node scripts/simulatePlaythrough.js skilled > docs/PLAYTHROUGH_REPORT.md   # un 
 python3 scripts/extract_sprites.py                        # regenerar sprites (Pillow + numpy)
 python3 scripts/card_art.py                               # ilustraciones de las cartas
 python3 scripts/story_backdrop.py                         # fondo pixel art de las escenas (utensilios)
+python3 scripts/menu_scene.py                             # dibujo del menú (sin la sartén de la ventana)
 node scripts/simulateLoops.js 300                          # equilibrio de cada servicio (docs/LOOP_BALANCE.md)
 npm run build:android   # web + sincronizar el proyecto Android (Capacitor)
 python3 scripts/android_assets.py                         # icono y pantalla de inicio de Android

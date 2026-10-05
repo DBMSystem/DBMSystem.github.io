@@ -610,3 +610,9 @@ Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloq
 - Así lo que se cocina coincide con el color: una casilla en verde pertenece a una receta que pide un cliente en espera y cocina esa; una en amarillo solo está en recetas fuera de carta y cocina la mayor de ellas.
 - Las recetas secretas se siguen descubriendo al tocar, pero en casillas que no estén en verde: si la secreta comparte casillas con un pedido, el pedido manda en esas casillas.
 
+## 33. La sartén del menú (Daniel: «hay una sartén flotando en la ventana, y también abajo una sartén cocinando: quiero que se vea más, con más chispas y partículas»)
+
+- **Sartén de la ventana:** se borra del dibujo de portada con `scripts/menu_scene.py`, que genera `ui/menu_scene.jpg` desde `assets/ref/loading_ref.jpg` sin modificar la referencia. El hueco se rehace con la propia ventana: la barra sigue hacia abajo, el alféizar repite su madera y los cristales reutilizan los árboles del cristal de la izquierda. `extract_sprites.py` llama a este script en vez de repetir el recorte.
+- **Sartén equipada (sección 7.5):** sigue luciéndose en el menú, pero apoyada de pie en el alféizar y más pequeña, para que no parezca flotar.
+- **Sartén que cocina:** el marco del menú pasa de un máximo del 44 % al 54 % de la altura de pantalla, para que se vea entera en móviles normales; la pantalla ya tiene scroll. Encima hay un resplandor que parpadea, brasas que suben, destellos y vapor, hechos solo con animaciones CSS (`MenuSizzle`). Con «menos movimiento» solo queda el resplandor, quieto.
+

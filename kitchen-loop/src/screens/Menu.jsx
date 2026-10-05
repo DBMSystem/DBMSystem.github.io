@@ -6,6 +6,7 @@ import { canClaimCalendar } from '../systems/calendar.js';
 import { todayChallenges } from '../systems/challenges.js';
 import { Challenges } from '../components/Challenges.jsx';
 import { levelProgress } from '../economy/progression.js';
+import { MenuSizzle } from '../components/MenuSizzle.jsx';
 import { StoryGoal } from '../components/StoryGoal.jsx';
 import { balance } from '../data/balance.js';
 import { t, formatNumber } from '../utils/i18n.js';
@@ -62,8 +63,9 @@ export function Menu({ services, onPlay, onAlbum, onWarehouse, onSettings, onDev
       </div>
       <div className="menu-scene-wrap">
         <img className="menu-scene" src={spriteUrl('ui/menu_scene')} alt={t('game.title')} />
+        <MenuSizzle />
         {save.equippedPan !== 'default' && (
-          // The equipped pan takes the place of the pan drawn on the window sill (spec 7.5).
+          // The equipped pan stands on the window sill (spec 7.5), where the art no longer draws one.
           <img className="decor-placed menu-pan" src={spriteUrl(panById[save.equippedPan].sprite)} alt={t(`pan.${save.equippedPan}`)} />
         )}
         {Object.values(save.decor).map((id) => {
