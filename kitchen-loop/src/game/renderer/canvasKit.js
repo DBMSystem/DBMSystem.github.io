@@ -17,6 +17,7 @@ export const COLORS = {
   board: '#8d5a3b',
   boardEdge: '#5d3a26',
   glow: '#ffd54f',
+  order: '#43a047', // cells of a recipe a customer is waiting for
   target: '#66bb6a',
   ok: '#66bb6a',
   warn: '#ffca28',

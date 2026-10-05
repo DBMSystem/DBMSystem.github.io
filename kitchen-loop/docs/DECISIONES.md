@@ -589,6 +589,10 @@ Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloq
   - Ocupa la cocina desde debajo de los bocadillos de pedido hasta los fogones. Se descartó cubrir también los bocadillos: con la transparencia el pedido y la guía se mezclaban y no se leía ninguno. Los fogones tampoco se tapan.
   - Solo lista lo que se puede cocinar en este servicio, de más a menos puntos (`cookableRecipes`), sin mostrar los puntos. Las secretas solo salen si ya se han descubierto; las bloqueadas siguen en el recetario del álbum.
   - En la pausa, «Encargos y recetas» muestra la misma lista a tamaño grande.
+  - Colores: cristal azul noche con una franja de color por tipo (normal turquesa, utensilio morado, secreta dorada). Daniel vio «demasiados marrones» con la primera versión, marrón sobre la madera de la cocina.
+- **Colores de la cuadrícula** (Daniel: «si juntas alguno sale en amarillo brillante, al igual que cuando haces un pedido… se juntan los colores y no se diferencia»):
+  - Las casillas de una receta que pide un cliente en espera se iluminan en verde. Las de una receta fuera de carta, que se vende en el mostrador, siguen en amarillo. Si una casilla sirve para las dos, manda el verde, igual que al cocinar (se prefiere la pedida).
+  - El ingrediente dorado ya no usa un recuadro amarillo: es un halo redondo que sobresale del ingrediente, con una estrella en la esquina. Se distingue de las recetas por la forma, no solo por el color.
 - **Sonido:** el plato fuera de carta (servido en el mostrador, sin cliente) usa `counterSale`, un arpegio ascendente con campanilla. Servir a un cliente conserva su sonido.
 - **Fondo:**
   - Sale de las cocinas de la partida (`ui/kitchen_day.jpg` y `ui/kitchen_night.jpg`, sin modificarlas). El script borra la ristra de pimientos y ajos rellenando con la pared de los lados y cuelga en los mismos ganchos cinco utensilios dibujados en pixel art, con el mismo bloque de 2 px y contorno oscuro. De noche se tiñen con la luz azulada de la cocina.
