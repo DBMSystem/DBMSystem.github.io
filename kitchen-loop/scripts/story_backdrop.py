@@ -21,8 +21,8 @@ B = 2  # the kitchen's pixel block, in image pixels
 # Where the peppers hang in each kitchen: the areas to clear (x0, y0, x1, y1; the garlic hangs lower than the
 # peppers, the carrot leaves below them stay) and the rail's hooks.
 RAILS = {
-    "day": {"clear": ((308, 115, 410, 174), (400, 115, 454, 165)), "hooks": (335, 362, 390, 418, 443), "top": 113},
-    "night": {"clear": ((328, 116, 432, 175), (422, 116, 474, 166)), "hooks": (352, 380, 408, 436, 462), "top": 114},
+    "day": {"clear": ((308, 115, 410, 178), (400, 115, 458, 168)), "hooks": (335, 362, 390, 418, 443), "top": 113},
+    "night": {"clear": ((328, 116, 432, 175), (422, 116, 474, 166)), "hooks": (352, 380, 408, 436, 462), "top": 114, "whole": True},
 }
 
 SPATULA = ["..tTt..", "..tkt..", "..tTt..", "..tTt..", "..tTt..", "..tTt..", "..tTt..", "..tTt..", "..tTt..", "..tTt..", "..tTt..",
@@ -60,40 +60,56 @@ def utensils():
     return [with_outline(p, width=2) for p in pieces]
 
 
-def clear(img, box):
-    """Paints the wall back where the peppers hung: each row blends the wall just left and right of the area, the
-    rows are smoothed together (no streaks) and the edges fade into the original so there is no visible patch."""
+def dilate(mask, r):
+    out = mask.copy()
+    for dy in range(-r, r + 1):
+        for dx in range(-r, r + 1):
+            out |= np.roll(np.roll(mask, dy, axis=0), dx, axis=1)
+    return out
+
+
+def clear(img, boxes, whole=False):
+    """Paints the wall back where the peppers and garlic hung: their own pixels (anything far from the wall's colour,
+    with outline and drop shadow), or the whole area when the wall around is too busy to tell (the night kitchen's
+    string of lights). The gap is filled by diffusing the wall around it, so the lamps' light and glow carry through,
+    but only from wall: the rail, the leaves and the outlines never bleed in (no smear, no flat band). Then the wall's
+    own grain."""
     a = np.asarray(img).astype(float)
-    x0, y0, x1, y1 = box
-    fill = np.zeros((y1 - y0, x1 - x0, 3))
-    t = np.linspace(0, 1, x1 - x0)[:, None]
-    ref = np.median(np.concatenate([a[y0:y1, x0 - 4:x0 - 1], a[y0:y1, x1 + 1:x1 + 4]]).reshape(-1, 3), axis=0)
-    wall = lambda c: np.linalg.norm(c - ref) < 40  # close to the wall's own colour: not a leaf, a fruit or a pepper
-    last = None
-    for y in range(y0, y1):
-        left = a[y - 1:y + 2, x0 - 4:x0 - 1].reshape(-1, 3).mean(axis=0)
-        right = a[y - 1:y + 2, x1 + 1:x1 + 4].reshape(-1, 3).mean(axis=0)
-        if last is not None and not (wall(left) and wall(right)):
-            fill[y - y0] = last  # something in front of the wall at this row: carry the wall down
-            continue
-        fill[y - y0] = left * (1 - t) + right * t
-        last = fill[y - y0].copy()
-    kernel = np.ones(5) / 5
-    for c in range(3):  # smooth along the columns
-        fill[..., c] = np.apply_along_axis(lambda col: np.convolve(np.pad(col, 2, mode="edge"), kernel, mode="valid"), 0, fill[..., c])
+    x0, y0 = min(b[0] for b in boxes), min(b[1] for b in boxes)
+    x1, y1 = max(b[2] for b in boxes), max(b[3] for b in boxes)
+    mid = (y0 + y1) // 2  # the upper half: below it, leaves and fruit reach the sides
+    strips = np.concatenate([a[y0:mid, x0 - 6:x0], a[y0:mid, x1:x1 + 6]], axis=1).reshape(-1, 3)
+    luma = strips.sum(axis=1)
+    wall = np.median(strips[luma <= np.median(luma)], axis=0)  # the plain wall, not a bulb or its glow
+    inside = np.zeros(a.shape[:2], bool)
+    for bx0, by0, bx1, by1 in boxes:
+        inside[by0:by1, bx0:bx1] = True
+    far = np.linalg.norm(a - wall, axis=2) > 35
+    mask = inside if whole else dilate(far & inside, 3) & inside
+    # work on the area plus a margin; outside the hole only wall-like pixels count as neighbours
+    m = 16
+    sy, sx = slice(y0 - m, y1 + m), slice(x0 - m, x1 + m)
+    hole, fill = mask[sy, sx], a[sy, sx].copy()
+    lum = a[sy, sx].sum(axis=2)
+    usable = hole | (~far[sy, sx] | ((lum > wall.sum()) & (np.abs(a[sy, sx] - a[sy, sx].mean(axis=2, keepdims=True)).max(axis=2) < 60)))
+    w = usable.astype(float)
+    fill[hole] = wall
+    shifts = ((1, 0), (-1, 0), (1, 1), (-1, 1))
+    for _ in range(3000):
+        total = sum(np.roll(fill * w[..., None], k, axis) for k, axis in shifts)
+        count = sum(np.roll(w, k, axis) for k, axis in shifts)
+        avg = total / np.maximum(count, 1)[..., None]
+        fill[hole] = avg[hole]
     rng = np.random.default_rng(1)
-    fill += rng.normal(0, 1.6, fill.shape)  # the wall's own grain
-    yy, xx = np.mgrid[0:y1 - y0, 0:x1 - x0]
-    edge = np.minimum.reduce([xx, x1 - x0 - 1 - xx, yy, y1 - y0 - 1 - yy]).astype(float)
-    k = np.clip(edge / 4, 0, 1)[..., None]  # 4 px feather into the original
-    a[y0:y1, x0:x1] = fill * k + a[y0:y1, x0:x1] * (1 - k)
-    return Image.fromarray(np.clip(a, 0, 255).astype("uint8"), img.mode)
+    fill[hole] += rng.normal(0, 1.5, (hole.sum(), 3))
+    out = a.copy()
+    out[sy, sx] = fill
+    return Image.fromarray(np.clip(out, 0, 255).astype("uint8"), img.mode), mask
 
 
 def scene(kitchen, rail):
     img = Image.open(UI / f"kitchen_{kitchen}.jpg").convert("RGB")
-    for area in rail["clear"]:
-        img = clear(img, area)
+    img, _ = clear(img, rail["clear"], rail.get("whole", False))
     out = img.convert("RGBA")
     pieces = utensils()
     if kitchen == "night":  # the night kitchen's dim, bluish light on the new utensils too

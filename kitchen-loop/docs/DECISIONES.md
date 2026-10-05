@@ -592,7 +592,9 @@ Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloq
 - **Fondo:**
   - Sale de las cocinas de la partida (`ui/kitchen_day.jpg` y `ui/kitchen_night.jpg`, sin modificarlas). El script borra la ristra de pimientos y ajos rellenando con la pared de los lados y cuelga en los mismos ganchos cinco utensilios dibujados en pixel art, con el mismo bloque de 2 px y contorno oscuro. De noche se tiñen con la luz azulada de la cocina.
   - Las escenas lo muestran arriba a su escala, con el suelo continuando en degradado bajo el diálogo.
+  - El borrado detecta solo los píxeles de los pimientos y el ajo (con su contorno y su sombra) y rellena el hueco por difusión desde la pared que lo rodea, sin tomar la barra ni las hojas. Así no queda una franja lisa (lo señaló Daniel). De noche se rellena la zona entera, porque las bombillas no dejan distinguir la pared.
 - **Especialidad:**
+  - La oferta es fija hasta jugar el siguiente servicio: se siembra con la partida guardada y el número de servicios jugados. Salir y volver a entrar no reparte otras (lo señaló Daniel).
   - Misma mecánica y mismas opciones (sección 2.12); solo cambia la presentación.
   - Cada especialidad lleva en sus datos un color y una etiqueta que dice de qué va.
   - El texto la sitúa en el mundo del juego: «La cocina recuerda tres especialidades».

@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Button } from './Button.jsx';
-import { rollSpecialties } from '../systems/specialty.js';
-import { createRng } from '../utils/rng.js';
+import { nextSpecialties } from '../systems/specialty.js';
 import { spriteUrl } from '../assets/manifest.js';
 import { t } from '../utils/i18n.js';
 
@@ -17,7 +16,7 @@ const rgba = (hex, a) => {
 // contraste con el juego, como si de ventajas épicas se tratase"): a dark, glowing stage and three cards dealt in,
 // each with its own colour, a medallion, a tag that says what it is about, and a shine.
 export function SpecialtyPicker({ save, onPick, onCancel }) {
-  const choices = useMemo(() => rollSpecialties(createRng(), save), [save]);
+  const choices = useMemo(() => nextSpecialties(save), [save]);
   const [picked, setPicked] = useState(null);
   const reduced = save.settings.reducedMotion;
 

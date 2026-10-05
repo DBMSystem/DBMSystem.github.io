@@ -4,7 +4,7 @@ import { advanceStory, pendingScenes, markSceneSeen, storyStage, nextChapterGoal
 import { levelProgress, xpToNext } from '../src/economy/progression.js';
 import { utensilState, treeTotalCost, treeComplete } from '../src/systems/utensils.js';
 import { buyUtensil, buyDecor, placeDecor, buyPack, addCoins, addFragments } from '../src/inventory/inventory.js';
-import { availableSpecialties, rollSpecialties } from '../src/systems/specialty.js';
+import { availableSpecialties, rollSpecialties, nextSpecialties } from '../src/systems/specialty.js';
 import { unlocksBetween } from '../src/economy/progression.js';
 import { finalizeLoop } from '../src/economy/rewards.js';
 import { utensils } from '../src/data/utensils.js';
@@ -207,6 +207,20 @@ describe('daily specialty (spec 2.12)', () => {
     expect(picked).toHaveLength(balance.specialtyChoices);
     expect(new Set(picked.map((s) => s.id)).size).toBe(picked.length);
     for (const s of availableSpecialties(save)) expect(hasKey(`specialty.${s.id}.name`)).toBe(true);
+  });
+
+  it('the offer stays the same until the next service is played', () => {
+    const save = fresh();
+    save.player.level = 6;
+    const ids = () => nextSpecialties(save).map((s) => s.id);
+    const first = ids();
+    expect(ids()).toEqual(first);
+    const offers = new Set();
+    for (let n = 0; n < 12; n++) {
+      save.stats.loopsPlayed = n;
+      offers.add(ids().join());
+    }
+    expect(offers.size).toBeGreaterThan(1);
   });
 });
 

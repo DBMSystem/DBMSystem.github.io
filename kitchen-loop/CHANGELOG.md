@@ -5,6 +5,8 @@
 - **Leyenda rápida de recetas:** el libro del marcador abre un desplegable con las recetas desbloqueadas (plato, ingredientes con su forma, línea o cuadrado, y puntos). Las secretas solo aparecen si ya se han descubierto. Se cierra tocando fuera y la partida sigue en pausa mientras está abierto.
 - **Plato fuera de carta:** el sonido al servirlo en el mostrador pasa a ser un arpegio brillante de premio, en lugar del chisporroteo seco de antes.
 - **Fondo de las escenas** (`scripts/story_backdrop.py`): el mismo pixel art de la cocina de la partida, de día y de noche. En lugar de la ristra de pimientos y ajos cuelgan utensilios en pixel art: paleta, cucharón, cazo, pinzas y batidor.
+- **Corregido:** las especialidades que se ofrecen antes de un servicio ya no cambian al salir y volver a entrar; son las mismas hasta que juegas ese servicio.
+- **Corregido:** bajo los utensilios del fondo de las escenas quedaba una franja lisa donde estaban los pimientos. Ahora solo se borran sus píxeles y el hueco se rellena con la pared de alrededor, con su luz y su textura.
 - **Especialidad del día:** se presenta como una ventaja épica. Escenario oscuro con rayos de luz, título dorado y tres cartas que entran repartidas, cada una con su color, medallón, etiqueta (Más puntos, Pedidos, Ayuda, Caos, Reto, Fragmentos) y un brillo. La elegida se ilumina y las otras se apagan.
 
 ## 0.10.1 — Progreso de nivel y la historia siempre a la vista
