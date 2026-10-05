@@ -76,6 +76,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     secretRecipe: null,
     comboPopAt: -10,
     toast: null, // { title, text, color, at }
+    guideOn: false, // the recipe guide is open over the kitchen: the book button shows it
     pans: [], // per customer slot: { landAt, burntAt, burntRecipe }
     fullStoveAt: -10,
     nextSteamAt: 0,
@@ -441,14 +442,31 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     ctx.restore();
   }
 
-  // Golden ingredient (spec 2.13): pulsing gold ring behind the sprite.
+  // Golden ingredient (spec 2.13): a round golden halo that spills past the sprite and a twinkling star in the
+  // corner. Round on purpose: recipe cells light up as squares, so a golden ingredient inside a recipe reads as both.
   function drawGoldenGlow(x, y, size) {
     const pulse = 0.5 + 0.5 * Math.sin(view.time * 5);
-    ctx.save();
-    ctx.shadowColor = COLORS.glow;
-    ctx.shadowBlur = 10 + 6 * pulse * motion;
-    kit.roundRect(x + 4, y + 4, size - 8, size - 8, 10, `rgba(255, 213, 79, ${0.25 + 0.2 * pulse})`, COLORS.glow, 2);
-    ctx.restore();
+    const cx = x + size / 2;
+    const cy = y + size / 2;
+    const radius = size * (0.6 + 0.05 * pulse * motion);
+    const halo = ctx.createRadialGradient(cx, cy, size * 0.3, cx, cy, radius);
+    halo.addColorStop(0, `rgba(255, 193, 7, ${0.75 + 0.2 * pulse})`);
+    halo.addColorStop(1, 'rgba(255, 193, 7, 0)');
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fill();
+    const star = size * (0.1 + 0.04 * pulse * motion);
+    const sx = x + size * 0.84;
+    const sy = y + size * 0.16;
+    ctx.fillStyle = '#fffde7';
+    ctx.beginPath();
+    for (let k = 0; k < 8; k++) {
+      const r = k % 2 === 0 ? star : star * 0.3;
+      const a = (k * Math.PI) / 4;
+      ctx.lineTo(sx + Math.cos(a) * r, sy + Math.sin(a) * r);
+    }
+    ctx.fill();
   }
 
   function drawAbilities() {
@@ -479,7 +497,8 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     ctx.fillStyle = COLORS.cream;
     ctx.fillRect(pause.x + 17, pause.y + 15, 4, 14);
     ctx.fillRect(pause.x + 25, pause.y + 15, 4, 14);
-    kit.roundRect(quick.x + 6, quick.y + 6, quick.w - 12, quick.h - 12, 8, 'rgba(255, 248, 231, 0.15)');
+    if (view.guideOn) kit.roundRect(quick.x + 5, quick.y + 5, quick.w - 10, quick.h - 10, 9, 'rgba(255, 204, 128, 0.35)', COLORS.peach);
+    else kit.roundRect(quick.x + 6, quick.y + 6, quick.w - 12, quick.h - 12, 8, 'rgba(255, 248, 231, 0.15)');
     const book = getSprite('ui/icon_recipe');
     if (book) drawSmooth(ctx, book, quick.x + 11, quick.y + 11, quick.w - 22, quick.h - 22);
 
@@ -543,6 +562,11 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
       }
     }
 
+    // A recipe a waiting customer ordered glows green; one off the menu (sold at the counter) glows gold, so the two
+    // never blend (Daniel: "se juntan los colores y no se diferencia").
+    const ordered = new Set(state.customers.filter((c) => !c.cooking).map((c) => c.recipeId));
+    const forOrder = new Set(state.matches.filter((m) => ordered.has(m.recipe.id)).flatMap((m) => m.cells));
+
     const tapTarget = view.selectedSlot !== null;
     for (let i = 0; i < grid.size * grid.size; i++) {
       const r = cellRect(layout, i);
@@ -579,7 +603,8 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
         const since = view.time - view.glowSince.get(i);
         if (since < GLOW_JITTER_TIME) dx += Math.sin(since * 80) * 2 * motion;
         const pulse = 0.55 + 0.45 * Math.sin(view.time * 6);
-        kit.roundRect(r.x + 2, r.y + 2, r.w - 4, r.h - 4, 7, `rgba(255, 213, 79, ${0.25 + 0.2 * pulse})`, COLORS.glow, 3);
+        if (forOrder.has(i)) kit.roundRect(r.x + 2, r.y + 2, r.w - 4, r.h - 4, 7, `rgba(102, 187, 106, ${0.3 + 0.2 * pulse})`, COLORS.order, 3);
+        else kit.roundRect(r.x + 2, r.y + 2, r.w - 4, r.h - 4, 7, `rgba(255, 213, 79, ${0.25 + 0.2 * pulse})`, COLORS.glow, 3);
         const bounce = Math.abs(Math.sin(view.time * 5 + i)) * 0.06 * motion;
         sy *= 1 + bounce;
         sx *= 1 - bounce / 2;

@@ -566,3 +566,47 @@ Daniel: «Chef rival error en sombrero, propina caída error línea, estudiante 
 - **Vitrina:** el Pase se presenta con lo que se ve (captura de la Cocina Nocturna y tres cartas con el marco del Álbum Dorado), lo que incluye y «pago único». Cada sartén lleva una línea. Tras un «Probar», la pantalla de resultados dice una sola vez dónde está lo probado. Sigue sin haber menciones de compra en ninguna otra pantalla.
 - **«Ver la historia»** (Ajustes) repite todas las escenas ya vistas, en orden. Antes solo repetía la presentación.
 
+## 30. Progreso de nivel y siguiente capítulo (Daniel: «añadir % de avance entre niveles… parece que entre partidas no vaya a pasar nada al principio, falta contexto de que hay una historia que seguir»)
+
+- **Nivel:** `levelProgress` (`economy/progression.js`) da el porcentaje del nivel y la XP que falta. Se muestra junto a la barra del menú y bajo la de resultados.
+- **Siguiente capítulo:** `nextChapterGoal(save)` (`systems/story.js`) traduce los disparadores de la sección 6.3 a requisitos visibles con su avance. No cambia cuándo se abre cada capítulo.
+  - Capítulo 2: llegar al nivel 3; el avance cuenta la XP acumulada.
+  - Capítulo 3: servicios jugados hasta el 7, cuando Brûlée llega seguro. Puede llegar antes con un buen servicio desde el 5.º, y el gancho («Huele a azúcar quemado… alguien vigila desde la puerta») lo deja intuir.
+  - Capítulo 4: comprar la Encimera Rúnica.
+  - Capítulo 5: nivel 12 y 3 utensilios.
+  - Capítulo 6: nivel 16 y 3 recetas secretas.
+  - Capítulo 7: los 9 utensilios.
+  - Epílogo: cocinar La Receta Perdida.
+  - Con varios requisitos, el porcentaje es la media de los dos.
+- Cada capítulo siguiente tiene una frase gancho (`story.next.*`) que adelanta la pregunta del capítulo sin destripar la respuesta.
+
+## 31. Leyenda de recetas, sonido de premio, fondo de las escenas y especialidad épica
+
+Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloqueadas» · «cuando hagas un plato fuera de carta, que el sonido sea más de premio» · «el fondo cuando sale Pip hablando, que sea el estilo pixel art de la cocina de la partida» (sustituye al fondo HD de la primera versión de 0.11.0, que no llegó a publicarse) · «utensilios de cocina en vez de pimientos» · «el menú de la especialidad del día que tenga más contraste… como si de ventajas épicas se tratase».
+
+- **Guía de recetas** (Daniel, segunda vuelta: «con transparencia en la parte superior donde está la cocina… que puedas activarlo o desactivarlo como guía durante la partida… moverlo con el dedo arriba y abajo… por orden de puntos, pero que no indique cuántos puntos gana»):
+  - El libro del marcador la activa o la desactiva y la partida no se pausa. La preferencia se guarda (`settings.recipeGuide`).
+  - Ocupa la cocina desde debajo de los bocadillos de pedido hasta los fogones. Se descartó cubrir también los bocadillos: con la transparencia el pedido y la guía se mezclaban y no se leía ninguno. Los fogones tampoco se tapan.
+  - Solo lista lo que se puede cocinar en este servicio, de más a menos puntos (`cookableRecipes`), sin mostrar los puntos. Las secretas solo salen si ya se han descubierto; las bloqueadas siguen en el recetario del álbum.
+  - En la pausa, «Encargos y recetas» muestra la misma lista a tamaño grande.
+  - Colores: cristal azul noche con una franja de color por tipo (normal turquesa, utensilio morado, secreta dorada). Daniel vio «demasiados marrones» con la primera versión, marrón sobre la madera de la cocina.
+- **Colores de la cuadrícula** (Daniel: «si juntas alguno sale en amarillo brillante, al igual que cuando haces un pedido… se juntan los colores y no se diferencia»):
+  - Las casillas de una receta que pide un cliente en espera se iluminan en verde. Las de una receta fuera de carta, que se vende en el mostrador, siguen en amarillo. Si una casilla sirve para las dos, manda el verde, igual que al cocinar (se prefiere la pedida).
+  - El ingrediente dorado ya no usa un recuadro amarillo: es un halo redondo que sobresale del ingrediente, con una estrella en la esquina. Se distingue de las recetas por la forma, no solo por el color.
+- **Sonido:** el plato fuera de carta (servido en el mostrador, sin cliente) usa `counterSale`, un arpegio ascendente con campanilla. Servir a un cliente conserva su sonido.
+- **Fondo:**
+  - Sale de las cocinas de la partida (`ui/kitchen_day.jpg` y `ui/kitchen_night.jpg`, sin modificarlas). El script borra la ristra de pimientos y ajos rellenando con la pared de los lados y cuelga en los mismos ganchos cinco utensilios dibujados en pixel art, con el mismo bloque de 2 px y contorno oscuro. De noche se tiñen con la luz azulada de la cocina.
+  - Las escenas lo muestran arriba a su escala, con el suelo continuando en degradado bajo el diálogo.
+  - El borrado detecta solo los píxeles de los pimientos y el ajo (con su contorno y su sombra) y rellena el hueco por difusión desde la pared que lo rodea, sin tomar la barra ni las hojas. Así no queda una franja lisa (lo señaló Daniel). De noche se rellena la zona entera, porque las bombillas no dejan distinguir la pared.
+- **Especialidad:**
+  - La oferta es fija hasta jugar el siguiente servicio: se siembra con la partida guardada y el número de servicios jugados. Salir y volver a entrar no reparte otras (lo señaló Daniel).
+  - Misma mecánica y mismas opciones (sección 2.12); solo cambia la presentación.
+  - Cada especialidad lleva en sus datos un color y una etiqueta que dice de qué va.
+  - El texto la sitúa en el mundo del juego: «La cocina recuerda tres especialidades».
+
+## 32. Tocar cocina lo que indica el color (Daniel: «si pulsas el verde, se cocina esa combinación; si pulsas el amarillo, la otra, por si se entrelazan varias recetas»)
+
+- Cambia la prioridad de la sección 2 de la especificación (ya actualizada). Antes ganaba la receta más grande, después la pedida y después la de más puntos. Ahora gana la pedida, después la más grande y después la de más puntos.
+- Así lo que se cocina coincide con el color: una casilla en verde pertenece a una receta que pide un cliente en espera y cocina esa; una en amarillo solo está en recetas fuera de carta y cocina la mayor de ellas.
+- Las recetas secretas se siguen descubriendo al tocar, pero en casillas que no estén en verde: si la secreta comparte casillas con un pedido, el pedido manda en esas casillas.
+

@@ -388,17 +388,25 @@ body {
   cursor: pointer;
 }
 
-/* The kitchen in the background, crisp pixel art (never blurred): the scene on the top two thirds, its tiled floor
-   continuing below, and a darker foot so the bubble and Pip read well. */
+/* The kitchen in the background: the game's own pixel art (scripts/story_backdrop.py swaps the peppers for
+   utensils), shown at about the scale of the game, its floor continuing below, and a darker foot so the bubble and
+   Pip read well. */
 .story::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(rgba(20, 12, 8, 0) 40%, rgba(20, 12, 8, 0.5) 68%, rgba(20, 12, 8, 0.85)),
-    var(--scene) center top / auto 72% no-repeat,
-    linear-gradient(#b98e68 66%, #6b4a36 80%, #2b1d14);
-  image-rendering: pixelated;
+    linear-gradient(rgba(20, 12, 8, 0) 40%, rgba(20, 12, 8, 0.45) 66%, rgba(20, 12, 8, 0.85)),
+    var(--scene) center top / auto 40% no-repeat,
+    linear-gradient(var(--floor) 40%, #6b4a36 75%, #2b1d14);
+}
+
+.story {
+  --floor: #ac8e6f;
+}
+
+.story.night {
+  --floor: #3a3b47;
 }
 
 .story > * {
@@ -1594,9 +1602,7 @@ body {
   right: 70px;
 }
 
-.story.night::before {
-  filter: brightness(0.9) saturate(1.1);
-}
+
 
 /* ---------- Brûlée's warehouse ---------- */
 .warehouse {
@@ -1798,39 +1804,6 @@ body {
   to {
     transform: translate(-50%, -2px);
   }
-}
-
-/* ---------- Daily specialty ---------- */
-.specialty {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  min-height: 64px;
-  padding: 8px 12px;
-  border: 2px solid rgba(255, 204, 128, 0.35);
-  border-radius: 14px;
-  background: rgba(255, 248, 231, 0.08);
-  color: var(--cream);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.specialty:active {
-  transform: scale(0.98);
-}
-
-.specialty img {
-  width: 48px;
-  height: 48px;
-  flex: none;
-  object-fit: contain;
-}
-
-.specialty strong {
-  display: block;
-  color: var(--peach);
 }
 
 .chapter-news {
@@ -2057,4 +2030,464 @@ body {
 .segmented button.on {
   background: var(--peach);
   color: var(--ink);
+}
+
+/* ---------- Level progress and the story ahead ---------- */
+
+.xp-wrap {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.xp-text {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--peach);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gains .xp-text {
+  font-size: 12px;
+}
+
+.story-goal {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 420px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 248, 231, 0.08);
+  box-shadow: inset 0 0 0 2px rgba(255, 204, 128, 0.35);
+  text-align: left;
+}
+
+.story-goal .label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255, 248, 231, 0.7);
+}
+
+.story-goal strong {
+  color: var(--peach);
+  font-size: 15px;
+}
+
+.story-goal .teaser {
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--cream);
+}
+
+.goal-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-bar .progress-bar {
+  flex: 1;
+  height: 10px;
+}
+
+.goal-percent {
+  min-width: 36px;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: right;
+  color: var(--peach);
+}
+
+.goal-parts {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: rgba(255, 248, 231, 0.85);
+}
+
+.goal-parts li.met {
+  color: var(--green);
+  text-decoration: line-through;
+}
+
+.story-goal.compact {
+  padding: 8px 10px;
+}
+
+/* ---------- Daily specialty: epic boons ---------- */
+
+.specialty-overlay {
+  background: radial-gradient(circle at 50% 28%, rgba(124, 77, 255, 0.4), rgba(12, 6, 24, 0.96) 68%);
+}
+
+.specialty-stage {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.specialty-rays {
+  position: absolute;
+  z-index: -1;
+  top: -30%;
+  left: 50%;
+  width: 640px;
+  height: 640px;
+  margin-left: -320px;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 213, 79, 0.1) 0deg 8deg, rgba(255, 213, 79, 0) 8deg 20deg);
+  -webkit-mask-image: radial-gradient(circle, #000 20%, transparent 65%);
+  mask-image: radial-gradient(circle, #000 20%, transparent 65%);
+  animation: rays-spin 40s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rays-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.specialty-kicker {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 248, 231, 0.7);
+}
+
+.specialty-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-align: center;
+  text-transform: uppercase;
+  background: linear-gradient(#fff6cf, #ffd54f 55%, #ff9f43);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 3px 0 #3b2a20) drop-shadow(0 0 12px rgba(255, 213, 79, 0.45));
+}
+
+.specialty-hint {
+  margin: 0 0 4px;
+  font-size: 14px;
+  text-align: center;
+  color: var(--cream);
+}
+
+.specialty-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  perspective: 800px;
+}
+
+.perk {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--accent);
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--tint), rgba(18, 10, 30, 0.96) 62%);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 18px var(--glow), inset 0 0 22px var(--tint);
+  color: var(--cream);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  animation: perk-in 0.55s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+  animation-delay: var(--delay);
+  transition:
+    opacity 0.25s,
+    transform 0.25s;
+}
+
+.perk:active {
+  transform: scale(0.97);
+}
+
+.perk-medallion {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.35), var(--tint) 60%, rgba(0, 0, 0, 0.3));
+  box-shadow: 0 0 0 3px var(--accent), 0 0 16px var(--glow);
+}
+
+.perk-medallion img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+}
+
+.perk-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+}
+
+.perk-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #1a1028;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.perk strong {
+  color: #fff;
+  font-size: 17px;
+  line-height: 1.15;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+}
+
+.perk-desc {
+  font-size: 13px;
+  line-height: 1.35;
+  color: rgba(255, 248, 231, 0.9);
+}
+
+.perk-shine {
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0));
+  animation: perk-shine 3.4s ease-in-out infinite;
+  animation-delay: calc(var(--delay) + 0.7s);
+  pointer-events: none;
+}
+
+.perk.picked {
+  animation: perk-pick 0.45s ease-out both;
+  box-shadow: 0 0 0 2px #fff, 0 0 32px var(--glow), inset 0 0 30px var(--glow);
+}
+
+.perk.faded {
+  animation: none;
+  opacity: 0.25;
+  transform: scale(0.95);
+}
+
+@keyframes perk-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) rotateX(35deg) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes perk-shine {
+  0%,
+  55% {
+    left: -60%;
+  }
+  100% {
+    left: 130%;
+  }
+}
+
+@keyframes perk-pick {
+  40% {
+    transform: scale(1.05);
+    filter: brightness(1.3);
+  }
+  100% {
+    transform: scale(1.02);
+    filter: brightness(1.1);
+  }
+}
+
+.reduced-motion .specialty-rays,
+.reduced-motion .perk,
+.reduced-motion .perk-shine {
+  animation: none;
+}
+
+/* ---------- Quick recipe legend (in play) ---------- */
+
+.legend-overlay {
+  align-items: flex-start;
+}
+
+.legend-sheet {
+  margin-top: calc(48px + var(--safe-top));
+  animation: legend-drop 0.22s ease-out both;
+}
+
+@keyframes legend-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+
+.legend {
+  width: 100%;
+}
+
+.legend .hint {
+  margin: 0 0 8px;
+}
+
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 10px;
+  background: rgba(255, 248, 231, 0.08);
+  text-align: left;
+}
+
+.legend-item.utensil {
+  box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.6);
+}
+
+.legend-item.secret {
+  box-shadow: inset 0 0 0 1px rgba(255, 213, 79, 0.7);
+}
+
+.legend-dish {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  object-fit: contain;
+}
+
+.legend-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.legend-text strong {
+  font-size: 12px;
+  line-height: 1.15;
+  color: var(--peach);
+}
+
+.legend-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-row .plus {
+  font-size: 11px;
+}
+
+.legend-mark {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--cream);
+}
+
+/* The same legend as a see-through guide over the kitchen during a service: scrolls with a finger, play goes on. */
+.recipe-guide {
+  position: absolute;
+  z-index: 5;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 6px 8px;
+  border-radius: 14px;
+  background: linear-gradient(rgba(16, 34, 56, 0.7), rgba(16, 34, 56, 0.52)); /* night-blue glass: stands out from the wooden kitchen */
+  box-shadow: inset 0 0 0 1px rgba(129, 212, 250, 0.35);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(129, 212, 250, 0.6) transparent;
+  animation: legend-drop 0.18s ease-out both;
+  -webkit-mask-image: linear-gradient(#000 85%, transparent);
+  mask-image: linear-gradient(#000 85%, transparent);
+  padding-bottom: 18px;
+}
+
+.legend.guide .legend-grid {
+  gap: 4px;
+}
+
+.legend.guide .legend-item {
+  gap: 4px;
+  padding: 3px 5px;
+  border-left: 3px solid #4dd0e1;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.legend.guide .legend-item.utensil {
+  border-left-color: var(--purple);
+}
+
+.legend.guide .legend-item.secret {
+  border-left-color: #ffd54f;
+}
+
+.legend.guide .legend-dish {
+  width: 26px;
+  height: 26px;
+}
+
+.legend.guide .legend-text strong {
+  font-size: 11px;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.legend.guide .pattern-line {
+  padding: 1px 4px;
+  border-radius: 6px;
+  background: rgba(129, 212, 250, 0.35);
+}
+
+.legend.guide .legend-mark {
+  font-size: 11px;
+}
+
+.reduced-motion .legend-sheet,
+.reduced-motion .recipe-guide {
+  animation: none;
 }

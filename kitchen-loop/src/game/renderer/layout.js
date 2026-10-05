@@ -7,6 +7,7 @@ const TRAY_SLOT = 72;
 const PREVIEW = 48;
 const HUD_HEIGHT = 44;
 const CUSTOMER_HEIGHT = 152; // speech bubble + character behind the counter
+export const BUBBLE_HEIGHT = 60; // the order bubble at the top of each customer's slot (its tail adds 8)
 const STOVE_HEIGHT = 58; // the stove with a pan per customer, between the customers and the board (spec 2.1, 7.5)
 const PAN_WIDTH = 84;
 const MIN_GAP = 4;

@@ -4,10 +4,10 @@ import { getSprite } from '../../assets/manifest.js';
 import { t } from '../../utils/i18n.js';
 import { COLORS, ease, clamp01 } from './canvasKit.js';
 import { drawIngredient, drawSmooth } from './placeholders.js';
+import { BUBBLE_HEIGHT } from './layout.js';
 
 // Customers (character + speech bubble with the order) and Pip, with their animations.
 const CHARACTER = 84;
-const BUBBLE_HEIGHT = 60;
 const COUNTER_HEIGHT = 16;
 const ARRIVE_TIME = 0.45;
 const BUBBLE_DELAY = 0.2;

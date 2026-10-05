@@ -103,8 +103,8 @@ Tamaño máximo de una receta: 4 ingredientes.
 
 - Cuando un conjunto de casillas forma una receta **conocida**, esas casillas **brillan** (outline temporal, pequeña vibración visual, partículas suaves y sonido suave).
 - **Tocar cualquier casilla de un grupo brillante lo cocina.** Esto da la tensión central del juego: cocinar ya para mantener el combo, o esperar a construir una receta más grande y valiosa arriesgando espacio.
-- Si una casilla pertenece a varias recetas posibles, se cocina según esta prioridad: 1) la receta más grande; 2) la que tiene un pedido activo; 3) la de más puntos.
-- **Recetas secretas**: no brillan hasta descubrirse. Pero si el jugador toca una casilla y la receta más grande que la contiene es una secreta con su requisito cumplido, **se cocina y se descubre**. Así se descubren jugando, por accidente o por experimentación. Tras descubrirse, brillan como las demás.
+- Si una casilla pertenece a varias recetas posibles, se cocina según esta prioridad: 1) la que tiene un pedido activo; 2) la receta más grande; 3) la de más puntos. Las casillas de una receta pedida brillan en verde y las de una fuera de carta en amarillo, así que al tocar se cocina lo que indica el color (DECISIONES 32).
+- **Recetas secretas**: no brillan hasta descubrirse. Pero si el jugador toca una casilla que no es de una receta pedida y la receta más grande que la contiene es una secreta con su requisito cumplido, **se cocina y se descubre**. Así se descubren jugando, por accidente o por experimentación. Tras descubrirse, brillan como las demás.
 - Tocar una casilla que no forma receta: pequeño temblor del ingrediente, sin castigo.
 - Al cocinar: los ingredientes saltan a la sartén (≤ 400 ms), partículas, pequeño shake y texto flotante. Las casillas se liberan al terminar el salto y no aceptan ingredientes mientras tanto.
 - El combo, ¡En su punto! y la fiebre cuentan **en el momento de tocar**, no al servir.
@@ -696,6 +696,8 @@ No se puede saltar la primera vez (es corto). Se puede repetir desde Ajustes.
 
 - Escena de la cocina en pixel art (con la decoración comprada y la sartén equipada), logo y Pip animado en reposo.
 - Botón grande: **JUGAR**.
+- Barra de nivel con su porcentaje y la XP que falta para el siguiente.
+- Tarjeta de historia: capítulo actual, gancho del siguiente, qué hace falta para abrirlo y porcentaje de avance (también, en pequeño, en resultados).
 - Botones secundarios: **ÁLBUM**, **ALMACÉN** (con candado y la puerta cerrada hasta el capítulo 3), **AJUSTES**.
 - Indicadores discretos (un punto) si hay un sobre gratis listo o el calendario disponible. Sin contadores de urgencia.
 

@@ -2,6 +2,8 @@ import { balance } from '../data/balance.js';
 import { chapterScenes, AFTER_FINALE } from '../data/dialogues.js';
 import { contentFor } from './unlocks.js';
 import { treeComplete, utensilsOwned } from './utensils.js';
+import { utensils } from '../data/utensils.js';
+import { xpToReach } from '../economy/progression.js';
 import { track } from '../analytics/analytics.js';
 
 export const LAST_CHAPTER = 7;
@@ -60,4 +62,31 @@ export function pendingScenes(save) {
 
 export function markSceneSeen(save, id) {
   if (!save.story.seenScenes.includes(id)) save.story.seenScenes.push(id);
+}
+
+// What the next chapter needs (spec 6.3), for the menu and the results (Daniel: "falta contexto de que hay una
+// historia que seguir"). Returns null once the epilogue has been seen. `share` 0–1 is the way there; `parts` are the
+// requirements still shown to the player as { key, have, need } (texts: story.goal.<key>).
+export function nextChapterGoal(save) {
+  const { player, stats, story } = save;
+  const levelPart = (need) => ({ key: 'level', have: player.level, need, share: Math.min(1, (xpToReach(player.level) + player.xp) / xpToReach(need)) });
+  const part = (key, have, need) => ({ key, have: Math.min(have, need), need, share: Math.min(1, have / need) });
+  const goal = (next, parts) => ({ next, parts, share: parts.reduce((sum, p) => sum + p.share, 0) / parts.length });
+  if (story.seenScenes.includes('finale')) return null;
+  switch (story.chapter) {
+    case 1:
+      return goal(2, [levelPart(3)]);
+    case 2:
+      return goal(3, [part('services', stats.loopsPlayed, balance.bruleeGuaranteedLoop)]);
+    case 3:
+      return goal(4, [part('runic', save.unlockedItems.includes('runic_counter') ? 1 : 0, 1)]);
+    case 4:
+      return goal(5, [levelPart(balance.chapterTriggers[5].level), part('utensils', utensilsOwned(save), balance.chapterTriggers[5].utensils)]);
+    case 5:
+      return goal(6, [levelPart(balance.chapterTriggers[6].level), part('secrets', discoveredSecretCount(save), balance.chapterTriggers[6].secrets)]);
+    case 6:
+      return goal(7, [part('utensils', utensilsOwned(save), utensils.length)]);
+    default:
+      return goal('finale', [part('lostRecipe', save.recipes.lost_recipe?.discovered ? 1 : 0, 1)]);
+  }
 }

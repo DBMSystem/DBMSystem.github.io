@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.11.0 — Leyenda de recetas, sonido de premio, fondo pixel art y especialidad épica
+
+- **Guía de recetas durante la partida:** el libro del marcador la activa o la desactiva sin pausar. Aparece translúcida sobre la cocina, justo debajo de los pedidos (que siempre se leen), y se desliza con el dedo. Muestra las recetas desbloqueadas de la que más puntos da a la que menos, con su plato e ingredientes en su forma (línea o cuadrado), pero sin los puntos: esos se ven al acabar la receta en la sartén. Las secretas solo aparecen si ya se han descubierto. El juego recuerda si la dejaste activada. La misma lista, sin puntos, está en la pausa (Encargos y recetas). La guía es de cristal azul noche con una franja de color por tipo de receta, para que no se pierda entre la madera de la cocina.
+- **Colores de la cuadrícula:** una receta que pide un cliente se ilumina en verde y una fuera de carta en amarillo, así ya no se confunden cuando hay varias juntas. El ingrediente dorado pasa de recuadro amarillo a halo dorado redondo con una estrella que titila.
+- **Tocar cocina lo que ves:** si varias recetas se entrelazan, tocar una casilla verde cocina la receta pedida y tocar una amarilla cocina la fuera de carta. Antes ganaba siempre la más grande, aunque la casilla estuviera en verde.
+- **Plato fuera de carta:** el sonido al servirlo en el mostrador pasa a ser un arpegio brillante de premio, en lugar del chisporroteo seco de antes.
+- **Fondo de las escenas** (`scripts/story_backdrop.py`): el mismo pixel art de la cocina de la partida, de día y de noche. En lugar de la ristra de pimientos y ajos cuelgan utensilios en pixel art: paleta, cucharón, cazo, pinzas y batidor.
+- **Corregido:** las especialidades que se ofrecen antes de un servicio ya no cambian al salir y volver a entrar; son las mismas hasta que juegas ese servicio.
+- **Corregido:** bajo los utensilios del fondo de las escenas quedaba una franja lisa donde estaban los pimientos. Ahora solo se borran sus píxeles y el hueco se rellena con la pared de alrededor, con su luz y su textura.
+- **Especialidad del día:** se presenta como una ventaja épica. Escenario oscuro con rayos de luz, título dorado y tres cartas que entran repartidas, cada una con su color, medallón, etiqueta (Más puntos, Pedidos, Ayuda, Caos, Reto, Fragmentos) y un brillo. La elegida se ilumina y las otras se apagan.
+
+## 0.10.1 — Progreso de nivel y la historia siempre a la vista
+
+- **Nivel:** el menú y los resultados muestran el porcentaje del nivel y cuánta XP falta para el siguiente («51 % · faltan 77 XP para el nivel 3»).
+- **Siguiente capítulo:** el menú enseña el capítulo actual, una frase gancho del siguiente, lo que hace falta para abrirlo y el porcentaje de avance. Los resultados lo repiten en pequeño, también tras el tutorial. Desde el primer servicio se ve que hay una historia que seguir.
+- 175 tests.
+
 ## 0.10.0 — Historia, cartas y vitrina
 
 - **Historia** (`docs/HISTORIA.md`): todas las escenas reescritas con un hilo claro: la hoja que huele a azúcar quemado, el maestro, el baúl, la cocina que recuerda, la prueba, la noche y el perdón. Cada escena acaba con un gancho o con una risa.

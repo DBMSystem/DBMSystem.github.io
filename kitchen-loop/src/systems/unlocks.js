@@ -1,5 +1,6 @@
 import { levelUnlocks, chapterUnlocks, utensilUnlocks, treeUnlocks } from '../data/unlocks.js';
 import { utensils } from '../data/utensils.js';
+import { recipes } from '../data/recipes.js';
 
 const KINDS = ['ingredients', 'recipes', 'customers', 'chapters', 'features'];
 
@@ -24,4 +25,11 @@ export const contentFor = (save) => getUnlockedContent(save.player.level, unlock
 // Level at which a recipe (or any other unlockable id) first appears, or null.
 export function unlockLevelOf(kind, id) {
   return levelUnlocks.find((row) => row[kind]?.includes(id))?.level ?? null;
+}
+
+// The recipes a service can cook, the most valuable first (Daniel: "por orden de puntos"). Secret ones only once
+// discovered; locked ones are left to the recipe book in the album.
+export function cookableRecipes(level, unlocks = {}, discovered = []) {
+  const unlocked = new Set(getUnlockedContent(level, unlocks).recipes);
+  return recipes.filter((r) => unlocked.has(r.id) && (r.kind !== 'secret' || discovered.includes(r.id))).sort((a, b) => b.points - a.points);
 }

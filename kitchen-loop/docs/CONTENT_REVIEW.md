@@ -197,3 +197,8 @@ Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challe
 - **Vitrina:** `pass.*`, `pan.<id>.desc`, `results.trial.*` y `shop.purchased`.
 - Todo tiene traducción al inglés en `en.js`, pendiente de revisión.
 
+## Progreso y ganchos de capítulo (0.10.1, draft)
+
+- `story.next.2–7` y `story.next.finale`: las frases gancho del siguiente capítulo (ver `docs/DECISIONES.md` §30).
+- `story.goal.*` y `hud.xpLeft`: los textos de requisitos y de XP que falta.
+
