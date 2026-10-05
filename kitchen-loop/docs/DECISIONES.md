@@ -617,3 +617,25 @@ Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloq
 - **Pip:** el del dibujo era pequeño y flotaba delante del mueble. Ahora se pinta encima el Pip del juego (`pip/happy`, el de la historia y los resultados), unas 1,4 veces más alto, que tapa por completo al del dibujo. Delante va una capa con la sartén recortada del propio dibujo (`ui/menu_pan.png`, desde una curva ajustada a su borde), así que Pip queda detrás de los fogones.
 - **Sartén que cocina:** el marco del menú pasa de un máximo del 44 % al 54 % de la altura de pantalla, para que se vea entera en móviles normales; la pantalla ya tiene scroll. Encima hay un resplandor que parpadea, brasas que suben, destellos y vapor, hechos solo con animaciones CSS (`MenuSizzle`). Con «menos movimiento» solo queda el resplandor, quieto.
 
+## 34. Cartas con un solo sujeto y nada suelto (Daniel: «un sushi en medio de la camiseta, un libro flotando, muchos elementos… haz cartas únicas, con elementos básicos, que se vea lo que indica el nombre de la carta, que no haya elementos sueltos, todo coherente»)
+
+- **Regla para las 120 cartas:**
+  - Fondo sencillo de su tema y un solo sujeto, el que dice el nombre, grande y apoyado en algo (mostrador, plato, mesa o suelo).
+  - Solo se añade un segundo elemento cuando el nombre lo pide: la abuela y su tortilla, Pip y Brûlée en la tregua, la seta y la trufa en «Buscatrufas».
+  - Nada flota: fuera interrogaciones, corazones, notas, chispas, mini-Pips, libros, relojes o sartenes de adorno.
+  - Lo que sí se dibuja va pegado al sujeto: lágrimas en la cara, la capa del huevo, la tirita de la sartén, la cámara colgada del cuello.
+- **Personajes:** algunas poses del juego traen elementos sueltos pegados al contorno (corazones, una moneda, destellos). En las cartas, `card_art.py` los quita:
+  - por color, solo en la esquina superior derecha del sprite, para no tocar la cara;
+  - y quedándose con la figura principal.
+  - Los sprites del juego no se modifican.
+- **Rediseños:**
+  - Turista Perdido: con cámara al cuello; el sprite del turista parecía un DJ.
+  - Recuerdo de Viaje: la foto de la tostada.
+  - Propina Caída: la moneda en el suelo, sin nevera ni Pip.
+  - Cocina Enamorada: un huevo frito en forma de corazón, en un plato de verdad.
+  - Último Segundo: un cronómetro a cero.
+  - Remolino de Especias: el bote con una sola espiral.
+  - Sueño Febril: la sartén en llamas violetas, para no repetir «Sartén en Llamas».
+  - El Chef Rival y Rival Convencido: se distinguen por el fondo y la pose.
+  - Maestro del Triple Bacon: el recorte de la referencia ya incluye el brazo.
+

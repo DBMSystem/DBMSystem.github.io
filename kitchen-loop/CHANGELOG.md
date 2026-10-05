@@ -4,6 +4,17 @@
 
 - **Menú:** el dibujo de portada ya no tiene la sartén que flotaba delante de la ventana (`scripts/menu_scene.py` la borra y rehace la ventana a partir de la propia ventana). Se ve entera la sartén que cocina abajo, con un resplandor que parpadea, brasas que suben, destellos dorados y vapor. Con «menos movimiento» solo queda el resplandor, quieto.
 - **Sartén equipada:** se apoya de pie en el alféizar, más pequeña, en lugar de flotar en la ventana.
+- **Cartas, una a una, sin elementos sueltos:** cada carta muestra solo lo que dice su nombre (el personaje o la comida), grande y apoyado en algo (mostrador, plato o mesa), con un fondo sencillo. Se quitan interrogaciones, corazones, notas, chispas, mini-Pips y objetos flotantes. Los personajes pierden los corazones, nubes, monedas y destellos que traían de serie. Cambios concretos:
+  - Turista Perdido: con cámara al cuello.
+  - Recuerdo de Viaje: es la foto de la tostada.
+  - Propina Caída: una moneda de canto en el suelo.
+  - Cocina Enamorada: un huevo frito en forma de corazón.
+  - Último Segundo: un cronómetro a cero.
+  - Remolino de Especias: una sola espiral.
+  - Sueño Febril: una sartén en llamas violetas.
+  - El Chef Rival: sobre fuego, como un desafío.
+  - Rival Convencido: sonriendo, sin sushi suelto, libro ni Pip.
+  - Maestro del Triple Bacon: con el brazo entero.
 - **Pip en el menú:** es el Pip del juego, más grande, y está de pie detrás de la sartén que cocina (las piernas quedan tras ella). Antes era pequeño y flotaba delante del mueble.
 
 ## 0.11.0 — Leyenda de recetas, sonido de premio, fondo pixel art y especialidad épica
