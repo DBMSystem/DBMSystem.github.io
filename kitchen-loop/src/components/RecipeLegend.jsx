@@ -1,31 +1,27 @@
-import { recipes } from '../data/recipes.js';
-import { getUnlockedContent } from '../systems/unlocks.js';
+import { cookableRecipes } from '../systems/unlocks.js';
 import { RecipeIngredients } from './IngredientIcon.jsx';
 import { spriteUrl } from '../assets/manifest.js';
-import { t, formatNumber } from '../utils/i18n.js';
+import { t } from '../utils/i18n.js';
 
 const PATTERN_MARK = { group: '', line: '↔', square: '▦' };
 
-// Quick legend of the recipes this service can cook (Daniel: "una leyenda desplegable rápida de las recetas
-// desbloqueadas, es muy difícil memorizarlas"): dish, ingredients in their shape and points, nothing else.
-// Secret recipes only once discovered; locked ones are left to the recipe book in the album.
-export function RecipeLegend({ level, unlocks = {}, discovered = [] }) {
-  const unlocked = new Set(getUnlockedContent(level, unlocks).recipes);
-  const known = recipes.filter((r) => unlocked.has(r.id) && (r.kind !== 'secret' || discovered.includes(r.id)));
+// Quick legend of the recipes this service can cook: dish, name and ingredients in their shape, no points (Daniel:
+// "que no indique cuántos puntos gana, eso sale cuando acabas la receta en la sartén").
+// `guide`: the see-through strip over the kitchen during a service.
+export function RecipeLegend({ level, unlocks, discovered, guide = false }) {
   return (
-    <div className="legend">
-      <p className="hint small">{t('legend.hint')}</p>
+    <div className={guide ? 'legend guide' : 'legend'}>
+      {!guide && <p className="hint small">{t('legend.hint')}</p>}
       <ul className="legend-grid">
-        {known.map((r) => (
+        {cookableRecipes(level, unlocks, discovered).map((r) => (
           <li key={r.id} className={`legend-item ${r.kind}`}>
             <img className="legend-dish" src={spriteUrl(`dishes/${r.id}`)} alt="" />
             <span className="legend-text">
               <strong>{t(`recipe.${r.id}`)}</strong>
               <span className="legend-row">
-                <RecipeIngredients recipe={r} size={22} />
+                <RecipeIngredients recipe={r} size={guide ? 16 : 22} />
                 {PATTERN_MARK[r.pattern] && <span className="legend-mark">{PATTERN_MARK[r.pattern]}</span>}
               </span>
-              <span className="legend-points">{t('book.points', { n: formatNumber(r.points) })}</span>
             </span>
           </li>
         ))}

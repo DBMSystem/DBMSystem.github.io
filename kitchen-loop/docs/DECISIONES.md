@@ -584,10 +584,11 @@ Daniel: «Chef rival error en sombrero, propina caída error línea, estudiante 
 
 Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloqueadas» · «cuando hagas un plato fuera de carta, que el sonido sea más de premio» · «el fondo cuando sale Pip hablando, que sea el estilo pixel art de la cocina de la partida» (sustituye al fondo HD de la primera versión de 0.11.0, que no llegó a publicarse) · «utensilios de cocina en vez de pimientos» · «el menú de la especialidad del día que tenga más contraste… como si de ventajas épicas se tratase».
 
-- **Leyenda:**
-  - Sustituye al libro de recetas dentro de la partida. Solo muestra lo que se puede cocinar en este servicio: plato, ingredientes, forma (↔ línea, ▦ cuadrado) y puntos.
-  - Las secretas solo salen si ya se han descubierto, para no destripar el descubrimiento. Las bloqueadas siguen en el recetario del álbum.
-  - Abrirla pausa la partida, igual que la pausa; tocar fuera la cierra.
+- **Guía de recetas** (Daniel, segunda vuelta: «con transparencia en la parte superior donde está la cocina… que puedas activarlo o desactivarlo como guía durante la partida… moverlo con el dedo arriba y abajo… por orden de puntos, pero que no indique cuántos puntos gana»):
+  - El libro del marcador la activa o la desactiva y la partida no se pausa. La preferencia se guarda (`settings.recipeGuide`).
+  - Ocupa la cocina desde debajo de los bocadillos de pedido hasta los fogones. Se descartó cubrir también los bocadillos: con la transparencia el pedido y la guía se mezclaban y no se leía ninguno. Los fogones tampoco se tapan.
+  - Solo lista lo que se puede cocinar en este servicio, de más a menos puntos (`cookableRecipes`), sin mostrar los puntos. Las secretas solo salen si ya se han descubierto; las bloqueadas siguen en el recetario del álbum.
+  - En la pausa, «Encargos y recetas» muestra la misma lista a tamaño grande.
 - **Sonido:** el plato fuera de carta (servido en el mostrador, sin cliente) usa `counterSale`, un arpegio ascendente con campanilla. Servir a un cliente conserva su sonido.
 - **Fondo:**
   - Sale de las cocinas de la partida (`ui/kitchen_day.jpg` y `ui/kitchen_night.jpg`, sin modificarlas). El script borra la ristra de pimientos y ajos rellenando con la pared de los lados y cuelga en los mismos ganchos cinco utensilios dibujados en pixel art, con el mismo bloque de 2 px y contorno oscuro. De noche se tiñen con la luz azulada de la cocina.

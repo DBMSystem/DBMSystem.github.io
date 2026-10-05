@@ -76,6 +76,7 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     secretRecipe: null,
     comboPopAt: -10,
     toast: null, // { title, text, color, at }
+    guideOn: false, // the recipe guide is open over the kitchen: the book button shows it
     pans: [], // per customer slot: { landAt, burntAt, burntRecipe }
     fullStoveAt: -10,
     nextSteamAt: 0,
@@ -479,7 +480,8 @@ export function createRenderer(canvas, engine, { balance, reducedMotion = false,
     ctx.fillStyle = COLORS.cream;
     ctx.fillRect(pause.x + 17, pause.y + 15, 4, 14);
     ctx.fillRect(pause.x + 25, pause.y + 15, 4, 14);
-    kit.roundRect(quick.x + 6, quick.y + 6, quick.w - 12, quick.h - 12, 8, 'rgba(255, 248, 231, 0.15)');
+    if (view.guideOn) kit.roundRect(quick.x + 5, quick.y + 5, quick.w - 10, quick.h - 10, 9, 'rgba(255, 204, 128, 0.35)', COLORS.peach);
+    else kit.roundRect(quick.x + 6, quick.y + 6, quick.w - 12, quick.h - 12, 8, 'rgba(255, 248, 231, 0.15)');
     const book = getSprite('ui/icon_recipe');
     if (book) drawSmooth(ctx, book, quick.x + 11, quick.y + 11, quick.w - 22, quick.h - 22);
 

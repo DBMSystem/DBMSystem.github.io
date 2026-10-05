@@ -1,5 +1,5 @@
 import { createRenderer } from './renderer.js';
-import { cellAt, inside } from './layout.js';
+import { cellAt, inside, LOGICAL_WIDTH, BUBBLE_HEIGHT } from './layout.js';
 import { isCellFree } from '../grid.js';
 import { createPip } from '../../systems/pip.js';
 import { createTutorialRunner } from '../../systems/tutorial.js';
@@ -27,6 +27,7 @@ export function createGameController({
   trialName = null,
   onPauseRequest,
   onQuickRequest,
+  onGuideArea,
   onEvents,
 }) {
   const renderer = createRenderer(canvas, engine, { balance, reducedMotion: settings.reducedMotion, showFps, cosmetics });
@@ -189,14 +190,24 @@ export function createGameController({
     view.targetCell = -1;
   }
 
-  const onResize = () => renderer.resize();
+  // Where the recipe guide sits, in CSS pixels of the canvas: over the kitchen, from under the order bubbles (the
+  // orders always stay readable) down to the stove.
+  function guideArea() {
+    const { scale, ox, customers, stove } = renderer.getLayout();
+    const top = customers[0].y + BUBBLE_HEIGHT + 10;
+    return { left: ox * scale, width: LOGICAL_WIDTH * scale, top: top * scale, height: (stove.y - top) * scale };
+  }
+  const onResize = () => {
+    renderer.resize();
+    onGuideArea?.(guideArea());
+  };
 
   canvas.addEventListener('pointerdown', onPointerDown);
   canvas.addEventListener('pointermove', onPointerMove);
   canvas.addEventListener('pointerup', onPointerUp);
   canvas.addEventListener('pointercancel', onPointerCancel);
   window.addEventListener('resize', onResize);
-  renderer.resize();
+  onResize();
   if (runner) syncTutorial();
   else pip.say('loopStart');
   if (trialName) renderer.showToast(t('trial.title'), trialName);
@@ -207,6 +218,9 @@ export function createGameController({
       paused = value;
       onPointerCancel();
       last = performance.now();
+    },
+    setGuide(on) {
+      view.guideOn = on;
     },
     setTapToPlace(value) {
       settings.tapToPlace = value;

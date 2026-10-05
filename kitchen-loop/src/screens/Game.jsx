@@ -38,8 +38,11 @@ export function Game({ tutorial = false, specialty = null, trial = null, service
   const [paused, setPaused] = useState(false);
   const [overflow, setOverflow] = useState(null);
   const [adBusy, setAdBusy] = useState(false);
-  const [panel, setPanel] = useState(null); // 'recipes' (quick legend) | 'challenges' | null
-  const [panelFromHud, setPanelFromHud] = useState(false);
+  const [panel, setPanel] = useState(null); // 'recipes' | 'challenges' | null, from the pause menu
+  // The recipe guide over the kitchen, switched on and off with the HUD book; play goes on (Daniel: "que puedas
+  // activarlo o desactivarlo como guía durante la partida").
+  const [guide, setGuide] = useState(saveManager.get().settings.recipeGuide);
+  const [guideArea, setGuideArea] = useState(null);
   const [challenges] = useState(() => (tutorial ? [] : todayChallenges(saveManager.get(), calendarToday(saveManager.get()))));
   const loopLevel = tutorial ? tutorialScript.level : level;
   const [tapToPlace, setTapToPlace] = useState(saveManager.get().settings.tapToPlace);
@@ -82,11 +85,8 @@ export function Game({ tutorial = false, specialty = null, trial = null, service
       cosmetics: { pan: trial?.kind === 'pan' ? trial.id : save.equippedPan, night: hasMaestroPass(save) && save.settings.nightTheme },
       trialName: trial ? t(trial.kind === 'pan' ? `pan.${trial.id}` : `utensil.${trial.id}.name`) : null,
       onPauseRequest: () => setPaused(true),
-      onQuickRequest: () => {
-        setPaused(true);
-        setPanel('recipes');
-        setPanelFromHud(true);
-      },
+      onQuickRequest: () => setGuide((on) => !on),
+      onGuideArea: setGuideArea,
       onEvents: (events) => {
         for (const event of events) {
           if (event.type === 'fever' || event.type === 'feverEnd') audio.musicLayer('fever', event.type === 'fever');
@@ -119,10 +119,19 @@ export function Game({ tutorial = false, specialty = null, trial = null, service
     controllerRef.current?.setPaused(paused);
   }, [paused]);
 
-  const closePanel = () => {
-    setPanel(null);
-    if (panelFromHud) setPaused(false);
-    setPanelFromHud(false);
+  useEffect(() => {
+    controllerRef.current?.setGuide(guide);
+    if (saveManager.get().settings.recipeGuide !== guide)
+      saveManager.update((s) => {
+        s.settings.recipeGuide = guide;
+      });
+  }, [guide, attempt, saveManager]);
+
+  const closePanel = () => setPanel(null);
+  const recipeContext = {
+    level: loopLevel,
+    unlocks: tutorial ? {} : withTrial(unlockContext(saveManager.get()), trial),
+    discovered: discoveredSecrets(saveManager.get()),
   };
 
   // Back (spec 8.9): pauses the service; on the pause menu it resumes, on a panel it closes it. The overflow
@@ -163,6 +172,12 @@ export function Game({ tutorial = false, specialty = null, trial = null, service
     <div className="game">
       <canvas ref={canvasRef} className="game-canvas" />
 
+      {guide && guideArea && !paused && !overflow && (
+        <div className="recipe-guide" style={guideArea}>
+          <RecipeLegend {...recipeContext} guide />
+        </div>
+      )}
+
       {paused && panel && (
         <div className="overlay scroll legend-overlay" onClick={closePanel}>
           <div className="panel quick-panel legend-sheet" onClick={(e) => e.stopPropagation()}>
@@ -176,13 +191,9 @@ export function Game({ tutorial = false, specialty = null, trial = null, service
             {panel === 'challenges' ? (
               <Challenges list={challenges} live={(c) => (engineRef.current ? progressWith(c, engineRef.current.getResult()) : c.progress)} />
             ) : (
-              <RecipeLegend
-                level={loopLevel}
-                unlocks={tutorial ? {} : withTrial(unlockContext(saveManager.get()), trial)}
-                discovered={discoveredSecrets(saveManager.get())}
-              />
+              <RecipeLegend {...recipeContext} />
             )}
-            <Button onClick={closePanel}>{t(panelFromHud ? 'pause.resume' : 'book.close')}</Button>
+            <Button onClick={closePanel}>{t('book.close')}</Button>
           </div>
         </div>
       )}

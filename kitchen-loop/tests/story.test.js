@@ -6,6 +6,7 @@ import { utensilState, treeTotalCost, treeComplete } from '../src/systems/utensi
 import { buyUtensil, buyDecor, placeDecor, buyPack, addCoins, addFragments } from '../src/inventory/inventory.js';
 import { availableSpecialties, rollSpecialties, nextSpecialties } from '../src/systems/specialty.js';
 import { unlocksBetween } from '../src/economy/progression.js';
+import { cookableRecipes } from '../src/systems/unlocks.js';
 import { finalizeLoop } from '../src/economy/rewards.js';
 import { utensils } from '../src/data/utensils.js';
 import { decorItems } from '../src/data/decor.js';
@@ -222,6 +223,14 @@ describe('daily specialty (spec 2.12)', () => {
     }
     expect(offers.size).toBeGreaterThan(1);
   });
+});
+
+it('the recipe guide: what this service can cook, most points first, secrets only once discovered', () => {
+  const list = cookableRecipes(9, { chapter: 5, utensils: [] }, []);
+  expect(list.length).toBeGreaterThan(5);
+  expect(list.every((r) => r.kind !== 'secret')).toBe(true);
+  for (let i = 1; i < list.length; i++) expect(list[i - 1].points).toBeGreaterThanOrEqual(list[i].points);
+  expect(cookableRecipes(9, { chapter: 5, utensils: [] }, ['bacon_crown']).some((r) => r.id === 'bacon_crown')).toBe(true);
 });
 
 it('level-ups never announce secret recipes', () => {

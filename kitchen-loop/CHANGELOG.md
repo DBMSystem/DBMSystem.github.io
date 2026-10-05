@@ -2,7 +2,7 @@
 
 ## 0.11.0 — Leyenda de recetas, sonido de premio, fondo pixel art y especialidad épica
 
-- **Leyenda rápida de recetas:** el libro del marcador abre un desplegable con las recetas desbloqueadas (plato, ingredientes con su forma, línea o cuadrado, y puntos). Las secretas solo aparecen si ya se han descubierto. Se cierra tocando fuera y la partida sigue en pausa mientras está abierto.
+- **Guía de recetas durante la partida:** el libro del marcador la activa o la desactiva sin pausar. Aparece translúcida sobre la cocina, justo debajo de los pedidos (que siempre se leen), y se desliza con el dedo. Muestra las recetas desbloqueadas de la que más puntos da a la que menos, con su plato e ingredientes en su forma (línea o cuadrado), pero sin los puntos: esos se ven al acabar la receta en la sartén. Las secretas solo aparecen si ya se han descubierto. El juego recuerda si la dejaste activada. La misma lista, sin puntos, está en la pausa (Encargos y recetas).
 - **Plato fuera de carta:** el sonido al servirlo en el mostrador pasa a ser un arpegio brillante de premio, en lugar del chisporroteo seco de antes.
 - **Fondo de las escenas** (`scripts/story_backdrop.py`): el mismo pixel art de la cocina de la partida, de día y de noche. En lugar de la ristra de pimientos y ajos cuelgan utensilios en pixel art: paleta, cucharón, cazo, pinzas y batidor.
 - **Corregido:** las especialidades que se ofrecen antes de un servicio ya no cambian al salir y volver a entrar; son las mismas hasta que juegas ese servicio.

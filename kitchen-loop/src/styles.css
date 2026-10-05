@@ -2428,11 +2428,53 @@ body {
   color: var(--cream);
 }
 
-.legend-points {
-  font-size: 10px;
-  color: rgba(255, 248, 231, 0.7);
+/* The same legend as a see-through guide over the kitchen during a service: scrolls with a finger, play goes on. */
+.recipe-guide {
+  position: absolute;
+  z-index: 5;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 6px 8px;
+  border-radius: 14px;
+  background: linear-gradient(rgba(30, 20, 14, 0.66), rgba(30, 20, 14, 0.5));
+  scrollbar-width: thin;
+  animation: legend-drop 0.18s ease-out both;
+  -webkit-mask-image: linear-gradient(#000 85%, transparent);
+  mask-image: linear-gradient(#000 85%, transparent);
+  padding-bottom: 18px;
 }
 
-.reduced-motion .legend-sheet {
+.legend.guide .legend-grid {
+  gap: 4px;
+}
+
+.legend.guide .legend-item {
+  gap: 4px;
+  padding: 3px 5px;
+  background: rgba(30, 20, 14, 0.35);
+}
+
+.legend.guide .legend-dish {
+  width: 26px;
+  height: 26px;
+}
+
+.legend.guide .legend-text strong {
+  font-size: 11px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.legend.guide .pattern-line {
+  padding: 1px 4px;
+  border-radius: 6px;
+}
+
+.legend.guide .legend-mark {
+  font-size: 11px;
+}
+
+.reduced-motion .legend-sheet,
+.reduced-motion .recipe-guide {
   animation: none;
 }
