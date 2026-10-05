@@ -696,6 +696,8 @@ No se puede saltar la primera vez (es corto). Se puede repetir desde Ajustes.
 
 - Escena de la cocina en pixel art (con la decoración comprada y la sartén equipada), logo y Pip animado en reposo.
 - Botón grande: **JUGAR**.
+- Barra de nivel con su porcentaje y la XP que falta para el siguiente.
+- Tarjeta de historia: capítulo actual, gancho del siguiente, qué hace falta para abrirlo y porcentaje de avance (también, en pequeño, en resultados).
 - Botones secundarios: **ÁLBUM**, **ALMACÉN** (con candado y la puerta cerrada hasta el capítulo 3), **AJUSTES**.
 - Indicadores discretos (un punto) si hay un sobre gratis listo o el calendario disponible. Sin contadores de urgencia.
 

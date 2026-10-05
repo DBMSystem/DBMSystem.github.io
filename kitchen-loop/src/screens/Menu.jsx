@@ -5,7 +5,8 @@ import { Calendar, calendarToday } from '../components/Calendar.jsx';
 import { canClaimCalendar } from '../systems/calendar.js';
 import { todayChallenges } from '../systems/challenges.js';
 import { Challenges } from '../components/Challenges.jsx';
-import { xpToNext } from '../economy/progression.js';
+import { levelProgress } from '../economy/progression.js';
+import { StoryGoal } from '../components/StoryGoal.jsx';
 import { balance } from '../data/balance.js';
 import { t, formatNumber } from '../utils/i18n.js';
 import { DEV_TOOLS } from '../utils/platform.js';
@@ -32,7 +33,7 @@ export function Menu({ services, onPlay, onAlbum, onWarehouse, onSettings, onDev
     if (showCalendar) calendarShownThisSession = true;
   }, [showCalendar]);
   const { level, xp, name } = save.player;
-  const xpShare = level >= balance.maxLevel ? 1 : xp / xpToNext(level);
+  const progress = levelProgress(save.player);
   const albumDot = save.packs.standard + save.packs.special > 0 || (save.stats.loopsPlayed >= balance.adsMinLoops && adManager.freePackWait() === 0);
   useAds(adManager);
   useEffect(() => adManager.start(), [adManager]);
@@ -46,8 +47,13 @@ export function Menu({ services, onPlay, onAlbum, onWarehouse, onSettings, onDev
     <div className="screen menu">
       <div className="status-bar">
         <span className="level-chip">{t('hud.level', { n: level })}</span>
-        <span className="xp-bar">
-          <span style={{ width: `${Math.round(xpShare * 100)}%` }} />
+        <span className="xp-wrap">
+          <span className="xp-bar">
+            <span style={{ width: `${Math.floor(progress.share * 100)}%` }} />
+          </span>
+          <span className="xp-text">
+            {progress.next ? t('hud.xpLeft', { p: Math.floor(progress.share * 100), n: formatNumber(progress.left), next: progress.next }) : t('hud.maxLevel')}
+          </span>
         </span>
         <span className="coins">
           <img src={spriteUrl('ui/icon_coin')} alt="" />
@@ -75,6 +81,7 @@ export function Menu({ services, onPlay, onAlbum, onWarehouse, onSettings, onDev
       </div>
       <p className="slogan">{t('game.slogan')}</p>
       <p className="greeting">{t(greeting, { nombre: name })}</p>
+      {save.tutorialDone && <StoryGoal save={save} />}
       <Button icon="icon_cook" onClick={onPlay}>
         {t('menu.play')}
       </Button>

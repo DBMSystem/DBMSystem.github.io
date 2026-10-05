@@ -9,7 +9,8 @@ import { endTrigger } from '../systems/pip.js';
 import { linesFor } from '../systems/dialogue.js';
 import { storyStage } from '../systems/story.js';
 import { balance } from '../data/balance.js';
-import { xpToNext } from '../economy/progression.js';
+import { xpToNext, levelProgress } from '../economy/progression.js';
+import { StoryGoal } from '../components/StoryGoal.jsx';
 import { createRng } from '../utils/rng.js';
 import { challengeText } from '../systems/challenges.js';
 import { spriteUrl } from '../assets/manifest.js';
@@ -36,6 +37,8 @@ export function Results({ result, playerName, services, onAgain, onMenu }) {
   const endShare = result.levelAfter >= balance.maxLevel ? 1 : result.xpAfter / xpToNext(result.levelAfter);
   const startShare = leveled ? 0 : result.xpBefore / xpToNext(result.levelBefore);
   const [xpShare, setXpShare] = useState(startShare);
+  const after = levelProgress({ level: result.levelAfter, xp: result.xpAfter });
+  const xpText = after.next ? t('hud.xpLeft', { p: Math.floor(after.share * 100), n: formatNumber(after.left), next: after.next }) : t('hud.maxLevel');
 
   useEffect(() => {
     if (showCards) return undefined;
@@ -73,6 +76,7 @@ export function Results({ result, playerName, services, onAgain, onMenu }) {
           </span>
           <span className="xp-gain">{t('results.xp', { n: result.xp })}</span>
         </div>
+        <span className="xp-text">{xpText}</span>
         <span className="coins pop-in">
           <img src={spriteUrl('ui/icon_coin')} alt="" />
           {t('results.coins', { n: formatNumber(result.coins) })}
@@ -113,6 +117,7 @@ export function Results({ result, playerName, services, onAgain, onMenu }) {
           {t('results.chapter', { name: t(`chapter.${n}`) })}
         </p>
       ))}
+      <StoryGoal save={saveManager.get()} compact />
       {(result.fragments > 0 || result.goldenCooked > 0) && (
         <p className="hint small pop-in">
           {[result.fragments > 0 && t('results.fragments', { n: result.fragments }), result.goldenCooked > 0 && t('results.golden', { n: result.goldenCooked })]

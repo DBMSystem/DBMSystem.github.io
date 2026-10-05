@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.1 — Progreso de nivel y la historia siempre a la vista
+
+- **Nivel:** el menú y los resultados muestran el porcentaje del nivel y cuánta XP falta para el siguiente («51 % · faltan 77 XP para el nivel 3»).
+- **Siguiente capítulo:** el menú enseña el capítulo actual, una frase gancho del siguiente, lo que hace falta para abrirlo y el porcentaje de avance. Los resultados lo repiten en pequeño, también tras el tutorial. Desde el primer servicio se ve que hay una historia que seguir.
+- 175 tests.
+
 ## 0.10.0 — Historia, cartas y vitrina
 
 - **Historia** (`docs/HISTORIA.md`): todas las escenas reescritas con un hilo claro: la hoja que huele a azúcar quemado, el maestro, el baúl, la cocina que recuerda, la prueba, la noche y el perdón. Cada escena acaba con un gancho o con una risa.

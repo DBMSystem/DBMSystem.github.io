@@ -6,6 +6,16 @@ import { addCoins, addPack } from '../inventory/inventory.js';
 // XP needed to go from level n to n + 1 (spec 5.1).
 export const xpToNext = (level) => balance.xpCurve.base + balance.xpCurve.perLevel * (level - 1);
 
+// How far the player is into the current level (0–1) and the XP still missing for the next one (spec 5.1).
+export function levelProgress({ level, xp }) {
+  if (level >= balance.maxLevel) return { share: 1, left: 0, next: null };
+  const need = xpToNext(level);
+  return { share: Math.min(1, xp / need), left: Math.max(0, need - xp), next: level + 1 };
+}
+
+// XP from the start of the game to the beginning of `level`.
+export const xpToReach = (level) => Array.from({ length: Math.max(0, level - 1) }, (_, i) => xpToNext(i + 1)).reduce((a, b) => a + b, 0);
+
 // Adds XP, levelling up as many times as it reaches. Each level gives coins; every few levels, a pack.
 export function addXp(save, xp) {
   const { player } = save;

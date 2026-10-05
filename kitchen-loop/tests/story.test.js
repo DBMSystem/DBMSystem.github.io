@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createDefaultSave, validateSave } from '../src/save/schema.js';
-import { advanceStory, pendingScenes, markSceneSeen, storyStage } from '../src/systems/story.js';
+import { advanceStory, pendingScenes, markSceneSeen, storyStage, nextChapterGoal } from '../src/systems/story.js';
+import { levelProgress, xpToNext } from '../src/economy/progression.js';
 import { utensilState, treeTotalCost, treeComplete } from '../src/systems/utensils.js';
 import { buyUtensil, buyDecor, placeDecor, buyPack, addCoins, addFragments } from '../src/inventory/inventory.js';
 import { availableSpecialties, rollSpecialties } from '../src/systems/specialty.js';
@@ -77,6 +78,35 @@ describe('story chapters (spec 6.3)', () => {
     expect(AFTER_FINALE).toBeGreaterThan(7);
     expect(storyOrder).toEqual(['intro', 'premise', ...Object.keys(chapterScenes)]);
     for (const id of storyOrder) expect(Boolean(storyScenes[id] || chapterScenes[id]), id).toBe(true);
+  });
+
+  it('there is always a next chapter in sight, with its requirements and how far along the player is', () => {
+    const save = fresh();
+    expect(nextChapterGoal(save)).toMatchObject({ next: 2, share: 0, parts: [{ key: 'level', have: 1, need: 3 }] });
+    save.player.level = 2;
+    save.player.xp = xpToNext(2) / 2;
+    const half = nextChapterGoal(save).share;
+    expect(half).toBeGreaterThan(0.5);
+    expect(half).toBeLessThan(1);
+    save.story.chapter = 2;
+    save.stats.loopsPlayed = 3;
+    expect(nextChapterGoal(save)).toMatchObject({ next: 3, parts: [{ key: 'services', have: 3, need: balance.bruleeGuaranteedLoop }] });
+    save.story.chapter = 4;
+    save.player.level = 12;
+    expect(nextChapterGoal(save).parts.map((p) => p.key)).toEqual(['level', 'utensils']);
+    expect(nextChapterGoal(save).share).toBe(0.5); // level met, no utensils yet
+    save.story.chapter = 7;
+    expect(nextChapterGoal(save)).toMatchObject({ next: 'finale', parts: [{ key: 'lostRecipe', have: 0, need: 1 }] });
+    markSceneSeen(save, 'finale');
+    expect(nextChapterGoal(save)).toBeNull();
+    for (const n of [2, 3, 4, 5, 6, 7, 'finale']) expect(hasKey(`story.next.${n}`), n).toBe(true);
+    for (const k of ['level', 'services', 'runic', 'utensils', 'secrets', 'lostRecipe']) expect(hasKey(`story.goal.${k}`), k).toBe(true);
+  });
+
+  it('level progress: share of the level and XP left', () => {
+    expect(levelProgress({ level: 1, xp: 0 })).toEqual({ share: 0, left: xpToNext(1), next: 2 });
+    expect(levelProgress({ level: 3, xp: xpToNext(3) / 4 })).toMatchObject({ share: 0.25, next: 4 });
+    expect(levelProgress({ level: balance.maxLevel, xp: 0 })).toEqual({ share: 1, left: 0, next: null });
   });
 
   it('every scene has at most 3 bubbles with texts', () => {

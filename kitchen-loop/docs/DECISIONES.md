@@ -566,3 +566,17 @@ Daniel: «Chef rival error en sombrero, propina caída error línea, estudiante 
 - **Vitrina:** el Pase se presenta con lo que se ve (captura de la Cocina Nocturna y tres cartas con el marco del Álbum Dorado), lo que incluye y «pago único». Cada sartén lleva una línea. Tras un «Probar», la pantalla de resultados dice una sola vez dónde está lo probado. Sigue sin haber menciones de compra en ninguna otra pantalla.
 - **«Ver la historia»** (Ajustes) repite todas las escenas ya vistas, en orden. Antes solo repetía la presentación.
 
+## 30. Progreso de nivel y siguiente capítulo (Daniel: «añadir % de avance entre niveles… parece que entre partidas no vaya a pasar nada al principio, falta contexto de que hay una historia que seguir»)
+
+- **Nivel:** `levelProgress` (`economy/progression.js`) da el porcentaje del nivel y la XP que falta. Se muestra junto a la barra del menú y bajo la de resultados.
+- **Siguiente capítulo:** `nextChapterGoal(save)` (`systems/story.js`) traduce los disparadores de la sección 6.3 a requisitos visibles con su avance. No cambia cuándo se abre cada capítulo.
+  - Capítulo 2: llegar al nivel 3; el avance cuenta la XP acumulada.
+  - Capítulo 3: servicios jugados hasta el 7, cuando Brûlée llega seguro. Puede llegar antes con un buen servicio desde el 5.º, y el gancho («Huele a azúcar quemado… alguien vigila desde la puerta») lo deja intuir.
+  - Capítulo 4: comprar la Encimera Rúnica.
+  - Capítulo 5: nivel 12 y 3 utensilios.
+  - Capítulo 6: nivel 16 y 3 recetas secretas.
+  - Capítulo 7: los 9 utensilios.
+  - Epílogo: cocinar La Receta Perdida.
+  - Con varios requisitos, el porcentaje es la media de los dos.
+- Cada capítulo siguiente tiene una frase gancho (`story.next.*`) que adelanta la pregunta del capítulo sin destripar la respuesta.
+
