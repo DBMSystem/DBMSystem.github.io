@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.11.0 — Fondo HD de las escenas y especialidad épica
+
+- **Fondo de las escenas en HD** (`scripts/story_backdrop.py`): la cocina de Pip pintada de nuevo a 1080 × 2100, con trazo suave y sin píxeles. En lugar de la ristra de pimientos, una barra con utensilios colgados: paleta, cucharón, cazo de cobre, pinzas y batidor. Versión de día y de noche.
+- **Especialidad del día:** se presenta como una ventaja épica. Escenario oscuro con rayos de luz, título dorado y tres cartas que entran repartidas, cada una con su color, medallón, etiqueta (Más puntos, Pedidos, Ayuda, Caos, Reto, Fragmentos) y un brillo. La elegida se ilumina y las otras se apagan.
+
 ## 0.10.1 — Progreso de nivel y la historia siempre a la vista
 
 - **Nivel:** el menú y los resultados muestran el porcentaje del nivel y cuánta XP falta para el siguiente («51 % · faltan 77 XP para el nivel 3»).

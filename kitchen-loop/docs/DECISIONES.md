@@ -580,3 +580,14 @@ Daniel: «Chef rival error en sombrero, propina caída error línea, estudiante 
   - Con varios requisitos, el porcentaje es la media de los dos.
 - Cada capítulo siguiente tiene una frase gancho (`story.next.*`) que adelanta la pregunta del capítulo sin destripar la respuesta.
 
+## 31. Fondo HD de las escenas y especialidad épica (Daniel: «mejora la calidad del fondo entre escenas, se ve muy pixelado… utensilios de cocina en vez de pimientos» · «el menú de la especialidad del día que tenga más contraste… como si de ventajas épicas se tratase»)
+
+- **Fondo:**
+  - Ya no se recorta de la cocina en pixel art del mega pack. Se pinta con `scripts/story_backdrop.py`: formas con contorno, degradados y luz de las lámparas, dibujado al doble de tamaño y reducido para que todos los bordes salgan suaves.
+  - La composición sigue siendo la cocina de Pip (ventana con cortinas de cuadros, lámparas, estante de botes, encimera), pero los pimientos se sustituyen por utensilios: paleta, cucharón, cazo, pinzas y batidor.
+  - Las escenas lo muestran a pantalla completa (`cover`), sin escalado pixelado. La cocina de la partida no cambia.
+- **Especialidad:**
+  - Misma mecánica y mismas opciones (sección 2.12); solo cambia la presentación.
+  - Cada especialidad lleva en sus datos un color y una etiqueta que dice de qué va.
+  - El texto la sitúa en el mundo del juego: «La cocina recuerda tres especialidades».
+

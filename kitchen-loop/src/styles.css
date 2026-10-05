@@ -388,17 +388,16 @@ body {
   cursor: pointer;
 }
 
-/* The kitchen in the background, crisp pixel art (never blurred): the scene on the top two thirds, its tiled floor
-   continuing below, and a darker foot so the bubble and Pip read well. */
+/* The kitchen in the background, painted in HD (scripts/story_backdrop.py) and covering the screen, with a darker
+   foot so the bubble and Pip read well. */
 .story::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(rgba(20, 12, 8, 0) 40%, rgba(20, 12, 8, 0.5) 68%, rgba(20, 12, 8, 0.85)),
-    var(--scene) center top / auto 72% no-repeat,
-    linear-gradient(#b98e68 66%, #6b4a36 80%, #2b1d14);
-  image-rendering: pixelated;
+    linear-gradient(rgba(20, 12, 8, 0) 45%, rgba(20, 12, 8, 0.45) 68%, rgba(20, 12, 8, 0.85)),
+    var(--scene) center top / cover no-repeat,
+    #2b1d14;
 }
 
 .story > * {
@@ -1800,39 +1799,6 @@ body {
   }
 }
 
-/* ---------- Daily specialty ---------- */
-.specialty {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  min-height: 64px;
-  padding: 8px 12px;
-  border: 2px solid rgba(255, 204, 128, 0.35);
-  border-radius: 14px;
-  background: rgba(255, 248, 231, 0.08);
-  color: var(--cream);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.specialty:active {
-  transform: scale(0.98);
-}
-
-.specialty img {
-  width: 48px;
-  height: 48px;
-  flex: none;
-  object-fit: contain;
-}
-
-.specialty strong {
-  display: block;
-  color: var(--peach);
-}
-
 .chapter-news {
   margin: 0;
   padding: 8px 14px;
@@ -2149,4 +2115,218 @@ body {
 
 .story-goal.compact {
   padding: 8px 10px;
+}
+
+/* ---------- Daily specialty: epic boons ---------- */
+
+.specialty-overlay {
+  background: radial-gradient(circle at 50% 28%, rgba(124, 77, 255, 0.4), rgba(12, 6, 24, 0.96) 68%);
+}
+
+.specialty-stage {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.specialty-rays {
+  position: absolute;
+  z-index: -1;
+  top: -30%;
+  left: 50%;
+  width: 640px;
+  height: 640px;
+  margin-left: -320px;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 213, 79, 0.1) 0deg 8deg, rgba(255, 213, 79, 0) 8deg 20deg);
+  -webkit-mask-image: radial-gradient(circle, #000 20%, transparent 65%);
+  mask-image: radial-gradient(circle, #000 20%, transparent 65%);
+  animation: rays-spin 40s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rays-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.specialty-kicker {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 248, 231, 0.7);
+}
+
+.specialty-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-align: center;
+  text-transform: uppercase;
+  background: linear-gradient(#fff6cf, #ffd54f 55%, #ff9f43);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 3px 0 #3b2a20) drop-shadow(0 0 12px rgba(255, 213, 79, 0.45));
+}
+
+.specialty-hint {
+  margin: 0 0 4px;
+  font-size: 14px;
+  text-align: center;
+  color: var(--cream);
+}
+
+.specialty-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  perspective: 800px;
+}
+
+.perk {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--accent);
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--tint), rgba(18, 10, 30, 0.96) 62%);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 18px var(--glow), inset 0 0 22px var(--tint);
+  color: var(--cream);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  animation: perk-in 0.55s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+  animation-delay: var(--delay);
+  transition:
+    opacity 0.25s,
+    transform 0.25s;
+}
+
+.perk:active {
+  transform: scale(0.97);
+}
+
+.perk-medallion {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.35), var(--tint) 60%, rgba(0, 0, 0, 0.3));
+  box-shadow: 0 0 0 3px var(--accent), 0 0 16px var(--glow);
+}
+
+.perk-medallion img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+}
+
+.perk-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+}
+
+.perk-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #1a1028;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.perk strong {
+  color: #fff;
+  font-size: 17px;
+  line-height: 1.15;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+}
+
+.perk-desc {
+  font-size: 13px;
+  line-height: 1.35;
+  color: rgba(255, 248, 231, 0.9);
+}
+
+.perk-shine {
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0));
+  animation: perk-shine 3.4s ease-in-out infinite;
+  animation-delay: calc(var(--delay) + 0.7s);
+  pointer-events: none;
+}
+
+.perk.picked {
+  animation: perk-pick 0.45s ease-out both;
+  box-shadow: 0 0 0 2px #fff, 0 0 32px var(--glow), inset 0 0 30px var(--glow);
+}
+
+.perk.faded {
+  animation: none;
+  opacity: 0.25;
+  transform: scale(0.95);
+}
+
+@keyframes perk-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) rotateX(35deg) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes perk-shine {
+  0%,
+  55% {
+    left: -60%;
+  }
+  100% {
+    left: 130%;
+  }
+}
+
+@keyframes perk-pick {
+  40% {
+    transform: scale(1.05);
+    filter: brightness(1.3);
+  }
+  100% {
+    transform: scale(1.02);
+    filter: brightness(1.1);
+  }
+}
+
+.reduced-motion .specialty-rays,
+.reduced-motion .perk,
+.reduced-motion .perk-shine {
+  animation: none;
 }
