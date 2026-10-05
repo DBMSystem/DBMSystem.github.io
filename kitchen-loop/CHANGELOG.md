@@ -4,6 +4,7 @@
 
 - **Menú:** el dibujo de portada ya no tiene la sartén que flotaba delante de la ventana (`scripts/menu_scene.py` la borra y rehace la ventana a partir de la propia ventana). Se ve entera la sartén que cocina abajo, con un resplandor que parpadea, brasas que suben, destellos dorados y vapor. Con «menos movimiento» solo queda el resplandor, quieto.
 - **Sartén equipada:** se apoya de pie en el alféizar, más pequeña, en lugar de flotar en la ventana.
+- **Pip en el menú:** es el Pip del juego, más grande, y está de pie detrás de la sartén que cocina (las piernas quedan tras ella). Antes era pequeño y flotaba delante del mueble.
 
 ## 0.11.0 — Leyenda de recetas, sonido de premio, fondo pixel art y especialidad épica
 

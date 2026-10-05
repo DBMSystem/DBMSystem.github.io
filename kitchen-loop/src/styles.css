@@ -1995,7 +1995,37 @@ body {
   width: 16%;
 }
 
-/* ---------- The pan cooking at the bottom of the menu art ---------- */
+/* ---------- Pip and the pan cooking at the bottom of the menu art ---------- */
+
+/* Pip's sprite (192 px, the figure 6–186 px down) drawn 490/720 of the art wide: hat at y 300 of 794, the legs behind
+   the pan layer. */
+.menu-pip {
+  position: absolute;
+  left: 15.3%;
+  top: 39.6cqw;
+  width: 68%;
+  image-rendering: pixelated;
+  pointer-events: none;
+  transform-origin: 50% 100%;
+  animation: menu-pip-idle 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes menu-pip-idle {
+  to {
+    transform: translateY(-1.2%) scaleY(1.01);
+  }
+}
+
+.menu-pan-layer {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  pointer-events: none;
+}
+
+.reduced-motion .menu-pip {
+  animation: none;
+}
 
 .sizzle {
   position: absolute;

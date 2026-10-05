@@ -2,8 +2,12 @@
 text and bar, and without the frying pan that seemed to float in front of the window (Daniel: "hay una sartén
 flotando en la ventana"). The big pan cooking at the bottom stays: the menu shows it whole, with sparks over it.
 
+It also cuts that cooking pan out as its own layer (ui/menu_pan.png, same size, transparent above the pan's rim): the
+menu draws a bigger Pip between the scene and the pan, so Pip stands behind the stove instead of floating small in
+front of the cupboards (Daniel: "Pip es muy pequeño en esa pantalla y flota frente al mueble").
+
 Dev tool, not part of the game: `python3 scripts/menu_scene.py` (needs Pillow + numpy). Writes
-src/assets/sprites/ui/menu_scene.jpg.
+src/assets/sprites/ui/menu_scene.jpg and menu_pan.png.
 """
 from pathlib import Path
 
@@ -12,7 +16,9 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 REF = ROOT / "assets" / "ref"
-OUT = ROOT / "src" / "assets" / "sprites" / "ui" / "menu_scene.jpg"
+UI = ROOT / "src" / "assets" / "sprites" / "ui"
+OUT = UI / "menu_scene.jpg"
+PAN_OUT = UI / "menu_pan.png"
 WIDTH = 720
 
 # In the 720 px wide scene: the pan's bowl (ellipse) and handle (segment), the window's lower panes, its vertical bar
@@ -65,9 +71,48 @@ def remove_window_pan(img):
     return Image.fromarray(a)
 
 
+# The cooking pan's rim: its dark outline, searched for in these rows, fitted as a smooth curve over the columns where
+# Pip stands (the rest of the pan is never covered).
+RIM_ROWS = (668, 735)
+RIM_COLUMNS = (150, 570)
+RIM_DARK = 70  # max mean channel value of the outline
+
+
+def rim_curve(a):
+    """Parabola through the rim's outline, ignoring columns where something else (a wisp of steam, a spark) is
+    darker first."""
+    xs, ys = [], []
+    for x in range(*RIM_COLUMNS):
+        rows = np.nonzero(a[RIM_ROWS[0]:RIM_ROWS[1], x].mean(axis=1) < RIM_DARK)[0]
+        if len(rows):
+            xs.append(x)
+            ys.append(RIM_ROWS[0] + rows[0])
+    xs, ys = np.array(xs, float), np.array(ys, float)
+    keep = np.ones(len(xs), bool)
+    for _ in range(5):
+        coef = np.polyfit(xs[keep], ys[keep], 2)
+        keep = np.abs(np.polyval(coef, xs) - ys) < 4
+    return coef
+
+
+def pan_layer(img):
+    """The pan at the bottom on its own, from the rim down, transparent above (and outside Pip's columns)."""
+    a = np.asarray(img)
+    h, w = a.shape[:2]
+    coef = rim_curve(a)
+    alpha = np.zeros((h, w), np.uint8)
+    for x in range(*RIM_COLUMNS):
+        alpha[int(round(np.polyval(coef, x))):, x] = 255
+    rgb = np.where(alpha[..., None] > 0, a, 0).astype(np.uint8)
+    return Image.fromarray(np.dstack([rgb, alpha]), "RGBA")
+
+
 def main():
-    remove_window_pan(scene()).save(OUT, quality=88)
-    print("✓", OUT.relative_to(ROOT))
+    img = remove_window_pan(scene())
+    img.save(OUT, quality=88)
+    pan_layer(img).save(PAN_OUT, optimize=True)
+    for path in (OUT, PAN_OUT):
+        print("✓", path.relative_to(ROOT), f"{path.stat().st_size // 1024} KB")
 
 
 if __name__ == "__main__":

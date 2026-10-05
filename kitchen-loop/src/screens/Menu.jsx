@@ -63,6 +63,9 @@ export function Menu({ services, onPlay, onAlbum, onWarehouse, onSettings, onDev
       </div>
       <div className="menu-scene-wrap">
         <img className="menu-scene" src={spriteUrl('ui/menu_scene')} alt={t('game.title')} />
+        {/* Pip, big, behind the pan that cooks at the bottom (the art's own Pip was small and floated) */}
+        <img className="menu-pip" src={spriteUrl('pip/happy')} alt="" />
+        <img className="menu-pan-layer" src={spriteUrl('ui/menu_pan')} alt="" />
         <MenuSizzle />
         {save.equippedPan !== 'default' && (
           // The equipped pan stands on the window sill (spec 7.5), where the art no longer draws one.
