@@ -580,14 +580,19 @@ Daniel: «Chef rival error en sombrero, propina caída error línea, estudiante 
   - Con varios requisitos, el porcentaje es la media de los dos.
 - Cada capítulo siguiente tiene una frase gancho (`story.next.*`) que adelanta la pregunta del capítulo sin destripar la respuesta.
 
-## 31. Fondo HD de las escenas y especialidad épica (Daniel: «mejora la calidad del fondo entre escenas, se ve muy pixelado… utensilios de cocina en vez de pimientos» · «el menú de la especialidad del día que tenga más contraste… como si de ventajas épicas se tratase»)
+## 31. Leyenda de recetas, sonido de premio, fondo de las escenas y especialidad épica
 
+Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloqueadas» · «cuando hagas un plato fuera de carta, que el sonido sea más de premio» · «el fondo cuando sale Pip hablando, que sea el estilo pixel art de la cocina de la partida» (sustituye al fondo HD de la primera versión de 0.11.0, que no llegó a publicarse) · «utensilios de cocina en vez de pimientos» · «el menú de la especialidad del día que tenga más contraste… como si de ventajas épicas se tratase».
+
+- **Leyenda:**
+  - Sustituye al libro de recetas dentro de la partida. Solo muestra lo que se puede cocinar en este servicio: plato, ingredientes, forma (↔ línea, ▦ cuadrado) y puntos.
+  - Las secretas solo salen si ya se han descubierto, para no destripar el descubrimiento. Las bloqueadas siguen en el recetario del álbum.
+  - Abrirla pausa la partida, igual que la pausa; tocar fuera la cierra.
+- **Sonido:** el plato fuera de carta (servido en el mostrador, sin cliente) usa `counterSale`, un arpegio ascendente con campanilla. Servir a un cliente conserva su sonido.
 - **Fondo:**
-  - Ya no se recorta de la cocina en pixel art del mega pack. Se pinta con `scripts/story_backdrop.py`: formas con contorno, degradados y luz de las lámparas, dibujado al doble de tamaño y reducido para que todos los bordes salgan suaves.
-  - La composición sigue siendo la cocina de Pip (ventana con cortinas de cuadros, lámparas, estante de botes, encimera), pero los pimientos se sustituyen por utensilios: paleta, cucharón, cazo, pinzas y batidor.
-  - Las escenas lo muestran a pantalla completa (`cover`), sin escalado pixelado. La cocina de la partida no cambia.
+  - Sale de las cocinas de la partida (`ui/kitchen_day.jpg` y `ui/kitchen_night.jpg`, sin modificarlas). El script borra la ristra de pimientos y ajos rellenando con la pared de los lados y cuelga en los mismos ganchos cinco utensilios dibujados en pixel art, con el mismo bloque de 2 px y contorno oscuro. De noche se tiñen con la luz azulada de la cocina.
+  - Las escenas lo muestran arriba a su escala, con el suelo continuando en degradado bajo el diálogo.
 - **Especialidad:**
   - Misma mecánica y mismas opciones (sección 2.12); solo cambia la presentación.
   - Cada especialidad lleva en sus datos un color y una etiqueta que dice de qué va.
   - El texto la sitúa en el mundo del juego: «La cocina recuerda tres especialidades».
-

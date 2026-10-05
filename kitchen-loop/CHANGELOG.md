@@ -1,8 +1,10 @@
 # Changelog
 
-## 0.11.0 — Fondo HD de las escenas y especialidad épica
+## 0.11.0 — Leyenda de recetas, sonido de premio, fondo pixel art y especialidad épica
 
-- **Fondo de las escenas en HD** (`scripts/story_backdrop.py`): la cocina de Pip pintada de nuevo a 1080 × 2100, con trazo suave y sin píxeles. En lugar de la ristra de pimientos, una barra con utensilios colgados: paleta, cucharón, cazo de cobre, pinzas y batidor. Versión de día y de noche.
+- **Leyenda rápida de recetas:** el libro del marcador abre un desplegable con las recetas desbloqueadas (plato, ingredientes con su forma, línea o cuadrado, y puntos). Las secretas solo aparecen si ya se han descubierto. Se cierra tocando fuera y la partida sigue en pausa mientras está abierto.
+- **Plato fuera de carta:** el sonido al servirlo en el mostrador pasa a ser un arpegio brillante de premio, en lugar del chisporroteo seco de antes.
+- **Fondo de las escenas** (`scripts/story_backdrop.py`): el mismo pixel art de la cocina de la partida, de día y de noche. En lugar de la ristra de pimientos y ajos cuelgan utensilios en pixel art: paleta, cucharón, cazo, pinzas y batidor.
 - **Especialidad del día:** se presenta como una ventaja épica. Escenario oscuro con rayos de luz, título dorado y tres cartas que entran repartidas, cada una con su color, medallón, etiqueta (Más puntos, Pedidos, Ayuda, Caos, Reto, Fragmentos) y un brillo. La elegida se ilumina y las otras se apagan.
 
 ## 0.10.1 — Progreso de nivel y la historia siempre a la vista

@@ -972,4 +972,5 @@ export const es = {
   'mock.complete': 'Completado',
   'mock.dismiss': 'Cerrado antes de tiempo',
   'mock.error': 'Error',
+  'legend.hint': 'Juntos, en línea (↔) o en cuadrado (▦). Toca fuera para seguir cocinando.',
 };

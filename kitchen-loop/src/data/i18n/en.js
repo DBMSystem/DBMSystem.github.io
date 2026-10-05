@@ -973,4 +973,5 @@ export const en = {
   'mock.complete': 'Completed',
   'mock.dismiss': 'Closed early',
   'mock.error': 'Error',
+  'legend.hint': 'Together, in a line (↔) or in a square (▦). Tap outside to keep cooking.',
 };

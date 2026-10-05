@@ -388,16 +388,25 @@ body {
   cursor: pointer;
 }
 
-/* The kitchen in the background, painted in HD (scripts/story_backdrop.py) and covering the screen, with a darker
-   foot so the bubble and Pip read well. */
+/* The kitchen in the background: the game's own pixel art (scripts/story_backdrop.py swaps the peppers for
+   utensils), shown at about the scale of the game, its floor continuing below, and a darker foot so the bubble and
+   Pip read well. */
 .story::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(rgba(20, 12, 8, 0) 45%, rgba(20, 12, 8, 0.45) 68%, rgba(20, 12, 8, 0.85)),
-    var(--scene) center top / cover no-repeat,
-    #2b1d14;
+    linear-gradient(rgba(20, 12, 8, 0) 40%, rgba(20, 12, 8, 0.45) 66%, rgba(20, 12, 8, 0.85)),
+    var(--scene) center top / auto 40% no-repeat,
+    linear-gradient(var(--floor) 40%, #6b4a36 75%, #2b1d14);
+}
+
+.story {
+  --floor: #ac8e6f;
+}
+
+.story.night {
+  --floor: #3a3b47;
 }
 
 .story > * {
@@ -1593,9 +1602,7 @@ body {
   right: 70px;
 }
 
-.story.night::before {
-  filter: brightness(0.9) saturate(1.1);
-}
+
 
 /* ---------- Brûlée's warehouse ---------- */
 .warehouse {
@@ -2328,5 +2335,104 @@ body {
 .reduced-motion .specialty-rays,
 .reduced-motion .perk,
 .reduced-motion .perk-shine {
+  animation: none;
+}
+
+/* ---------- Quick recipe legend (in play) ---------- */
+
+.legend-overlay {
+  align-items: flex-start;
+}
+
+.legend-sheet {
+  margin-top: calc(48px + var(--safe-top));
+  animation: legend-drop 0.22s ease-out both;
+}
+
+@keyframes legend-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+
+.legend {
+  width: 100%;
+}
+
+.legend .hint {
+  margin: 0 0 8px;
+}
+
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 10px;
+  background: rgba(255, 248, 231, 0.08);
+  text-align: left;
+}
+
+.legend-item.utensil {
+  box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.6);
+}
+
+.legend-item.secret {
+  box-shadow: inset 0 0 0 1px rgba(255, 213, 79, 0.7);
+}
+
+.legend-dish {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  object-fit: contain;
+}
+
+.legend-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.legend-text strong {
+  font-size: 12px;
+  line-height: 1.15;
+  color: var(--peach);
+}
+
+.legend-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-row .plus {
+  font-size: 11px;
+}
+
+.legend-mark {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--cream);
+}
+
+.legend-points {
+  font-size: 10px;
+  color: rgba(255, 248, 231, 0.7);
+}
+
+.reduced-motion .legend-sheet {
   animation: none;
 }

@@ -18,7 +18,7 @@ export function feedbackFor(event) {
     case 'cook':
       if (event.secretFound) return ['secret', 'medium'];
       if (event.golden) return ['coin', 'medium'];
-      return [[event.customerSlot !== null ? 'sizzle' : 'cook', ...(event.chain >= 3 ? ['combo'] : [])], 'light'];
+      return [[event.customerSlot !== null ? 'sizzle' : 'counterSale', ...(event.chain >= 3 ? ['combo'] : [])], 'light'];
     case 'served':
       return event.justInTime ? ['justInTime', 'medium'] : ['serve', 'light'];
     case 'fullStove':
