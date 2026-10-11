@@ -97,21 +97,17 @@ def straight_bottom(img, trim):
     return img.crop((0, 0, img.width, box[3] - trim))
 
 
-def round_bun(img, outline=(40, 30, 30, 255)):
-    """In the mega pack the tourist's jeans hide the top of the grandma's bun, so it ends in a straight line (the
-    jeans' edge). Its corners are carved round, with her own dark outline along the new edge, like the bun of her
-    angry pose; the bun's grey is never redrawn. The bit of jeans left on it goes too."""
+def round_top(img, outline, depth_ratio=0.22):
+    """A head whose top was hidden by the figure above ends in a straight line in the reference. Its corners are
+    carved round with the figure's own dark outline along the new edge (nothing is redrawn inside), and the little
+    spikes the neighbour left standing beside it go."""
     a = np.asarray(img).astype(int).copy()
-    r, g, b = a[..., 0], a[..., 1], a[..., 2]
-    jeans = (a[..., 3] > 0) & (b - r > 25)
-    jeans[np.nonzero(a[..., 3].any(axis=1))[0][0] + 12:] = False
-    a[jeans] = 0
     solid = a[..., 3] > 40
     top = np.nonzero(solid.any(axis=1))[0][0]
     xs = np.nonzero(solid[top])[0]
     left, right = xs[0], xs[-1]
-    span = right - left
-    depth = max(3, round(span * 0.22))
+    span = max(1, right - left)
+    depth = max(3, round(span * depth_ratio))
     for x in range(left, right + 1):
         u = (x - left) / span * 2 - 1
         edge = top + round(depth * (1 - np.sqrt(max(0.0, 1 - u * u))))
@@ -120,7 +116,7 @@ def round_bun(img, outline=(40, 30, 30, 255)):
         if len(column):
             y = edge + column[0]
             a[y: y + 2, x] = outline
-    for _ in range(3):  # little spikes the jeans left standing beside the bun
+    for _ in range(3):
         solid = a[..., 3] > 40
         for y in range(top, top + depth + 6):
             row = solid[y]
@@ -135,6 +131,78 @@ def round_bun(img, outline=(40, 30, 30, 255)):
                     x = end
                 else:
                     x += 1
+    return Image.fromarray(a.astype("uint8"), "RGBA")
+
+
+def round_bun(img):
+    """The grandma's bun, hidden at the top by the tourist's jeans: the bit of jeans goes, then its top is rounded
+    like the bun of her angry pose."""
+    a = np.asarray(img).astype(int).copy()
+    jeans = (a[..., 3] > 0) & (a[..., 2] - a[..., 0] > 25)
+    jeans[np.nonzero(a[..., 3].any(axis=1))[0][0] + 12:] = False
+    a[jeans] = 0
+    return round_top(Image.fromarray(a.astype("uint8"), "RGBA"), (40, 30, 30, 255))
+
+
+def round_cap(img, outline=(28, 28, 34, 255), height_ratio=0.16):
+    """The tourist's cap, whose crown the shopping bag of the customer above hides: it ends in a flat line. The
+    crown is completed upwards as a low dome, filled row by row with the cap's own colours from just under the
+    line, and outlined like the rest of the cap; the bag's light leftovers go first."""
+    a = np.asarray(img).astype(int).copy()
+    first = np.nonzero(a[..., 3].any(axis=1))[0][0]
+    light = (a[..., 3] > 0) & (a[..., :3].sum(axis=2) > 330)
+    light[first + 10:] = False
+    a[light] = 0
+    solid = a[..., 3] > 40
+    top = first + np.nonzero(solid[first:].sum(axis=1) >= 8)[0][0]
+    xs = np.nonzero(solid[top])[0]
+    run = max(np.split(xs, np.nonzero(np.diff(xs) > 1)[0] + 1), key=len)
+    left, right = run[0], run[-1]
+    a[:top, left:right + 1] = 0
+    span = right - left
+    height = max(3, round(span * height_ratio))
+    pad = max(0, height + 3 - top)
+    if pad:
+        a = np.pad(a, ((pad, 0), (0, 0), (0, 0)))
+        top += pad
+    band = a[top + 3: top + 9, left:right + 1].reshape(-1, 4)
+    cap = band[(band[:, 3] > 200) & (band[:, :3].sum(axis=1) < 200)]
+    colour = np.append(np.median(cap[:, :3], axis=0), 255)  # the cap's own dark cloth
+    for x in range(left, right + 1):
+        u = (x - left) / span * 2 - 1
+        dome = round(height * np.sqrt(max(0.0, 1 - u * u)))
+        a[top - dome: top + 2, x] = colour
+        a[top - dome - 2: top - dome, x] = outline
+    for x in (left, right):  # the dome's ends meet the cap's own outline
+        a[top - 2: top + 2, x - 1: x + 1] = outline
+    return fill_holes(Image.fromarray(a.astype("uint8"), "RGBA"))
+
+
+def fill_holes(img, max_size=24):
+    """Pin holes inside the figure (a highlight the background removal took as background) get the colour around."""
+    a = np.asarray(img).astype(int).copy()
+    empty = a[..., 3] <= 40
+    h, w = empty.shape
+    seen = np.zeros_like(empty)
+    for y0, x0 in zip(*np.nonzero(empty)):
+        if seen[y0, x0]:
+            continue
+        seen[y0, x0] = True
+        stack, pixels, border = [(y0, x0)], [], False
+        while stack:
+            y, x = stack.pop()
+            pixels.append((y, x))
+            border |= y in (0, h - 1) or x in (0, w - 1)
+            for ny, nx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)):
+                if 0 <= ny < h and 0 <= nx < w and empty[ny, nx] and not seen[ny, nx]:
+                    seen[ny, nx] = True
+                    stack.append((ny, nx))
+        if border or len(pixels) > max_size:
+            continue
+        ys, xs = map(np.array, zip(*pixels))
+        ring = a[max(0, ys.min() - 1): ys.max() + 2, max(0, xs.min() - 1): xs.max() + 2].reshape(-1, 4)
+        ring = ring[ring[:, 3] > 40]
+        a[ys, xs] = np.append(np.median(ring[:, :3], axis=0), 255)
     return Image.fromarray(a.astype("uint8"), "RGBA")
 
 
@@ -163,7 +231,7 @@ def clear_pockets(img, min_size=40):
     return Image.fromarray(a, "RGBA")
 
 
-FIX = {"tourist": clear_pockets, "student": clean_hair_top, "calm": lambda img: round_bun(straight_bottom(img, 26))}
+FIX = {"tourist": lambda img: round_cap(clear_pockets(img)), "student": clean_hair_top, "calm": lambda img: round_bun(straight_bottom(img, 26))}
 
 
 def poses():

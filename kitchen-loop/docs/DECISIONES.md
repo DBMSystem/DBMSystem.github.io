@@ -660,6 +660,7 @@ Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloq
 - **Cartas:**
   - Usan las poses sin corazones (abuela, oficinista, críticos, rival), así que ya no hay que borrar nada de los clientes.
   - En Pip, cada pose con adornos tiene una gemela dibujada igual: guiño y despistado con neutral, orgulloso con pulgar arriba, de fiesta con contento. Medido píxel a píxel, solo se diferencian en esos adornos (y el guiño, en su ojo). La carta usa la gemela entera y, del guiño, solo el recuadro del ojo. Borrar los adornos por color dejaba restos y cortes en la cabeza (Daniel señaló las cartas 40 y 47).
+  - La gorra del turista acaba plana porque en la referencia la tapa la bolsa de la clienta de encima. La copa se completa hacia arriba como una cúpula baja, rellena con la tela de la propia gorra y con su contorno. Es la única parte de un personaje que se dibuja: lo que el original no muestra.
   - El turista contento tenía una cuña de fondo blanco encerrada entre la gorra, la cara y el brazo, que el borrado del fondo no alcanzaba. Se vacían esas zonas casi blancas mayores que un brillo de ojo.
 - **Comprobación automática:**
   - Ninguna carta toca el borde, salvo las ilustraciones a sangre de la referencia.

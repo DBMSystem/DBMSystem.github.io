@@ -17,7 +17,9 @@
   - Maestro del Triple Bacon: con el brazo entero.
   - Revisión por píxeles de pelos y gorros: los clientes se recortan de nuevo de las referencias con un corte que sigue el hueco blanco entre figuras (`scripts/figures.py`). Pelo del estudiante, gorro del chef rival y sombreros de los críticos salen enteros del original, sin redibujar. Al moño de la abuela, que en la referencia tapa el vaquero del turista, se le redondea el corte con su propio contorno. Las cartas usan las poses sin corazones. En Pip, las poses con adornos sueltos (guiño, orgulloso, de fiesta, despistado) se toman de su pose gemela, idéntica píxel a píxel salvo por esos adornos; del guiño solo se toma el ojo guiñado.
   - Turista Perdido: se quita la cuña blanca de fondo que quedaba encerrada entre la gorra, la cara y el brazo.
-  - Nube de Humo: la sartén cabe entera en la carta, con el humo saliendo de ella.
+  - Nube de Humo: un huevo quemado en la sartén y una columna de humo en pixel art que sale de ella, en lugar de la nube de explosión en diagonal.
+  - Turista: su gorra, tapada arriba por la bolsa de la clienta de encima en la referencia, se completa con su propia tela y contorno.
+  - Lluvia de Tomates: caja de mercado dibujada de nuevo (tres listones, postes, clavos y el listón de arriba roto), con los tomates amontonados dentro y saliéndose por la esquina rota.
   - Los personajes conservan su pixel art original entero: gorros, pelo del estudiante, moño de la abuela y cresta del gallo. Solo se quitan los corazones, la moneda y los destellos, y los huecos que dejan dentro de la figura se rellenan.
   - El gorro del Chef Rival viene recortado en el sprite: se completa por simetría.
   - Nube de Humo: el humo sale de la sartén, por delante.

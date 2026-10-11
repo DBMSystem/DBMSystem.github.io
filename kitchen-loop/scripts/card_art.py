@@ -453,6 +453,55 @@ def round_plate(card, x, y, w=210):
     card.layer(with_outline(plate), x, y)
 
 
+def smoke_column(puffs=((16, 42, 3.2), (14.5, 37, 4.2), (18, 31, 5.2), (13.5, 24.5, 6.2), (20, 17, 6.8), (11, 13, 6.4), (16, 7, 6)),
+                 gw=32, gh=46, p=4):
+    """A column of grey smoke in pixel art, one outlined cloud of puffs that widens as it rises: the bottom puff is
+    where it comes out of. Light on the upper left of each puff, shade on the lower right."""
+    def best(u, v):
+        x, y = (u + 1) / 2 * gw, (v + 1) / 2 * gh
+        return max(((r - math.hypot(x - cx, y - cy), x - cx, y - cy, r) for cx, cy, r in puffs), key=lambda t: t[0])
+
+    def colour(u, v):
+        _, dx, dy, r = best(u, v)
+        shine = math.hypot(dx + r * 0.38, dy + r * 0.38) / r  # distance to the puff's highlight, upper left
+        if shine < 0.28:
+            return "w"
+        if math.hypot(dx, dy) > r * 0.68 and dx + dy > r * 0.35:
+            return "S"  # its shaded rim, lower right
+        return "s"
+
+    return shape(lambda u, v: best(u, v)[0] > 0, gw, gh, colour, p=p)
+
+
+def crate(w=150, h=80, broken=True):
+    """A wooden market crate seen from the front: three planks with their gaps, two corner posts and nails; when
+    broken, the top plank has snapped on the right and hangs down."""
+    img = Image.new("RGBA", (w + 40, h + 40))
+    d = ImageDraw.Draw(img)
+    wood, dark, light, gap = rgba(PAL["n"]), rgba(PAL["N"]), rgba(PAL["t"]), (60, 40, 26, 255)
+    ox, oy = 4, 4
+    d.rectangle((ox, oy, ox + w - 1, oy + h - 1), fill=gap)
+    plank = (h - 8) // 3
+    for k in range(3):
+        y0 = oy + k * (plank + 4)
+        x1 = ox + w - 1 if not (broken and k == 0) else ox + round(w * 0.58)
+        d.rectangle((ox, y0, x1, y0 + plank - 1), fill=wood)
+        d.line((ox, y0, x1, y0), fill=light, width=2)
+        for gx in range(ox + 18, x1 - 8, 34):  # grain
+            d.line((gx, y0 + plank // 2, gx + 12, y0 + plank // 2), fill=dark, width=2)
+    for x in (ox, ox + w - 14):
+        d.rectangle((x, oy, x + 13, oy + h - 1), fill=dark)
+        d.line((x + 2, oy, x + 2, oy + h - 1), fill=wood, width=2)
+        for k in range(3):
+            d.rectangle((x + 5, oy + k * (plank + 4) + plank // 2 - 2, x + 8, oy + k * (plank + 4) + plank // 2 + 1), fill=rgba(PAL["S"]))
+    if broken:  # the top plank snapped: a splintered end, and the dark inside of the crate behind it
+        x1 = ox + round(w * 0.58)
+        teeth = [(x1, oy), (x1 + 10, oy + 4), (x1 + 4, oy + plank * 0.4), (x1 + 14, oy + plank * 0.6), (x1 + 6, oy + plank - 1), (x1, oy + plank - 1)]
+        d.polygon(teeth, fill=wood)
+        d.line(teeth[:-1], fill=dark, width=2)
+    return with_outline(img.crop(img.getbbox()))
+
+
 def pan(card, x, y, w=120, rot=0, key="pans/default", flip=False):
     card.put(key, w=w, x=x, y=y, rot=rot, flip=flip)
 
@@ -1114,10 +1163,13 @@ def build_cards():
 
     @card("steam_cloud", "dawn")
     def _(c):
-        # Something burnt: a cloud of smoke rising out of the pan, in front of it.
-        pan(c, W / 2 + 14, 216, w=176)
+        # Something burnt: the egg left too long in the pan, and a column of smoke rising straight out of it.
+        pan(c, W / 2 + 12, 222, w=180)
         x0, y0, x1, y1 = c.last
-        c.put("vfx/smoke", w=150, x=x0 + (x1 - x0) * 0.36, y=y0 - 30, fx=lambda im: tint(im, lambda rgb: rgb * 0.35 + 150))
+        bowl_x, bowl_y = x0 + (x1 - x0) * 0.36, y0 + (y1 - y0) * 0.5
+        c.put("ingredients/egg", w=86, x=bowl_x, y=bowl_y, fx=lambda im: tint(im, lambda rgb: rgb * 0.22 + np.array([40, 26, 16])))
+        smoke = smoke_column()
+        c.layer(smoke, bowl_x, bowl_y + 6 - smoke.height / 2)
 
     @card("fridge_note", "fridge")
     def _(c):
@@ -1316,12 +1368,14 @@ def build_cards():
 
     @card("tomato_rain", "dawn")
     def _(c):
-        # The market crate broke: an open crate, and the tomatoes tumbling out of it.
-        crate = ["n..............n", "nnnnnnnnnnnnnnnn", "NNNNNNNNNNNNNNNN", "n..n..n..n..n..n", "nnnnnnnnnn......", "NNNNNNNNNN..nn..",
-                 "n..n..n..n...nn."]
-        c.pat(crate, W / 2, 238, p=8)
-        for x, y, h in ((78, 190, 60), (150, 186, 58), (116, 150, 62), (176, 126, 54), (62, 118, 50)):
-            c.put("ingredients/tomato", h=h, x=x, y=y, rot=(x % 30) - 15)
+        # The market crate broke: its top plank snapped and the tomatoes spill out over the counter.
+        box = crate()
+        cx, top = 100, 252 - box.height
+        for x, y, h, rot in ((62, top + 4, 58, -10), (104, top - 6, 62, 6), (146, top + 6, 56, 14), (84, top - 22, 54, -4)):
+            c.put("ingredients/tomato", h=h, x=x, y=y, rot=rot)  # heaped inside, behind the front planks
+        c.layer(box, cx, 252 - box.height / 2)
+        c.put("ingredients/tomato", h=52, x=186, y=top + 10, rot=30)  # tumbling over the broken corner
+        c.put("ingredients/tomato", h=50, x=200, y=236, rot=-20)  # already on the counter
 
     @card("coin_shower", "dining")
     def _(c):
