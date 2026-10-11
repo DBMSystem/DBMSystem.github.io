@@ -14,6 +14,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageFilter
 
+import menu_scene
+
 ROOT = Path(__file__).resolve().parent.parent
 REF = ROOT / "assets" / "ref"
 ORIGINALS = REF / "originals"
@@ -221,12 +223,8 @@ def main():
         pan = pan.crop((4, 4, pan.width - 4, int(pan.height * 0.78)))  # drop the frame edge and the number
         save(fit(remove_background(pan), PAN_SIZE), ROOT / "assets" / f"pan_{pan_id}.png")
 
-    # Menu art: the loading illustration without its English "Loading..." text and bar.
-    loading = Image.open(REF / "loading_ref.jpg")
-    scene = loading.crop((0, 0, loading.width, int(loading.height * 0.62)))
-    scene = scene.resize((720, round(720 * scene.height / scene.width)), Image.LANCZOS)
-    scene.convert("RGB").save(SPRITES / "ui" / "menu_scene.jpg", quality=88)
-    print("✓", (SPRITES / "ui" / "menu_scene.jpg").relative_to(ROOT))
+    # Menu art: the loading illustration without its text, bar and the pan in the window (scripts/menu_scene.py).
+    menu_scene.main()
 
     # App icons from the official icon on a cream rounded square (spec palette).
     icon = Image.open(REF / "icon_final.png").convert("RGBA")

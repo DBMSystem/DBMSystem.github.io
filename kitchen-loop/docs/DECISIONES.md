@@ -610,3 +610,59 @@ Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloq
 - Así lo que se cocina coincide con el color: una casilla en verde pertenece a una receta que pide un cliente en espera y cocina esa; una en amarillo solo está en recetas fuera de carta y cocina la mayor de ellas.
 - Las recetas secretas se siguen descubriendo al tocar, pero en casillas que no estén en verde: si la secreta comparte casillas con un pedido, el pedido manda en esas casillas.
 
+## 33. La sartén del menú (Daniel: «hay una sartén flotando en la ventana, y también abajo una sartén cocinando: quiero que se vea más, con más chispas y partículas»)
+
+- **Sartén de la ventana:** se borra del dibujo de portada con `scripts/menu_scene.py`, que genera `ui/menu_scene.jpg` desde `assets/ref/loading_ref.jpg` sin modificar la referencia. El hueco se rehace con la propia ventana: la barra sigue hacia abajo, el alféizar repite su madera y los cristales reutilizan los árboles del cristal de la izquierda. `extract_sprites.py` llama a este script en vez de repetir el recorte.
+- **Sartén equipada (sección 7.5):** sigue luciéndose en el menú, pero apoyada de pie en el alféizar y más pequeña, para que no parezca flotar.
+- **Pip:** el del dibujo era pequeño y flotaba delante del mueble. Ahora se pinta encima el Pip del juego (`pip/happy`, el de la historia y los resultados), unas 1,4 veces más alto, que tapa por completo al del dibujo. Delante va una capa con la sartén recortada del propio dibujo (`ui/menu_pan.png`, desde una curva ajustada a su borde), así que Pip queda detrás de los fogones.
+- **Sartén que cocina:** el marco del menú pasa de un máximo del 44 % al 54 % de la altura de pantalla, para que se vea entera en móviles normales; la pantalla ya tiene scroll. Encima hay un resplandor que parpadea, brasas que suben, destellos y vapor, hechos solo con animaciones CSS (`MenuSizzle`). Con «menos movimiento» solo queda el resplandor, quieto.
+
+## 34. Cartas con un solo sujeto y nada suelto (Daniel: «un sushi en medio de la camiseta, un libro flotando, muchos elementos… haz cartas únicas, con elementos básicos, que se vea lo que indica el nombre de la carta, que no haya elementos sueltos, todo coherente»)
+
+- **Regla para las 120 cartas:**
+  - Fondo sencillo de su tema y un solo sujeto, el que dice el nombre, grande y apoyado en algo (mostrador, plato, mesa o suelo).
+  - Solo se añade un segundo elemento cuando el nombre lo pide: la abuela y su tortilla, Pip y Brûlée en la tregua, la seta y la trufa en «Buscatrufas».
+  - Nada flota: fuera interrogaciones, corazones, notas, chispas, mini-Pips, libros, relojes o sartenes de adorno.
+  - Lo que sí se dibuja va pegado al sujeto: lágrimas en la cara, la capa del huevo, la tirita de la sartén, la cámara colgada del cuello.
+- **Personajes:** algunas poses del juego traen elementos sueltos pegados al contorno (corazones, una moneda, destellos). En las cartas, `card_art.py` los quita:
+  - Primera versión: por color en la esquina superior derecha y quedándose con la figura principal. Cortaba gorros, el pelo del estudiante y el moño de la abuela, y Daniel lo señaló.
+  - Ahora se hace pose a pose:
+    - corazones (rosas) solo en las poses que los traen;
+    - la moneda dorada, el destello azul y el confeti en las de Pip;
+    - el contorno que deja cada corazón;
+    - los huecos que quedan dentro de la figura se rellenan con el color vecino.
+  - El resto del sprite queda intacto.
+  - El gorro del Chef Rival viene recortado en el sprite original: en las cartas se completa reflejando la mitad izquierda.
+  - Los sprites del juego no se modifican.
+- **Rediseños:**
+  - Turista Perdido: con cámara al cuello; el sprite del turista parecía un DJ.
+  - Recuerdo de Viaje: la foto de la tostada.
+  - Propina Caída: la moneda en el suelo, sin nevera ni Pip.
+  - Cocina Enamorada: un huevo frito en forma de corazón, en un plato de verdad.
+  - Último Segundo: un cronómetro a cero.
+  - Remolino de Especias: el bote con una sola espiral.
+  - Sueño Febril: la sartén en llamas violetas, para no repetir «Sartén en Llamas».
+  - El Chef Rival y Rival Convencido: se distinguen por el fondo y la pose.
+  - Maestro del Triple Bacon: el recorte de la referencia ya incluye el brazo.
+
+## 35. Pelos y gorros revisados por píxeles (Daniel: «revisa las cartas por tema pelos y gorros, analízalo todo por píxeles»)
+
+- **Causa:** en las hojas de referencia las figuras se tocan.
+  - En el mega pack, el pelo del estudiante llega a los pies de la abuela de encima y el moño de la abuela, al vaquero del turista.
+  - En la hoja de clientes, el gorro del chef rival se sale de su celda.
+  - El recorte recto cortaba pelo y gorros planos. Además, al abrir el contorno del gorro, el borrado del fondo lo vaciaba.
+- **Recorte nuevo** (`scripts/figures.py`): cada figura se separa de sus vecinas con una costura que sigue el hueco blanco entre ellas. Solo cruza una figura donde dos se tocan, y lo hace por su contorno oscuro.
+  - Pelo, gorros y sombreros salen enteros del original, sin redibujar.
+  - Se regeneran los retratos, las poses y las poses derivadas (contento, enfadado y los retratos reutilizados).
+  - Arreglos puntuales:
+    - Estudiante: se quitan los restos de la falda de la abuela de encima, conservando solo el pelo y su contorno.
+    - Abuela: su moño, tapado en la referencia, se redondea con su propio contorno, como el de su pose enfadada; el bajo se corta recto.
+- **Cartas:**
+  - Usan las poses sin corazones (abuela, oficinista, críticos, rival), así que ya no hay que borrar nada de los clientes.
+  - En Pip, cada pose con adornos tiene una gemela dibujada igual: guiño y despistado con neutral, orgulloso con pulgar arriba, de fiesta con contento. Medido píxel a píxel, solo se diferencian en esos adornos (y el guiño, en su ojo). La carta usa la gemela entera y, del guiño, solo el recuadro del ojo. Borrar los adornos por color dejaba restos y cortes en la cabeza (Daniel señaló las cartas 40 y 47).
+  - La gorra del turista acaba plana porque en la referencia la tapa la bolsa de la clienta de encima. La copa se completa hacia arriba como una cúpula baja, rellena con la tela de la propia gorra y con su contorno. Es la única parte de un personaje que se dibuja: lo que el original no muestra.
+  - El turista contento tenía una cuña de fondo blanco encerrada entre la gorra, la cara y el brazo, que el borrado del fondo no alcanzaba. Se vacían esas zonas casi blancas mayores que un brillo de ojo.
+- **Comprobación automática:**
+  - Ninguna carta toca el borde, salvo las ilustraciones a sangre de la referencia.
+  - Los gorros de Pip coinciden al píxel con su gemelo.
+

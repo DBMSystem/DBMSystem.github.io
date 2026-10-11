@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.11.1 — La sartén del menú, viva
+
+- **Menú:** el dibujo de portada ya no tiene la sartén que flotaba delante de la ventana (`scripts/menu_scene.py` la borra y rehace la ventana a partir de la propia ventana). Se ve entera la sartén que cocina abajo, con un resplandor que parpadea, brasas que suben, destellos dorados y vapor. Con «menos movimiento» solo queda el resplandor, quieto.
+- **Sartén equipada:** se apoya de pie en el alféizar, más pequeña, en lugar de flotar en la ventana.
+- **Cartas, una a una, sin elementos sueltos:** cada carta muestra solo lo que dice su nombre (el personaje o la comida), grande y apoyado en algo (mostrador, plato o mesa), con un fondo sencillo. Se quitan interrogaciones, corazones, notas, chispas, mini-Pips y objetos flotantes. Los personajes pierden los corazones, nubes, monedas y destellos que traían de serie. Cambios concretos:
+  - Turista Perdido: con cámara al cuello.
+  - Recuerdo de Viaje: es la foto de la tostada.
+  - Propina Caída: una moneda de canto en el suelo.
+  - Cocina Enamorada: un huevo frito en forma de corazón.
+  - Último Segundo: un cronómetro a cero.
+  - Remolino de Especias: una sola espiral.
+  - Sueño Febril: una sartén en llamas violetas.
+  - El Chef Rival: sobre fuego, como un desafío.
+  - Rival Convencido: sonriendo, sin sushi suelto, libro ni Pip.
+  - Maestro del Triple Bacon: con el brazo entero.
+  - Revisión por píxeles de pelos y gorros: los clientes se recortan de nuevo de las referencias con un corte que sigue el hueco blanco entre figuras (`scripts/figures.py`). Pelo del estudiante, gorro del chef rival y sombreros de los críticos salen enteros del original, sin redibujar. Al moño de la abuela, que en la referencia tapa el vaquero del turista, se le redondea el corte con su propio contorno. Las cartas usan las poses sin corazones. En Pip, las poses con adornos sueltos (guiño, orgulloso, de fiesta, despistado) se toman de su pose gemela, idéntica píxel a píxel salvo por esos adornos; del guiño solo se toma el ojo guiñado.
+  - Turista Perdido: se quita la cuña blanca de fondo que quedaba encerrada entre la gorra, la cara y el brazo.
+  - Nube de Humo: un huevo quemado en la sartén y una columna de humo en pixel art que sale de ella, en lugar de la nube de explosión en diagonal.
+  - Turista: su gorra, tapada arriba por la bolsa de la clienta de encima en la referencia, se completa con su propia tela y contorno.
+  - Lluvia de Tomates: caja de mercado dibujada de nuevo (tres listones, postes, clavos y el listón de arriba roto), con los tomates amontonados dentro y saliéndose por la esquina rota.
+  - Los personajes conservan su pixel art original entero: gorros, pelo del estudiante, moño de la abuela y cresta del gallo. Solo se quitan los corazones, la moneda y los destellos, y los huecos que dejan dentro de la figura se rellenan.
+  - El gorro del Chef Rival viene recortado en el sprite: se completa por simetría.
+  - Nube de Humo: el humo sale de la sartén, por delante.
+- **Pip en el menú:** es el Pip del juego, más grande, y está de pie detrás de la sartén que cocina (las piernas quedan tras ella). Antes era pequeño y flotaba delante del mueble.
+
 ## 0.11.0 — Leyenda de recetas, sonido de premio, fondo pixel art y especialidad épica
 
 - **Guía de recetas durante la partida:** el libro del marcador la activa o la desactiva sin pausar. Aparece translúcida sobre la cocina, justo debajo de los pedidos (que siempre se leen), y se desliza con el dedo. Muestra las recetas desbloqueadas de la que más puntos da a la que menos, con su plato e ingredientes en su forma (línea o cuadrado), pero sin los puntos: esos se ven al acabar la receta en la sartén. Las secretas solo aparecen si ya se han descubierto. El juego recuerda si la dejaste activada. La misma lista, sin puntos, está en la pausa (Encargos y recetas). La guía es de cristal azul noche con una franja de color por tipo de receta, para que no se pierda entre la madera de la cocina.
