@@ -659,7 +659,8 @@ Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloq
     - Abuela: su moño, tapado en la referencia, se redondea con su propio contorno, como el de su pose enfadada; el bajo se corta recto.
 - **Cartas:**
   - Usan las poses sin corazones (abuela, oficinista, críticos, rival), así que ya no hay que borrar nada de los clientes.
-  - En Pip, la moneda y el confeti tapaban parte del gorro. Ese trozo se copia píxel a píxel de su pose gemela, con el gorro idéntico (error de color 0), y se borra lo que queda fuera del gorro y del pelo.
+  - En Pip, cada pose con adornos tiene una gemela dibujada igual: guiño y despistado con neutral, orgulloso con pulgar arriba, de fiesta con contento. Medido píxel a píxel, solo se diferencian en esos adornos (y el guiño, en su ojo). La carta usa la gemela entera y, del guiño, solo el recuadro del ojo. Borrar los adornos por color dejaba restos y cortes en la cabeza (Daniel señaló las cartas 40 y 47).
+  - El turista contento tenía una cuña de fondo blanco encerrada entre la gorra, la cara y el brazo, que el borrado del fondo no alcanzaba. Se vacían esas zonas casi blancas mayores que un brillo de ojo.
 - **Comprobación automática:**
   - Ninguna carta toca el borde, salvo las ilustraciones a sangre de la referencia.
   - Los gorros de Pip coinciden al píxel con su gemelo.

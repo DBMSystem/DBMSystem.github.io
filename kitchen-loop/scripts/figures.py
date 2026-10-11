@@ -138,7 +138,32 @@ def round_bun(img, outline=(40, 30, 30, 255)):
     return Image.fromarray(a.astype("uint8"), "RGBA")
 
 
-FIX = {"student": clean_hair_top, "calm": lambda img: round_bun(straight_bottom(img, 26))}
+def clear_pockets(img, min_size=40):
+    """The background enclosed between the tourist's cap, cheek and raised arm is not reached by the flood fill
+    from the border and stays as a white wedge: near-white patches bigger than an eye's highlight are emptied."""
+    a = np.asarray(img).copy()
+    white = (a[..., 3] > 0) & (a[..., :3].astype(int).min(axis=2) > 225)
+    h, w = white.shape
+    seen = np.zeros_like(white)
+    for y0, x0 in zip(*np.nonzero(white)):
+        if seen[y0, x0]:
+            continue
+        seen[y0, x0] = True
+        stack, pixels = [(y0, x0)], []
+        while stack:
+            y, x = stack.pop()
+            pixels.append((y, x))
+            for ny, nx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)):
+                if 0 <= ny < h and 0 <= nx < w and white[ny, nx] and not seen[ny, nx]:
+                    seen[ny, nx] = True
+                    stack.append((ny, nx))
+        if len(pixels) >= min_size:
+            ys, xs = zip(*pixels)
+            a[ys, xs, 3] = 0
+    return Image.fromarray(a, "RGBA")
+
+
+FIX = {"tourist": clear_pockets, "student": clean_hair_top, "calm": lambda img: round_bun(straight_bottom(img, 26))}
 
 
 def poses():

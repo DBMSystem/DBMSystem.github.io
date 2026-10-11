@@ -50,145 +50,24 @@ def rgba(c):
 _cache = {}
 
 
-def grow(mask, px):
-    return np.asarray(Image.fromarray((mask * 255).astype("uint8")).filter(ImageFilter.MaxFilter(2 * px + 1))) > 0
+# Pip's poses with something loose around his head (a coin, a sparkle, confetti, a question mark) and their twin:
+# the pose drawn identically without it. Measured pixel by pixel: proud, celebrating and confused differ from their
+# twin only in those loose bits; winking also in its winking eye, inside this box (x0, y0, x1, y1 of the 192 px
+# sprite), the only thing taken from the pose.
+PIP_TWINS = {"winking": "neutral", "proud": "thumbs_up", "celebrating": "happy", "confused": "neutral"}
+PIP_FACE = {"winking": (104, 64, 132, 100)}  # the sparkle starts at x 133
 
 
-def blobs(mask):
-    """Connected regions of a mask (8-neighbourhood) as lists of (y, x)."""
-    seen = np.zeros(mask.shape, bool)
-    h, w = mask.shape
-    for y0, x0 in zip(*np.nonzero(mask)):
-        if seen[y0, x0]:
-            continue
-        seen[y0, x0] = True
-        stack, pixels = [(y0, x0)], []
-        while stack:
-            y, x = stack.pop()
-            pixels.append((y, x))
-            for ny in (y - 1, y, y + 1):
-                for nx in (x - 1, x, x + 1):
-                    if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not seen[ny, nx]:
-                        seen[ny, nx] = True
-                        stack.append((ny, nx))
-        yield pixels
-
-
-def strip_extras(img):
-    """Takes off the loose bits some of Pip's poses draw around his head (Daniel: "que no haya elementos sueltos"):
-    the golden coin and the blue sparkle (Pip has neither colour), their glow and the confetti, touching nothing
-    of Pip himself (his hat stays whole). The customers' cards use their poses without hearts, so they need none."""
-    a = np.asarray(img).astype(int)
-    r, g, b, alpha = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
-    solid = alpha > 40
-    loose = solid & (((r > 200) & (g > 170) & (g - b > 50)) | ((b > 180) & (b - r > 50)))
-    loose[int(a.shape[0] * 0.55):] = False  # they float around the head
-    near = grow(loose, 4)
-    light = np.minimum(np.minimum(r, g), b) > 200
-    dark = (r + g + b) / 3 < 90
-    edge = grow(~solid, 3)
-    drop = loose | (near & (dark | light) & edge)
-    zone = grow(loose, 10)
-    drop |= zone & solid & (g - b > 40) & (r > 180)  # the coin's pale golden glow
-    drop |= zone & ~solid  # the faint specks of the sparkle
-    rest = solid & ~drop
-    for pixels in blobs(rest):  # leftovers next to them, and the confetti
-        ys, xs = zip(*pixels)
-        if zone[ys, xs].all() or len(pixels) < 80:
-            drop[ys, xs] = True
-    out = a.copy()
-    keep = solid & ~drop
-    out[drop] = 0
-    # A heart drawn over the hat or the coat leaves a hole inside the figure: fill it from its neighbours (only
-    # holes fully enclosed by the figure, never the empty space around it).
-    outside = np.zeros(drop.shape, bool)
-    for pixels in blobs(~keep):
-        ys, xs = map(np.array, zip(*pixels))
-        if ys.min() == 0 or xs.min() == 0 or ys.max() == drop.shape[0] - 1 or xs.max() == drop.shape[1] - 1 or len(pixels) > 400:
-            outside[ys, xs] = True
-    todo = ~keep & ~outside
-    known = keep.copy()
-    pad = lambda m: np.pad(m, 1)
-    while todo.any():
-        grown = False
-        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-            src = pad(known)[1 + dy: 1 + dy + known.shape[0], 1 + dx: 1 + dx + known.shape[1]]
-            take = todo & src
-            if take.any():
-                shifted = np.pad(out, ((1, 1), (1, 1), (0, 0)))[1 + dy: 1 + dy + out.shape[0], 1 + dx: 1 + dx + out.shape[1]]
-                out[take] = shifted[take]
-                known |= take
-                todo &= ~take
-                grown = True
-        if not grown:
-            break
-    return Image.fromarray(out.astype("uint8"), "RGBA")
-
-
-CLEAN_PIPS = ("happy", "thumbs_up", "neutral", "surprised", "worried", "crying", "sleeping")
-
-
-HAIR_BAND = 44  # rows of hair under the brim, the same in both twins
-
-
-def hat_of(key):
-    """A clean pose's toque and the hair under it: its rows down to HAIR_BAND below the brim, and the brim row."""
-    ref = Image.open(SPRITES / f"{key}.png").convert("RGBA")
-    ref = np.asarray(ref.crop(ref.getbbox())).astype(int)
-    r, g, b = ref[..., 0], ref[..., 1], ref[..., 2]
-    rows = np.nonzero(((r - b > 40) & (r < 170) & (g < 120) & (ref[..., 3] > 200)).sum(axis=1) > 12)[0]
-    return (ref[: rows[0]], ref[: rows[0] + HAIR_BAND]) if len(rows) else None
-
-
-def match_hat(out, hat):
-    """Best placement of `hat` over the pose: (mean colour error on the pixels both have, dy, dx)."""
-    solid = hat[..., 3] > 40
-    ys, xs = np.nonzero(solid)
-    best = (np.inf, 0, 0)
-    for dy in range(-8, 9):
-        for dx in range(-10, 70):
-            ty, tx = ys + dy, xs + dx
-            ok = (ty >= 0) & (ty < out.shape[0]) & (tx >= 0) & (tx < out.shape[1])
-            ty, tx, sy, sx = ty[ok], tx[ok], ys[ok], xs[ok]
-            both = out[ty, tx, 3] > 40
-            if both.sum() < solid.sum() * 0.6:
-                continue
-            err = np.abs(out[ty[both], tx[both], :3] - hat[sy[both], sx[both], :3]).mean()
-            if err < best[0]:
-                best = (err, dy, dx)
-    return best
-
-
-def restore_hat(img):
-    """Pip's poses come in pairs with the very same toque. Where a coin or confetti was painted over it (and went
-    with them), the toque is copied back, pixel for pixel, from the clean pose whose toque matches exactly; above
-    the brim whatever is left outside it (glow, confetti) goes."""
-    out = np.asarray(img).astype(int).copy()
-    twins = [t for t in map(hat_of, (f"pip/{k}" for k in CLEAN_PIPS)) if t is not None]
-    err, dy, dx, hat, head = min((match_hat(out, h) + (h, hd) for h, hd in twins), key=lambda m: m[0])
-    if err > 5:  # no exact twin: leave the pose as it is
-        return img
-    ys, xs = np.nonzero(hat[..., 3] > 40)
-    ty, tx = ys + dy, xs + dx
-    ok = (ty >= 0) & (ty < out.shape[0]) & (tx >= 0) & (tx < out.shape[1])
-    out[ty[ok], tx[ok]] = hat[ys[ok], xs[ok]]
-    inside = np.zeros(out.shape[:2], bool)
-    inside[ty[ok], tx[ok]] = True
-    above = np.zeros(out.shape[:2], bool)
-    above[: max(0, hat.shape[0] + dy)] = True
-    out[above & ~inside] = 0
-    # just under the brim the twins share the hair's outline too: what sticks out of it there (sparkle) goes
-    hy, hx = np.nonzero(head[..., 3] > 40)
-    ty, tx = hy + dy, hx + dx
-    ok = (ty >= 0) & (ty < out.shape[0]) & (tx >= 0) & (tx < out.shape[1])
-    shape = np.zeros(out.shape[:2], bool)
-    shape[ty[ok], tx[ok]] = True
-    band = np.zeros(out.shape[:2], bool)
-    band[max(0, hat.shape[0] + dy): max(0, head.shape[0] + dy)] = True
-    out[band & ~grow(shape, 1)] = 0
-    r, g, b = out[..., 0], out[..., 1], out[..., 2]
-    out[band & (b - r > 12) & (b > 140)] = 0  # the sparkle's blue on the hair's edge (Pip's head has no blue)
-    return Image.fromarray(out.astype("uint8"), "RGBA")
+def without_extras(key, img):
+    """The twin's pixels, plus the pose's own face where it has one (Daniel: "que no haya elementos sueltos", and
+    nothing cut: hat, hair, ears and outline stay exactly as drawn)."""
+    name = key.split("/")[1]
+    out = np.asarray(Image.open(SPRITES / f"pip/{PIP_TWINS[name]}.png").convert("RGBA")).copy()
+    if name in PIP_FACE:
+        x0, y0, x1, y1 = PIP_FACE[name]
+        out[y0:y1, x0:x1] = np.asarray(Image.open(SPRITES / f"{key}.png").convert("RGBA"))[y0:y1, x0:x1]
+    img = Image.fromarray(out, "RGBA")
+    return img.crop(img.getbbox())
 
 
 def sprite(key):
@@ -198,8 +77,8 @@ def sprite(key):
             path = ROOT / "assets" / f"pan_{key.split('/')[1]}.png"
         img = Image.open(path).convert("RGBA")
         img = img.crop(img.getbbox())
-        if key.startswith("pip/"):
-            img = restore_hat(strip_extras(img))
+        if key.split("/")[0] == "pip" and key.split("/")[1] in PIP_TWINS:
+            img = without_extras(key, img)
             img = img.crop(img.getbbox())
         _cache[key] = img
     return _cache[key].copy()
@@ -1236,9 +1115,9 @@ def build_cards():
     @card("steam_cloud", "dawn")
     def _(c):
         # Something burnt: a cloud of smoke rising out of the pan, in front of it.
-        pan(c, W / 2 + 24, 228, w=200)
+        pan(c, W / 2 + 14, 216, w=176)
         x0, y0, x1, y1 = c.last
-        c.put("vfx/smoke", w=170, x=x0 + (x1 - x0) * 0.33, y=y0 - 36, fx=lambda im: tint(im, lambda rgb: rgb * 0.35 + 150))
+        c.put("vfx/smoke", w=150, x=x0 + (x1 - x0) * 0.36, y=y0 - 30, fx=lambda im: tint(im, lambda rgb: rgb * 0.35 + 150))
 
     @card("fridge_note", "fridge")
     def _(c):
