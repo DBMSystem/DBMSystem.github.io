@@ -48,7 +48,6 @@ def rgba(c):
 # ---------------------------------------------------------------- sprites
 
 _cache = {}
-CHARACTERS = ("customers/", "pip/", "brulee/")
 
 
 def grow(mask, px):
@@ -75,41 +74,27 @@ def blobs(mask):
         yield pixels
 
 
-HEARTS = {"customers/office_happy", "customers/calm_happy", "customers/critic_happy", "customers/legendary_critic_happy",
-          "customers/rival_chef_happy"}
-
-
-def strip_extras(img, key):
-    """Takes off the loose bits some poses draw around the character (Daniel: "que no haya elementos sueltos"),
-    touching nothing of the character itself (hair, hats and buns stay whole):
-      - the hearts of the happy poses: their saturated pink (not skin, which has less blue than green, nor lilac),
-      - Pip's golden coin and blue sparkle (Pip has neither colour) and his confetti,
-      - with the dark outline around them where it borders empty space, and the crumbs left nearby."""
+def strip_extras(img):
+    """Takes off the loose bits some of Pip's poses draw around his head (Daniel: "que no haya elementos sueltos"):
+    the golden coin and the blue sparkle (Pip has neither colour), their glow and the confetti, touching nothing
+    of Pip himself (his hat stays whole). The customers' cards use their poses without hearts, so they need none."""
     a = np.asarray(img).astype(int)
     r, g, b, alpha = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
     solid = alpha > 40
-    loose = np.zeros(solid.shape, bool)
-    if key in HEARTS:  # the poses that draw hearts around the head
-        loose |= solid & (r > 120) & (r - g > 40) & (r - b > 20) & (b > g + 10)  # pinks, light to dark
-    if key.startswith("pip/"):  # gold has far more green than blue; skin does not
-        loose |= solid & (((r > 200) & (g > 170) & (g - b > 50)) | ((b > 180) & (b - r > 50)))
-    loose[int(a.shape[0] * 0.55):] = False  # they float around the head: an apron's flowers stay
-    if not loose.any() and not key.startswith("pip/"):
-        return img
+    loose = solid & (((r > 200) & (g > 170) & (g - b > 50)) | ((b > 180) & (b - r > 50)))
+    loose[int(a.shape[0] * 0.55):] = False  # they float around the head
     near = grow(loose, 4)
     light = np.minimum(np.minimum(r, g), b) > 200
     dark = (r + g + b) / 3 < 90
     edge = grow(~solid, 3)
-    reddish = (r - g > 20) & (r >= b)  # a heart's darker rim
-    drop = loose | (near & (dark | light | reddish) & edge)
+    drop = loose | (near & (dark | light) & edge)
     zone = grow(loose, 10)
-    if key.startswith("pip/"):  # the coin's pale golden glow, and the faint specks of its sparkle
-        drop |= zone & solid & (g - b > 40) & (r > 180)
-    drop |= zone & ~solid
+    drop |= zone & solid & (g - b > 40) & (r > 180)  # the coin's pale golden glow
+    drop |= zone & ~solid  # the faint specks of the sparkle
     rest = solid & ~drop
-    for pixels in blobs(rest):  # what is left of a heart's outline (all of it next to one), and Pip's confetti
+    for pixels in blobs(rest):  # leftovers next to them, and the confetti
         ys, xs = zip(*pixels)
-        if zone[ys, xs].all() or (len(pixels) < 80 and key.startswith("pip/")):
+        if zone[ys, xs].all() or len(pixels) < 80:
             drop[ys, xs] = True
     out = a.copy()
     keep = solid & ~drop
@@ -140,14 +125,70 @@ def strip_extras(img, key):
     return Image.fromarray(out.astype("uint8"), "RGBA")
 
 
-def whole_hat(img, centre=63, rows=34):
-    """The rival chef's sprite has the puffy top of its hat cut straight on the right: the hat is symmetric about
-    its band, so the right half of those rows is redrawn as the mirror of the left half."""
-    a = np.asarray(img).copy()
-    for x in range(centre, a.shape[1]):
-        src = 2 * centre - x
-        a[:rows, x] = a[:rows, src] if src >= 0 else 0
-    return Image.fromarray(a, "RGBA")
+CLEAN_PIPS = ("happy", "thumbs_up", "neutral", "surprised", "worried", "crying", "sleeping")
+
+
+HAIR_BAND = 44  # rows of hair under the brim, the same in both twins
+
+
+def hat_of(key):
+    """A clean pose's toque and the hair under it: its rows down to HAIR_BAND below the brim, and the brim row."""
+    ref = Image.open(SPRITES / f"{key}.png").convert("RGBA")
+    ref = np.asarray(ref.crop(ref.getbbox())).astype(int)
+    r, g, b = ref[..., 0], ref[..., 1], ref[..., 2]
+    rows = np.nonzero(((r - b > 40) & (r < 170) & (g < 120) & (ref[..., 3] > 200)).sum(axis=1) > 12)[0]
+    return (ref[: rows[0]], ref[: rows[0] + HAIR_BAND]) if len(rows) else None
+
+
+def match_hat(out, hat):
+    """Best placement of `hat` over the pose: (mean colour error on the pixels both have, dy, dx)."""
+    solid = hat[..., 3] > 40
+    ys, xs = np.nonzero(solid)
+    best = (np.inf, 0, 0)
+    for dy in range(-8, 9):
+        for dx in range(-10, 70):
+            ty, tx = ys + dy, xs + dx
+            ok = (ty >= 0) & (ty < out.shape[0]) & (tx >= 0) & (tx < out.shape[1])
+            ty, tx, sy, sx = ty[ok], tx[ok], ys[ok], xs[ok]
+            both = out[ty, tx, 3] > 40
+            if both.sum() < solid.sum() * 0.6:
+                continue
+            err = np.abs(out[ty[both], tx[both], :3] - hat[sy[both], sx[both], :3]).mean()
+            if err < best[0]:
+                best = (err, dy, dx)
+    return best
+
+
+def restore_hat(img):
+    """Pip's poses come in pairs with the very same toque. Where a coin or confetti was painted over it (and went
+    with them), the toque is copied back, pixel for pixel, from the clean pose whose toque matches exactly; above
+    the brim whatever is left outside it (glow, confetti) goes."""
+    out = np.asarray(img).astype(int).copy()
+    twins = [t for t in map(hat_of, (f"pip/{k}" for k in CLEAN_PIPS)) if t is not None]
+    err, dy, dx, hat, head = min((match_hat(out, h) + (h, hd) for h, hd in twins), key=lambda m: m[0])
+    if err > 5:  # no exact twin: leave the pose as it is
+        return img
+    ys, xs = np.nonzero(hat[..., 3] > 40)
+    ty, tx = ys + dy, xs + dx
+    ok = (ty >= 0) & (ty < out.shape[0]) & (tx >= 0) & (tx < out.shape[1])
+    out[ty[ok], tx[ok]] = hat[ys[ok], xs[ok]]
+    inside = np.zeros(out.shape[:2], bool)
+    inside[ty[ok], tx[ok]] = True
+    above = np.zeros(out.shape[:2], bool)
+    above[: max(0, hat.shape[0] + dy)] = True
+    out[above & ~inside] = 0
+    # just under the brim the twins share the hair's outline too: what sticks out of it there (sparkle) goes
+    hy, hx = np.nonzero(head[..., 3] > 40)
+    ty, tx = hy + dy, hx + dx
+    ok = (ty >= 0) & (ty < out.shape[0]) & (tx >= 0) & (tx < out.shape[1])
+    shape = np.zeros(out.shape[:2], bool)
+    shape[ty[ok], tx[ok]] = True
+    band = np.zeros(out.shape[:2], bool)
+    band[max(0, hat.shape[0] + dy): max(0, head.shape[0] + dy)] = True
+    out[band & ~grow(shape, 1)] = 0
+    r, g, b = out[..., 0], out[..., 1], out[..., 2]
+    out[band & (b - r > 12) & (b > 140)] = 0  # the sparkle's blue on the hair's edge (Pip's head has no blue)
+    return Image.fromarray(out.astype("uint8"), "RGBA")
 
 
 def sprite(key):
@@ -157,10 +198,8 @@ def sprite(key):
             path = ROOT / "assets" / f"pan_{key.split('/')[1]}.png"
         img = Image.open(path).convert("RGBA")
         img = img.crop(img.getbbox())
-        if key.startswith("customers/rival_chef"):
-            img = whole_hat(img)
-        if key.startswith(CHARACTERS):
-            img = strip_extras(img, key)
+        if key.startswith("pip/"):
+            img = restore_hat(strip_extras(img))
             img = img.crop(img.getbbox())
         _cache[key] = img
     return _cache[key].copy()
@@ -1164,7 +1203,7 @@ def build_cards():
 
     @card("regular_customer", "dining")
     def _(c):
-        c.put("customers/calm_happy", h=200, y=130)
+        c.put("customers/calm_idle", h=200, y=130)
         c.put("dishes/tomato_toast", w=110, x=W / 2, y=234)
 
     @card("student_rush", "dining")
@@ -1324,7 +1363,7 @@ def build_cards():
 
     @card("happy_office", "dining")
     def _(c):
-        c.put("customers/office_happy", h=200, y=130)
+        c.put("customers/office_idle", h=200, y=130)
         c.put("dishes/full_breakfast", w=110, x=W / 2, y=236)
 
     @card("student_feast", "dining")
@@ -1459,7 +1498,7 @@ def build_cards():
 
     @card("happy_critic", "dining")
     def _(c):
-        c.put("customers/critic_happy", h=230, y=146)
+        c.put("customers/critic", h=230, y=146)
 
     @card("mystery_guest", "magic")
     def _(c):
@@ -1561,8 +1600,8 @@ def build_cards():
     @card("full_house", "dining")
     def _(c):
         # Not a free chair: three happy customers at the table, all inside the card.
-        c.put("customers/calm_happy", h=112, x=58, y=196)
-        c.put("customers/office_happy", h=112, x=180, y=196)
+        c.put("customers/calm_idle", h=112, x=58, y=196)
+        c.put("customers/office_idle", h=112, x=180, y=196)
         c.put("customers/student_happy", h=124, x=W / 2, y=148)
 
     @card("mystery_lid", "magic")
@@ -1619,7 +1658,7 @@ def build_cards():
     @card("rival_defeated", "dining")
     def _(c):
         # He came to criticise and left convinced: the rival, smiling at last.
-        c.put("customers/rival_chef_happy", h=230, y=146, flip=True)
+        c.put("customers/rival_chef", h=230, y=146, flip=True)
 
     @card("high_score", "chalk")
     def _(c):
@@ -1673,7 +1712,7 @@ def build_cards():
     @card("legendary_critic_card", "gold")
     def _(c):
         # Five stars: the critic, delighted, under his five stars.
-        c.put("customers/legendary_critic_happy", h=210, y=166)
+        c.put("customers/legendary_critic", h=210, y=166)
         for k in range(5):
             c.pat(PROPS["star"], 40 + k * 40, 40, outline=True, p=5)
 

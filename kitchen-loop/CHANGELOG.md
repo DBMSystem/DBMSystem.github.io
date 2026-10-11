@@ -15,6 +15,7 @@
   - El Chef Rival: sobre fuego, como un desafío.
   - Rival Convencido: sonriendo, sin sushi suelto, libro ni Pip.
   - Maestro del Triple Bacon: con el brazo entero.
+  - Revisión por píxeles de pelos y gorros: los clientes se recortan de nuevo de las referencias con un corte que sigue el hueco blanco entre figuras (`scripts/figures.py`). Pelo del estudiante, gorro del chef rival y sombreros de los críticos salen enteros del original, sin redibujar. Al moño de la abuela, que en la referencia tapa el vaquero del turista, se le redondea el corte con su propio contorno. Las cartas usan las poses sin corazones. En Pip, el gorro tapado por la moneda o el confeti se copia píxel a píxel de su pose gemela, que tiene el mismo gorro.
   - Los personajes conservan su pixel art original entero: gorros, pelo del estudiante, moño de la abuela y cresta del gallo. Solo se quitan los corazones, la moneda y los destellos, y los huecos que dejan dentro de la figura se rellenan.
   - El gorro del Chef Rival viene recortado en el sprite: se completa por simetría.
   - Nube de Humo: el humo sale de la sartén, por delante.

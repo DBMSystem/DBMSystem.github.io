@@ -645,3 +645,22 @@ Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloq
   - El Chef Rival y Rival Convencido: se distinguen por el fondo y la pose.
   - Maestro del Triple Bacon: el recorte de la referencia ya incluye el brazo.
 
+## 35. Pelos y gorros revisados por píxeles (Daniel: «revisa las cartas por tema pelos y gorros, analízalo todo por píxeles»)
+
+- **Causa:** en las hojas de referencia las figuras se tocan.
+  - En el mega pack, el pelo del estudiante llega a los pies de la abuela de encima y el moño de la abuela, al vaquero del turista.
+  - En la hoja de clientes, el gorro del chef rival se sale de su celda.
+  - El recorte recto cortaba pelo y gorros planos. Además, al abrir el contorno del gorro, el borrado del fondo lo vaciaba.
+- **Recorte nuevo** (`scripts/figures.py`): cada figura se separa de sus vecinas con una costura que sigue el hueco blanco entre ellas. Solo cruza una figura donde dos se tocan, y lo hace por su contorno oscuro.
+  - Pelo, gorros y sombreros salen enteros del original, sin redibujar.
+  - Se regeneran los retratos, las poses y las poses derivadas (contento, enfadado y los retratos reutilizados).
+  - Arreglos puntuales:
+    - Estudiante: se quitan los restos de la falda de la abuela de encima, conservando solo el pelo y su contorno.
+    - Abuela: su moño, tapado en la referencia, se redondea con su propio contorno, como el de su pose enfadada; el bajo se corta recto.
+- **Cartas:**
+  - Usan las poses sin corazones (abuela, oficinista, críticos, rival), así que ya no hay que borrar nada de los clientes.
+  - En Pip, la moneda y el confeti tapaban parte del gorro. Ese trozo se copia píxel a píxel de su pose gemela, con el gorro idéntico (error de color 0), y se borra lo que queda fuera del gorro y del pelo.
+- **Comprobación automática:**
+  - Ninguna carta toca el borde, salvo las ilustraciones a sangre de la referencia.
+  - Los gorros de Pip coinciden al píxel con su gemelo.
+
