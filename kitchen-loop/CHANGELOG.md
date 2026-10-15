@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.12.0 — Historia bien repartida y una cocina que se anima
+
+- **Historia repartida** (medido con partidas simuladas, jugador casual de 4 servicios al día): los capítulos ya no se amontonan al principio para luego dejar semanas sin nada.
+  - Capítulo 5: nivel 9 y 3 utensilios (antes nivel 12).
+  - Capítulo 6: nivel 13 y 2 recetas secretas (antes nivel 16 y 3).
+  - Capítulo 7: nivel 17 y 6 utensilios (antes el árbol entero).
+  - La Trufa y La Receta Perdida llegan con el capítulo 7. El árbol completo queda como objetivo de colección.
+  - El final de la historia llega hacia el día 30 para un jugador casual (antes el 56) y hacia el día 8 para uno hábil.
+- **La historia, también entre capítulos:** cada capítulo añade una frase de Pip en los resultados sobre lo último que se ha revelado.
+- **La cocina se anima con el nivel:** desde los niveles 5, 10, 15 y 20 los clientes llegan más seguidos y esperan un poco menos. Hay más pedidos a la vez y más «¡Justo a tiempo!». La paciencia baja poco para no castigar a quien juega con calma.
+- **Más fiebres:** la fiebre se enciende con 4 platos seguidos (antes 5). Un jugador casual la ve en uno de cada dos servicios (antes uno de cada cinco).
+
 ## 0.11.1 — La sartén del menú, viva
 
 - **Menú:** el dibujo de portada ya no tiene la sartén que flotaba delante de la ventana (`scripts/menu_scene.py` la borra y rehace la ventana a partir de la propia ventana). Se ve entera la sartén que cocina abajo, con un resplandor que parpadea, brasas que suben, destellos dorados y vapor. Con «menos movimiento» solo queda el resplandor, quieto.

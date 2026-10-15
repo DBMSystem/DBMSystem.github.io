@@ -46,7 +46,8 @@ describe('story chapters (spec 6.3)', () => {
     expect(advanceStory(late, loop(0))).toEqual([2, 3]);
   });
 
-  it('chapters 4–7 follow the tree, level and secrets; the finale after the lost recipe', () => {
+  it('chapters 4–7 follow the utensils, level and secrets; the finale after the lost recipe', () => {
+    const { 5: ch5, 6: ch6, 7: ch7 } = balance.chapterTriggers;
     const save = fresh();
     Object.assign(save.story, { chapter: 3, seenScenes: ['chapter2', 'chapter3'] });
     rich(save);
@@ -54,13 +55,17 @@ describe('story chapters (spec 6.3)', () => {
     expect(advanceStory(save)).toEqual([4]);
     buyUtensil(save, 'crystal_spatula');
     buyUtensil(save, 'time_ladle');
-    expect(advanceStory(save)).toEqual([]); // chapter 5 also needs level 12
-    save.player.level = 16;
+    save.player.level = ch5.level - 1;
+    expect(advanceStory(save)).toEqual([]); // chapter 5 also needs its level
+    save.player.level = ch5.level;
     expect(advanceStory(save)).toEqual([5]);
+    save.player.level = ch6.level;
     for (const id of ['bacon_crown', 'impossible_omelette', 'mystic_scramble']) save.recipes[id] = { discovered: true, timesCooked: 1 };
     expect(advanceStory(save)).toEqual([6]);
-    for (const u of utensils) buyUtensil(save, u.id);
-    expect(treeComplete(save)).toBe(true);
+    save.player.level = ch7.level;
+    expect(advanceStory(save)).toEqual([]); // chapter 7 also needs its utensils, not the whole tree
+    for (const u of utensils.slice(0, ch7.utensils)) buyUtensil(save, u.id);
+    expect(treeComplete(save)).toBe(false);
     expect(advanceStory(save)).toEqual([7]);
     for (const id of ['chapter4', 'chapter5', 'chapter6', 'chapter7']) markSceneSeen(save, id);
     expect(pendingScenes(save)).toEqual([]);

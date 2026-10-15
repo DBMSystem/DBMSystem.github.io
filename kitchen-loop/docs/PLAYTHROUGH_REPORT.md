@@ -1,5 +1,29 @@
 # Informe de partidas completas (bot)
 
+## 0.12.0: historia repartida y dificultad por nivel
+
+Partidas de 40 a 60 días con el motor real (`node scripts/simulatePlaythrough.js casual|skilled [semilla]`). La tabla da el día en que se abre cada capítulo.
+
+| Jugador | Cap. 2 | Cap. 3 | Cap. 4 | Cap. 5 | Cap. 6 | Cap. 7 | Final |
+|---|---|---|---|---|---|---|---|
+| Casual, 0.11.1 | 1 | 2 | 2 | 12 | 21 | 43 | 56 |
+| Casual, 0.12.0 (semilla 1) | 1 | 2 | 2 | 7 | 15 | 23 | 30 |
+| Casual, 0.12.0 (semilla 7) | 1 | 2 | 2 | 7 | 23 | 24 | 38 |
+| Hábil, 0.11.1 | 1 | 1 | 1 | 3 | 8 | 13 | 16 |
+| Hábil, 0.12.0 | 1 | 1 | 1 | 2 | 4 | 6 | 8 |
+
+El bot casual tarda 30 servicios en «leer» la pista de una secreta, así que los capítulos 6 y final dependen de esa suerte. Con las pistas del álbum, una persona suele ir más rápido.
+
+Servicios con la dificultad por nivel y la fiebre a 4 (medias por tramo):
+
+| Jugador | Niveles | Puntos | Pedidos | Perdidos | Justo a tiempo | Fiebres |
+|---|---|---|---|---|---|---|
+| Casual 0.11.1 | 16–20 | 1323 | 7,3 | 2,0 | 0,51 | 0,18 |
+| Casual 0.12.0 | 16–20 | 1313 | 7,6 | 3,2 | 0,69 | 0,50 |
+| Hábil 0.11.1 | 21–25 | 3910 | 8,2 | 1,3 | 0,27 | 2,10 |
+| Hábil 0.12.0 | 21–25 | 4142 | 9,8 | 2,1 | 0,39 | 2,64 |
+
+
 Con el balance 0.9.2: el reparto de ingredientes sigue a las recetas desbloqueadas y sale de una bolsa barajada (`docs/LOOP_BALANCE.md`), sobre el balance 0.9.0 (combo 4 s, fiebre x5, Brûlée desde el servicio 5, decoración, rincón mágico y sobres por monedas). Frente a 0.9.0, los servicios son más parejos y se ganan un 5 % más de monedas; los hitos llegan unos días antes, sobre todo para el jugador casual.
 
 ## Partida completa simulada (jugador hábil)

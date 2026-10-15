@@ -666,3 +666,24 @@ Peticiones de Daniel: «una leyenda (desplegable) rápida de las recetas desbloq
   - Ninguna carta toca el borde, salvo las ilustraciones a sangre de la referencia.
   - Los gorros de Pip coinciden al píxel con su gemelo.
 
+## 36. Ritmo de la historia y presión en la partida (Daniel: «mejóralo todo», tras la nota de 7/10)
+
+Medido con `scripts/simulatePlaythrough.js` (motor real, bot casual de 4 servicios al día y bot hábil de 8).
+
+- **Historia:**
+  - Antes, para el jugador casual, los capítulos 2–4 caían en los primeros 6 servicios. Después había 10 días sin historia hasta el capítulo 5, 9 hasta el 6 y 22 hasta el 7, que esperaba al árbol entero (el árbol está pensado para 4–6 semanas, sección 5.4). El final llegaba el día 56.
+  - Nuevos disparadores (`balance.chapterTriggers`):
+    - capítulo 5: nivel 9 y 3 utensilios;
+    - capítulo 6: nivel 13 y 2 secretas, porque 3 dependían demasiado de la suerte (en una tirada el casual no encontró la tercera hasta el día 29);
+    - capítulo 7: nivel 17 y 6 utensilios.
+  - La Trufa y La Receta Perdida pasan del árbol completo al capítulo 7 (`chapterUnlocks`). El árbol completo sigue siendo el objetivo largo de colección.
+  - Textos ajustados: el capítulo 7 empieza con «Al baúl le quedan pocas cosas» y el 6 con «Dos recetas secretas ya».
+  - Entre escenas, `pip.endNormal.4–11` dan una frase de historia por capítulo en los resultados (contenido `draft`).
+  - Resultado: el casual termina la historia hacia el día 30 y el hábil hacia el día 8.
+- **Partida:**
+  - Antes la dificultad era la misma del nivel 1 al 30: el hábil apenas perdía clientes y la puntuación del casual era plana desde el nivel 4.
+  - Ahora `balance.difficulty` acorta el intervalo entre clientes y, menos, su paciencia desde los niveles 5, 10, 15 y 20. En el nivel 20: 82 % del intervalo y 88 % de la paciencia.
+  - Efecto medido: más pedidos y «¡Justo a tiempo!» en niveles altos. El hábil sube su puntuación (unos 3.900 frente a 3.800). El casual pierde algún cliente más (unos 3 por servicio en niveles altos, antes 2) y mantiene sus puntos.
+  - Es el punto a vigilar al probar en el móvil: si cuesta demasiado, se baja en `balance.js`.
+- **Fiebre:** `feverThreshold` pasa de 5 a 4. El casual ve una fiebre cada dos servicios (antes una cada cinco); el hábil, unas 2,6 por servicio (antes 2).
+

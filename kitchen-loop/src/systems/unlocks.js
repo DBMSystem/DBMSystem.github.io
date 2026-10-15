@@ -1,4 +1,4 @@
-import { levelUnlocks, chapterUnlocks, utensilUnlocks, treeUnlocks } from '../data/unlocks.js';
+import { levelUnlocks, chapterUnlocks, utensilUnlocks } from '../data/unlocks.js';
 import { utensils } from '../data/utensils.js';
 import { recipes } from '../data/recipes.js';
 
@@ -13,7 +13,6 @@ export function getUnlockedContent(level, { chapter = 1, utensils: owned = [] } 
   for (const row of levelUnlocks) if (row.level <= level) add(row);
   for (const row of chapterUnlocks) if (row.chapter <= chapter) add(row);
   for (const id of owned) if (utensilUnlocks[id]) add(utensilUnlocks[id]);
-  if (utensils.every((u) => owned.includes(u.id))) add(treeUnlocks);
   return content;
 }
 

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { ingredients, ingredientById } from '../src/data/ingredients.js';
 import { recipes } from '../src/data/recipes.js';
 import { customers, customerById } from '../src/data/customers.js';
-import { levelUnlocks, utensilUnlocks, treeUnlocks } from '../src/data/unlocks.js';
+import { levelUnlocks, utensilUnlocks, chapterUnlocks } from '../src/data/unlocks.js';
 import { utensils } from '../src/data/utensils.js';
 import { balance } from '../src/data/balance.js';
 import { hasKey } from '../src/utils/i18n.js';
@@ -39,8 +39,12 @@ describe('data integrity', () => {
     }
   });
 
-  it('every recipe is unlocked exactly once (level, utensil or complete tree)', () => {
-    const sources = [...levelUnlocks.flatMap((r) => r.recipes ?? []), ...Object.values(utensilUnlocks).flatMap((u) => u.recipes ?? []), ...treeUnlocks.recipes];
+  it('every recipe is unlocked exactly once (level, utensil or chapter)', () => {
+    const sources = [
+      ...levelUnlocks.flatMap((r) => r.recipes ?? []),
+      ...Object.values(utensilUnlocks).flatMap((u) => u.recipes ?? []),
+      ...chapterUnlocks.flatMap((c) => c.recipes ?? []),
+    ];
     expect(unique(sources)).toBe(true);
     expect(recipes.filter((r) => !sources.includes(r.id)).map((r) => r.id)).toEqual([]);
   });

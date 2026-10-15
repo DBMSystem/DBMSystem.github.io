@@ -126,6 +126,7 @@ Tamaño máximo de una receta: 4 ingredientes.
 
 - Llega un cliente cada `customerInterval` (7 s); el primero al segundo 1. Máximo `maxCustomers` (3).
 - Paciencia base `customerPatience` (22 s: 20 + 2 por el tiempo de sartén), modificada por tipo de cliente (sección 3.3).
+- La cocina se anima con el nivel (`difficulty` en `balance.js`, DECISIONES 36): desde el nivel 5, 10, 15 y 20 los clientes esperan un poco menos y llegan un poco más seguidos, hasta un 88 % de la paciencia y un 82 % del intervalo base en el nivel 20.
 - Los pedidos solo incluyen recetas **conocidas y desbloqueadas**, nunca secretas. Al principio se priorizan las recetas pequeñas.
 - Si la paciencia se agota, el cliente se va: se pierde el pedido y Pip reacciona. No hay más castigo.
 
@@ -145,7 +146,7 @@ Tamaño máximo de una receta: 4 ingredientes.
 
 ### 2.10 ¡FIEBRE EN LA COCINA! (antes "Kitchen Fever")
 
-- Se activa al llegar a una cadena de combo ≥ `feverThreshold` (5). Dura `feverDuration` (5 s).
+- Se activa al llegar a una cadena de combo ≥ `feverThreshold` (4; era 5, DECISIONES 36). Dura `feverDuration` (5 s).
 - Si la cadena sigue viva cuando la fiebre acaba, la siguiente fiebre pide otras `feverThreshold` recetas en la cadena (si no, se encendería otra vez al instante).
 - Durante la fiebre: multiplicador extra × `feverMultiplier` (1,5), `comboWindow` × 1,5, música con una capa más intensa, partículas adicionales, estelas en los ingredientes y Pip animado.
 - La legibilidad manda: el grid y los pedidos deben leerse perfectamente durante la fiebre.
@@ -214,7 +215,7 @@ Todo este contenido se define en archivos de datos (`src/data/`), nunca dentro d
 | clock | Reloj de Cocina | Cucharón del Tiempo | Al colocarlo, suma +4 s y desaparece sin ocupar casilla. Máx. 2 por loop. |
 | spice | Especia Ancestral | Especia Ancestral | Comodín: sustituye a un ingrediente en recetas de 3 o más. Máx. 2 por loop. |
 | flame | Llama | Brochetas Ember | Ingrediente para recetas de fuego (Tomate Explosivo, brochetas). |
-| truffle | Trufa | Árbol completo | Aparece como máximo 1 vez por loop con un 15 % de probabilidad. |
+| truffle | Trufa | Capítulo 7 | Aparece como máximo 1 vez por loop con un 15 % de probabilidad. |
 
 ### 3.2 Recetas
 
@@ -255,7 +256,7 @@ Todo este contenido se define en archivos de datos (`src/data/`), nunca dentro d
 | mystic_scramble | Revuelto Místico | champiñón ×3, huevo | group | Nivel 4 | 300 |
 | master_soup | Sopa del Maestro | pescado, cebolla, hierbas, patata | group | Olla Encantada | 400 |
 | exploding_tomato | Tomate Explosivo | tomate, queso, llama | group | Brochetas Ember | 380 |
-| lost_recipe | La Receta Perdida | trufa, huevo, pan, queso | square | Árbol completo | 600 |
+| lost_recipe | La Receta Perdida | trufa, huevo, pan, queso | square | Capítulo 7 | 600 |
 
 **Pistas de recetas secretas**: el álbum muestra un acertijo corto por cada receta secreta no descubierta cuando el jugador cumple su requisito (ejemplo para la Corona de Bacon: "Dos lonchas protegen al más frágil"). Nunca se muestran los ingredientes.
 
@@ -516,7 +517,7 @@ Los utensilios desbloquean **contenido y pequeños cambios estratégicos**, nunc
 | T4 | Brochetas Ember | 2.500 | 2 utensilios de T3 | Ingrediente especial Llama · Brocheta de la Huerta · habilita la secreta Tomate Explosivo. |
 
 - Coste total: 13.500 monedas. Objetivo: un jugador constante completa el árbol en 4–6 semanas.
-- **Árbol completo**: habilita la Trufa y la secreta La Receta Perdida (final de la historia).
+- **Árbol completo**: es el objetivo de colección a largo plazo. La Trufa y la secreta La Receta Perdida llegan con el capítulo 7 (DECISIONES 36), para que el final de la historia no espere al árbol entero.
 - La Encimera Rúnica no es una sartén. Las sartenes son solo cosméticas (sección 7.5).
 
 ### 5.5 Calendario de Pip (antes "streak")
@@ -566,13 +567,14 @@ Los utensilios desbloquean **contenido y pequeños cambios estratégicos**, nunc
 | 2 | El Aprendiz | Nivel 3 | Completo |
 | 3 | El Maestro | Aparición de Brûlée: al terminar el primer loop con ≥ 1.200 puntos a partir del loop 5 (`bruleeFromLoop`); **garantizada al terminar el loop 7** si no ha ocurrido antes | Completo |
 | 4 | El Baúl | Comprar la Encimera Rúnica | Estructura + diálogos `draft` |
-| 5 | La Cocina Nocturna | Nivel 12 y 3 utensilios comprados | Estructura + diálogos `draft` |
-| 6 | Las Recetas Perdidas | Nivel 16 y 3 recetas secretas descubiertas | Estructura + diálogos `draft` |
-| 7 | La Gran Cocina | Árbol completo; termina al descubrir La Receta Perdida | Estructura + diálogos `draft` |
+| 5 | La Cocina Nocturna | Nivel 9 y 3 utensilios comprados | Estructura + diálogos `draft` |
+| 6 | Las Recetas Perdidas | Nivel 13 y 2 recetas secretas descubiertas | Estructura + diálogos `draft` |
+| 7 | La Gran Cocina | Nivel 17 y 6 utensilios; habilita la Trufa y La Receta Perdida, y termina al descubrirla | Estructura + diálogos `draft` |
 
 - **La historia completa es gratuita.** El capítulo 5 se llama "La Cocina Nocturna" y es gratis; el **tema visual** Cocina Nocturna es lo que incluye el Pase.
 - La primera aparición de Brûlée ocurre en la pantalla de resultados, nunca interrumpiendo un loop. Frase de entrada: "Así que por fin has encontrado a alguien que aguanta una cocina."
 - Cada capítulo desbloquea diálogos y, según la tabla de desbloqueos, cartas, decoración o recetas.
+- Disparadores repartidos para que no haya tramos largos sin historia (DECISIONES 36); los números viven en `balance.chapterTriggers`. Entre escenas, cada capítulo añade una frase de Pip sobre la historia en los resultados.
 - Escenas de diálogo: como máximo 3 bocadillos por escena, saltables, nunca durante el gameplay (en partida solo frases sueltas de Pip).
 - Las frases de Pip en partida, las de Brûlée en el Almacén y la de resultados pueden llevar un capítulo mínimo (`fromChapter`): así cada capítulo cambia lo que dicen. El canon de la historia está en `docs/HISTORIA.md`.
 - «Ver la historia» (Ajustes) repite todas las escenas ya vistas, en orden.

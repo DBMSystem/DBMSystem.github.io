@@ -76,10 +76,12 @@ Este documento es el canon de la historia: quién es cada uno, cómo habla, qué
 | 2. El Aprendiz | Nivel 3 | Pip también fue aprendiz, de alguien muy exigente | «Pero esa es otra historia» |
 | 3. El Maestro | Brûlée aparece tras un buen servicio (desde el 5.º; seguro en el 7.º) | Brûlée existe y vuelve: abre el baúl | «Es hora de desempolvar el baúl» |
 | 4. El Baúl | Comprar la Encimera Rúnica | Hubo una noche en que la cocina se quedó fría | «Veamos si {nombre} la calienta mejor» |
-| 5. La Cocina Nocturna | Nivel 12 y 3 utensilios | Brûlée encantó la cocina: por eso los platos son cartas | «Por eso tus platos se vuelven cartas» |
-| 6. Las Recetas Perdidas | Nivel 16 y 3 secretas | La Receta Perdida; tu hoja es una página suya | «Tu hoja vieja es una página suya» |
-| 7. La Gran Cocina | Árbol completo | La confesión de Pip: la noche de su prueba | «Cocinad juntos La Receta Perdida» |
+| 5. La Cocina Nocturna | Nivel 9 y 3 utensilios | Brûlée encantó la cocina: por eso los platos son cartas | «Por eso tus platos se vuelven cartas» |
+| 6. Las Recetas Perdidas | Nivel 13 y 2 secretas | La Receta Perdida; tu hoja es una página suya | «Tu hoja vieja es una página suya» |
+| 7. La Gran Cocina | Nivel 17 y 6 utensilios (trae la trufa y La Receta Perdida) | La confesión de Pip: la noche de su prueba | «Cocinad juntos La Receta Perdida» |
 | Epílogo | Cocinar La Receta Perdida | El perdón; Pip pide su prueba | Pip se pone el delantal |
+
+Entre escenas, la historia no desaparece: cada capítulo añade una frase de Pip en los resultados (`pip.endNormal.4`–`11`) que alude a lo último que se ha revelado.
 
 ## 5. Dónde más vive la historia
 

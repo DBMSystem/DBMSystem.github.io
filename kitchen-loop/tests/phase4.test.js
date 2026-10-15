@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createEngine } from '../src/game/engine.js';
+import { createEngine, difficultyAt } from '../src/game/engine.js';
 import { findMatches } from '../src/game/recipeMatcher.js';
 import { getUnlockedContent } from '../src/systems/unlocks.js';
 import { recipes, recipeById } from '../src/data/recipes.js';
@@ -32,12 +32,14 @@ describe('unlocks by chapter, utensils and the complete tree', () => {
     expect(c3.features).toEqual(expect.arrayContaining(['warehouse', 'bruleeNight']));
   });
 
-  it('utensils add their content; the whole tree adds the truffle and the lost recipe', () => {
+  it('utensils add their content; chapter 7 adds the truffle and the lost recipe', () => {
     expect(getUnlockedContent(1, { utensils: ['golden_whisk'] }).recipes).toContain('french_omelette');
-    expect(getUnlockedContent(1, { utensils: ALL.slice(1) }).recipes).not.toContain('lost_recipe');
-    const full = getUnlockedContent(1, { utensils: ALL });
-    expect(full.recipes).toContain('lost_recipe');
-    expect(full.ingredients).toEqual(expect.arrayContaining(['truffle', 'flame', 'spice', 'clock']));
+    const full = getUnlockedContent(1, { chapter: 6, utensils: ALL });
+    expect(full.recipes).not.toContain('lost_recipe');
+    expect(full.ingredients).toEqual(expect.arrayContaining(['flame', 'spice', 'clock']));
+    const last = getUnlockedContent(1, { chapter: 7, utensils: ALL.slice(0, 6) });
+    expect(last.recipes).toContain('lost_recipe');
+    expect(last.ingredients).toContain('truffle');
   });
 });
 
@@ -62,7 +64,20 @@ describe('Runic Counter and abilities', () => {
   it('the runic counter makes a 5x5 grid with 4 customers', () => {
     const engine = setup({ unlocks: { chapter: 3, utensils: ['runic_counter'] } });
     expect(engine.state.grid.cells).toHaveLength(25);
-    expect(engine.state.rules).toMatchObject({ gridSize: 5, maxCustomers: 4, customerInterval: 6 });
+    expect(engine.state.rules).toMatchObject({ gridSize: 5, maxCustomers: 4 });
+    expect(engine.state.rules.customerInterval).toBeCloseTo(balance.runicGrid.customerInterval * difficultyAt(balance, 10).interval);
+  });
+
+  it('the kitchen gets busier with the level: less patience, customers closer together', () => {
+    const rookie = setup({ level: 1 }).state.rules;
+    const veteran = setup({ level: 22 }).state.rules;
+    expect(rookie.patience).toBe(balance.customerPatience);
+    expect(rookie.customerInterval).toBe(balance.customerInterval);
+    expect(veteran.patience).toBeLessThan(rookie.patience);
+    expect(veteran.customerInterval).toBeLessThan(rookie.customerInterval);
+    for (let level = 2; level <= balance.maxLevel; level++) {
+      expect(difficultyAt(balance, level).patience).toBeLessThanOrEqual(difficultyAt(balance, level - 1).patience);
+    }
   });
 
   it('move, discard and freeze have limited uses and need their utensil', () => {

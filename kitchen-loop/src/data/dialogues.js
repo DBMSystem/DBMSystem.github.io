@@ -29,7 +29,20 @@ export const pipTriggers = {
   overflow: { expression: 'scared', priority: true, lines: lines('pip.overflow', 3, 3) },
   // Results screen (spec 8.5): what really happened, chosen by endTrigger() in systems/pip.js.
   endRecord: { expression: 'proud', lines: lines('pip.endRecord', 3, 3) },
-  endNormal: { expression: 'happy', lines: lines('pip.endNormal', 3, 3) },
+  // Between chapters the story stays in sight (DECISIONES 36): each chapter adds a line about it to the usual ending.
+  endNormal: {
+    expression: 'happy',
+    lines: [
+      ...lines('pip.endNormal', 3, 3),
+      ...from(2, 'pip.endNormal', [4]),
+      ...from(3, 'pip.endNormal', [5, 6]),
+      ...from(4, 'pip.endNormal', [7]),
+      ...from(5, 'pip.endNormal', [8]),
+      ...from(6, 'pip.endNormal', [9]),
+      ...from(7, 'pip.endNormal', [10]),
+      ...from(AFTER_FINALE, 'pip.endNormal', [11]),
+    ],
+  },
   endWeak: { expression: 'embarrassed', lines: lines('pip.endWeak', 3, 3) },
   endBurnt: { expression: 'embarrassed', lines: lines('pip.endBurnt', 2, 1) },
   endNoLoss: { expression: 'celebrating', lines: lines('pip.endNoLoss', 2, 1) },

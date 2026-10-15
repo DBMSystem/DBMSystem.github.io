@@ -19,7 +19,11 @@ export const levelUnlocks = [
 ];
 
 // Brûlée's appearance opens chapter 3 (spec 5.2, 6.3).
-export const chapterUnlocks = [{ chapter: 3, customers: ['night_visitor'], features: ['warehouse', 'bruleeNight'] }];
+export const chapterUnlocks = [
+  { chapter: 3, customers: ['night_visitor'], features: ['warehouse', 'bruleeNight'] },
+  // The story's final recipe and its truffle come with its last chapter (DECISIONES 36), not with the whole tree.
+  { chapter: 7, ingredients: ['truffle'], recipes: ['lost_recipe'] },
+];
 
 // Brûlée's tree (spec 5.4): what each utensil unlocks.
 export const utensilUnlocks = {
@@ -33,9 +37,6 @@ export const utensilUnlocks = {
   frost_tongs: { features: ['freeze'] },
   ember_skewers: { ingredients: ['flame'], recipes: ['garden_skewer', 'exploding_tomato'] },
 };
-
-// The complete tree: the truffle and the story's final recipe.
-export const treeUnlocks = { ingredients: ['truffle'], recipes: ['lost_recipe'] };
 
 // Highest level with new content.
 export const maxContentLevel = 10;

@@ -20,6 +20,9 @@ const TRUFFLE = 'truffle';
 // `specialty` = id of the daily specialty (spec 2.12) or null.
 // Tutorial options: `ingredientQueue` fixes the first ingredients, `timerRunning: false` stops the clock,
 // customers and patience until startTimer(), and `allowedSlots` / `allowedCells` restrict placing.
+// The step of the difficulty curve that applies at `level` (balance.difficulty).
+export const difficultyAt = (balance, level) => balance.difficulty.filter((d) => level >= d.fromLevel).at(-1);
+
 export function createEngine({
   balance,
   level,
@@ -36,10 +39,12 @@ export function createEngine({
   const content = getUnlockedContent(level, unlocks);
   const features = new Set(content.features);
   const runic = features.has('runicGrid');
+  const ramp = difficultyAt(balance, level);
   const rules = {
     gridSize: runic ? balance.runicGrid.gridSize : balance.gridSize,
     maxCustomers: runic ? balance.runicGrid.maxCustomers : balance.maxCustomers,
-    customerInterval: runic ? balance.runicGrid.customerInterval : balance.customerInterval,
+    customerInterval: (runic ? balance.runicGrid.customerInterval : balance.customerInterval) * ramp.interval,
+    patience: balance.customerPatience * ramp.patience,
   };
   const unlockedIngredients = content.ingredients.map((id) => ingredientById[id]);
   const pool = unlockedIngredients.filter((i) => !i.special);
@@ -153,7 +158,7 @@ export function createEngine({
   function addCustomer(type, recipe) {
     const slot = freeSlot(state.customers, rules.maxCustomers);
     if (slot === -1 || !recipe) return null;
-    const patience = balance.customerPatience * type.patience;
+    const patience = rules.patience * type.patience;
     const customer = { uid: ++state.customerSeq, typeId: type.id, recipeId: recipe.id, slot, patience, maxPatience: patience };
     state.customers.push(customer);
     state.ordersIssued += 1;

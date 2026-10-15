@@ -20,7 +20,7 @@ export const balance = {
   ],
   perfectWindow: 4,
   perfectRecipes: 3,
-  feverThreshold: 5,
+  feverThreshold: 4, // 5 → 4: a casual player saw a fever once every 3–5 services (DECISIONES 36)
   feverDuration: 5,
   feverMultiplier: 1.5,
   feverComboWindowMultiplier: 1.5,
@@ -30,6 +30,17 @@ export const balance = {
   customerInterval: 7,
   firstCustomerAt: 1,
   customerPatience: 22, // +2 s for the pan (spec 2.6)
+  // The kitchen gets busier as the player grows (DECISIONES 36): from each level on, customers wait this share of
+  // their patience and arrive this share of the interval apart. Level 1 is the spec's base.
+  // The pressure comes mostly from customers arriving closer together (more orders, more pans at once) and less
+  // from patience, so a casual player is not punished with lost customers.
+  difficulty: [
+    { fromLevel: 1, patience: 1, interval: 1 },
+    { fromLevel: 5, patience: 0.96, interval: 0.95 },
+    { fromLevel: 10, patience: 0.93, interval: 0.9 },
+    { fromLevel: 15, patience: 0.9, interval: 0.86 },
+    { fromLevel: 20, patience: 0.88, interval: 0.82 },
+  ],
   smallOrdersFirst: 2,
   smallRecipeMaxSize: 2,
   cheapRecipeMaxPoints: 100,
@@ -153,7 +164,9 @@ export const balance = {
   bruleeScoreThreshold: 1200,
   bruleeFromLoop: 5, // not before the 5th service: the first services are not a string of scenes
   bruleeGuaranteedLoop: 7,
-  chapterTriggers: { 5: { level: 12, utensils: 3 }, 6: { level: 16, secrets: 3 } },
+  // Spread so no stretch of play goes without story (DECISIONES 36): before, chapters 2–4 came in the first services
+  // and then 10, 9 and 22 days of silence for a casual player; chapter 7 waited for the whole tree.
+  chapterTriggers: { 5: { level: 9, utensils: 3 }, 6: { level: 13, secrets: 2 }, 7: { level: 17, utensils: 6 } },
 
   // Presentation
   maxParticles: 300,

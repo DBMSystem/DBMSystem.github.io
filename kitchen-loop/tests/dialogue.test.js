@@ -36,13 +36,13 @@ describe('dialogue', () => {
     for (let i = 0; i < 20; i++) expect(early.say('t', i).key).toBe('always');
     const late = createDialogue({ triggers: gated, rng: createRng(3), minInterval: 0, historySize: 5, chapter: 5 });
     expect(new Set(Array.from({ length: 20 }, (_, i) => late.say('t', i).key))).toEqual(new Set(['always', 'late']));
-    // The real data: Pip has lines for chapter 3, 5 and after the epilogue; every gate is one of those stages.
+    // The real data: every chapter from 2 on, and the time after the epilogue, adds lines of Pip.
     const gates = new Set(
       Object.values(pipTriggers)
         .flatMap((e) => e.lines.map((l) => l.fromChapter))
         .filter(Boolean),
     );
-    expect([...gates].sort()).toEqual([3, 5, AFTER_FINALE]);
+    expect([...gates].sort((a, b) => a - b)).toEqual([2, 3, 4, 5, 6, 7, AFTER_FINALE]);
     expect(linesFor(warehouseLines, 3).length).toBeLessThan(linesFor(warehouseLines, AFTER_FINALE).length);
     for (const key of [...warehouseLines, ...Object.values(menuGreetings).flat()].map((l) => l.key)) expect(hasKey(key), key).toBe(true);
   });

@@ -1,8 +1,7 @@
 import { balance } from '../data/balance.js';
 import { chapterScenes, AFTER_FINALE } from '../data/dialogues.js';
 import { contentFor } from './unlocks.js';
-import { treeComplete, utensilsOwned } from './utensils.js';
-import { utensils } from '../data/utensils.js';
+import { utensilsOwned } from './utensils.js';
 import { xpToReach } from '../economy/progression.js';
 import { track } from '../analytics/analytics.js';
 
@@ -31,7 +30,7 @@ function chapterReady(save, n, loop) {
     case 6:
       return player.level >= rule.level && discoveredSecretCount(save) >= rule.secrets;
     case 7:
-      return treeComplete(save);
+      return player.level >= rule.level && utensilsOwned(save) >= rule.utensils;
     default:
       return false;
   }
@@ -85,7 +84,7 @@ export function nextChapterGoal(save) {
     case 5:
       return goal(6, [levelPart(balance.chapterTriggers[6].level), part('secrets', discoveredSecretCount(save), balance.chapterTriggers[6].secrets)]);
     case 6:
-      return goal(7, [part('utensils', utensilsOwned(save), utensils.length)]);
+      return goal(7, [levelPart(balance.chapterTriggers[7].level), part('utensils', utensilsOwned(save), balance.chapterTriggers[7].utensils)]);
     default:
       return goal('finale', [part('lostRecipe', save.recipes.lost_recipe?.discovered ? 1 : 0, 1)]);
   }

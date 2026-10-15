@@ -89,6 +89,6 @@ describe('fever after fever', () => {
     // One recipe every second for 20 s: the chain never breaks (window 4 s).
     for (let t = 1; t <= 20; t++) if (registerCook(state, t, balance).feverStarted) starts.push(t);
     expect(state.chain).toBe(20);
-    expect(starts).toEqual([5, 14]); // not relit at 10, when the first one ends
+    expect(starts).toEqual([4, 12, 20]); // threshold 4: not relit at 9, when the first one ends
   });
 });

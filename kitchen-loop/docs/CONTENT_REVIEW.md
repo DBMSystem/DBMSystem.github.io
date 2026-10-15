@@ -202,3 +202,9 @@ Textos `challenges.*`, `challenge.*`, `panel.*`, `pause.panel` y `results.challe
 - `story.next.2–7` y `story.next.finale`: las frases gancho del siguiente capítulo (ver `docs/DECISIONES.md` §30).
 - `story.goal.*` y `hud.xpLeft`: los textos de requisitos y de XP que falta.
 
+
+## Historia entre capítulos (0.12.0, draft)
+
+- `pip.endNormal.4–11`: frases de Pip en los resultados que llegan con cada capítulo (2, 3, 3, 4, 5, 6, 7 y tras el epílogo) y aluden a lo último revelado. Ver `docs/DECISIONES.md` §36.
+- `story.chapter7.1` cambia: «Al baúl le quedan pocas cosas…» (antes «El baúl está vacío»), porque el capítulo 7 ya no espera al árbol entero.
+- `story.chapter6.1` cambia: «Dos recetas secretas ya…» (antes «Tres»), porque el capítulo 6 pide ahora 2 secretas.
