@@ -17,6 +17,7 @@ python3 scripts/figures.py                                # clientes recortados 
 python3 scripts/menu_scene.py                             # dibujo del menú (sin la sartén de la ventana)
 node scripts/simulateLoops.js 300                          # equilibrio de cada servicio (docs/LOOP_BALANCE.md)
 npm run build:android   # web + sincronizar el proyecto Android (Capacitor)
+npm run build:release   # igual, pero en modo producción: la versión para Google Play
 python3 scripts/android_assets.py                         # icono y pantalla de inicio de Android
 ```
 
@@ -30,3 +31,10 @@ python3 scripts/android_assets.py                         # icono y pantalla de 
   3. Las siguientes versiones se instalan encima y conservan la partida: todas se firman con la misma clave de prueba (`android/app/kitchenloop-debug.keystore`, contraseña `android`). La clave de la Play Store será otra, privada (Fase 7).
 - **Contenido:** es la versión de pruebas (contador de FPS y herramientas de prueba), con anuncios de prueba de Google y compras simuladas.
 - **Compilar en local:** necesitas Android Studio (o el SDK) y JDK 21. Ejecuta `npm run build:android` y después `cd android && ./gradlew assembleDebug`.
+
+## Android (Google Play)
+
+- **Pagos:** Google Play Billing con un plugin propio (`android/app/src/main/java/com/dbmsystem/kitchenloop/PlayBillingPlugin.java` y `src/monetization/playBilling.js`). Solo en la versión de producción; el APK de prueba mantiene las compras simuladas.
+- **AAB firmado:** la CI lo genera en `main` cuando existen los secretos `KL_UPLOAD_KEYSTORE_BASE64`, `KL_UPLOAD_STORE_PASSWORD`, `KL_UPLOAD_KEY_ALIAS` y `KL_UPLOAD_KEY_PASSWORD` (ver `docs/FASE7_DATOS.md`). Queda como artefacto `…-play` de la ejecución, para subirlo a Play Console.
+- **En local:** `npm run build:release` y `cd android && ./gradlew bundleRelease` (sin la clave, el AAB sale sin firmar).
+- **Lo que falta para publicar:** los datos de Daniel de `docs/FASE7_DATOS.md`; la revisión final, en `docs/FASE8_CHECKLIST.md`.

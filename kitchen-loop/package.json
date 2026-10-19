@@ -1,7 +1,7 @@
 {
   "name": "kitchen-loop",
   "private": true,
-  "version": "0.12.0",
+  "version": "0.13.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,8 @@
     "build:playtest": "node scripts/buildPlaytest.js",
     "preview": "vite preview",
     "test": "vitest run",
-    "build:android": "vite build --mode playtest && cap sync android"
+    "build:android": "vite build --mode playtest && cap sync android",
+    "build:release": "vite build && cap sync android"
   },
   "dependencies": {
     "@capacitor-community/admob": "^8.1.0",

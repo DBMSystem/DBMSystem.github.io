@@ -859,6 +859,7 @@ export const es = {
   'settings.nightThemeLocked': 'Incluido en el Pase del Maestro',
   'settings.devRefund': 'Simular reembolso de todo (prueba)',
   'settings.adPrivacy': 'Privacidad de los anuncios',
+  'settings.privacy': 'Política de privacidad',
   'settings.credits': 'Créditos',
   'settings.creditsText': 'KITCHEN LOOP · Idea y dirección: Daniel · Arte de referencia generado con Meta AI · Programación con Claude Code',
   'settings.delete': 'Borrar partida',

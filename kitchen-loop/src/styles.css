@@ -98,6 +98,14 @@ body {
   touch-action: manipulation;
 }
 
+/* A link that looks like a button (the privacy policy opens in the browser). */
+a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .btn.primary {
   background: var(--orange);
   color: var(--cream);
@@ -1243,6 +1251,7 @@ body {
 
 /* Four tabs (the warehouse) fit a 360 px screen. */
 .tabs button {
+  flex: 1 1 auto; /* a longer label ("Decoración") takes the room it needs on 360 px phones */
   min-width: 0;
   padding: 0 4px;
 }

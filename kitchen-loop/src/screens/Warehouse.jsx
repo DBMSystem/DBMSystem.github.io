@@ -1,4 +1,4 @@
-import { useMemo, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import { Button } from '../components/Button.jsx';
 import { utensils, utensilById } from '../data/utensils.js';
 import { decorItems } from '../data/decor.js';
@@ -45,6 +45,7 @@ export function Warehouse({ services, onClose, onTrial }) {
   const save = saveManager.get();
   const [tab, setTab] = useState('utensils');
   const [, refresh] = useReducer((n) => n + 1, 0);
+  useEffect(() => shop.subscribe(refresh), [shop]); // store prices and purchases confirmed later
   const rng = useMemo(() => createRng(), []);
   const bruleeLines = linesFor(warehouseLines, storyStage(save));
   const [line, setLine] = useState(() => rng.pick(bruleeLines).key);
@@ -266,7 +267,7 @@ export function Warehouse({ services, onClose, onTrial }) {
                       <span className="hint small">{t('warehouse.goldenPan')}</span>
                     ) : (
                       <Button variant="euro" onClick={() => purchase(product.id)}>
-                        <span className="price euro">{product.price}</span>
+                        <span className="price euro">{shop.priceOf(product.id)}</span>
                       </Button>
                     )}
                     {!owned && <TryButton kind="pan" id={pan.id} />}
@@ -310,7 +311,7 @@ export function Warehouse({ services, onClose, onTrial }) {
               <span className="badge ok">{t('warehouse.passActive')}</span>
             ) : (
               <Button variant="euro" onClick={() => purchase(PASS)}>
-                <span className="price euro">{products.find((p) => p.id === PASS).price}</span>
+                <span className="price euro">{shop.priceOf(PASS)}</span>
               </Button>
             )}
           </section>
@@ -325,7 +326,7 @@ export function Warehouse({ services, onClose, onTrial }) {
               </div>
               {starterRepeats.length > 0 && <p className="hint small">{t('warehouse.chestRepeats', { n: starterRepeats.length })}</p>}
               <Button variant="euro" onClick={() => purchase(starterPack.id)}>
-                <span className="price euro">{starterPack.price}</span>
+                <span className="price euro">{shop.priceOf(starterPack.id)}</span>
               </Button>
             </section>
           )}

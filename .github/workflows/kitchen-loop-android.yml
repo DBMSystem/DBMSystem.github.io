@@ -1,6 +1,8 @@
 # Kitchen Loop test APK (phase 6). Every push that touches the game builds a debug APK; on main it is also
 # published as the "kitchen-loop-apk" prerelease, so the latest one is always at the same link:
 # https://github.com/DBMSystem/DBMSystem.github.io/releases/download/kitchen-loop-apk/KitchenLoop.apk
+# Phase 7: on main, once the Google Play upload key is in the KL_UPLOAD_* secrets (docs/FASE7_DATOS.md, step 2),
+# it also builds the signed release bundle (.aab) to upload to Play Console. Without the secrets that step is skipped.
 name: Kitchen Loop APK
 
 on:
@@ -24,6 +26,8 @@ jobs:
     defaults:
       run:
         working-directory: kitchen-loop
+    env:
+      RELEASE_BUNDLE: ${{ github.ref == 'refs/heads/main' && secrets.KL_UPLOAD_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -81,3 +85,31 @@ jobs:
             --target "${{ github.sha }}" \
             --title "Kitchen Loop ${KL_VERSION_NAME} (build ${{ github.run_number }}, prueba)" \
             --notes "APK de prueba de Kitchen Loop: se instala encima de la anterior y conserva la partida. Anuncios de prueba de Google; compras simuladas."
+
+      # Google Play release: production build (real Play Billing, no development tools), signed with the upload key.
+      - name: Release web build and Capacitor sync
+        if: env.RELEASE_BUNDLE == 'true'
+        run: npm run build:release
+
+      - name: Build the signed bundle
+        if: env.RELEASE_BUNDLE == 'true'
+        working-directory: kitchen-loop/android
+        env:
+          KL_VERSION_CODE: ${{ github.run_number }}
+          KL_UPLOAD_KEYSTORE_BASE64: ${{ secrets.KL_UPLOAD_KEYSTORE_BASE64 }}
+          KL_UPLOAD_STORE_PASSWORD: ${{ secrets.KL_UPLOAD_STORE_PASSWORD }}
+          KL_UPLOAD_KEY_ALIAS: ${{ secrets.KL_UPLOAD_KEY_ALIAS }}
+          KL_UPLOAD_KEY_PASSWORD: ${{ secrets.KL_UPLOAD_KEY_PASSWORD }}
+        run: |
+          export KL_UPLOAD_KEYSTORE="$RUNNER_TEMP/upload.keystore"
+          echo "$KL_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$KL_UPLOAD_KEYSTORE"
+          ./gradlew bundleRelease --no-daemon --stacktrace
+          rm -f "$KL_UPLOAD_KEYSTORE"
+          cp app/build/outputs/bundle/release/app-release.aab ../KitchenLoop.aab
+          ls -lh ../KitchenLoop.aab
+
+      - uses: actions/upload-artifact@v4
+        if: env.RELEASE_BUNDLE == 'true'
+        with:
+          name: KitchenLoop-${{ env.KL_VERSION_NAME }}-${{ github.run_number }}-play
+          path: kitchen-loop/KitchenLoop.aab

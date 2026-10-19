@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createDefaultSave, validateSave } from '../src/save/schema.js';
 import { grantProduct, revokeProduct, equipPan, ownsPan, claimPassPack, addCard } from '../src/inventory/inventory.js';
 import { createShop } from '../src/monetization/shop.js';
+import { createPlayBilling } from '../src/monetization/playBilling.js';
 import { createAdManager } from '../src/monetization/adManager.js';
 import { PASS, STARTER_PACK, starterPack, products, pans } from '../src/data/products.js';
 import { cardById } from '../src/data/cards.js';
@@ -125,6 +126,69 @@ describe('shop (spec 12.2)', () => {
     expect((await shop.buy('kl_skin_pink')).status).toBe('unavailable');
     expect((await shop.refreshEntitlements()).status).toBe('unavailable');
     expect(shop.hasMaestroPass()).toBe(true); // the cache stays
+  });
+
+  it('shows the store price when there is one, the base price otherwise', () => {
+    const billing = { ...fakeBilling(), priceOf: (id) => (id === PASS ? 'US$4.99' : undefined) };
+    const shop = createShop({ saveManager: memorySaveManager(), billing });
+    expect(shop.priceOf(PASS)).toBe('US$4.99');
+    expect(shop.priceOf('kl_skin_pink')).toBe(products.find((p) => p.id === 'kl_skin_pink').price);
+    expect(shop.priceOf(STARTER_PACK)).toBe(starterPack.price);
+  });
+});
+
+// The JS half of the Google Play plugin (D-7), with a fake native side.
+const fakePlugin = ({ products: found = [{ id: PASS, price: '4,99 €' }], owned = [], online = true } = {}) => {
+  const plugin = { online, listeners: {}, purchases: [] };
+  plugin.getProducts = async () => {
+    if (!plugin.online) throw new Error('unavailable');
+    return { products: found };
+  };
+  plugin.purchase = async ({ productId }) => {
+    plugin.purchases.push(productId);
+    return { status: 'purchased' };
+  };
+  plugin.getOwned = async () => {
+    if (!plugin.online) throw new Error('unavailable');
+    return { owned };
+  };
+  plugin.addListener = (name, fn) => (plugin.listeners[name] = fn);
+  return plugin;
+};
+
+describe('Google Play billing (spec 7.6, D-7)', () => {
+  it('is available once the store lists the products, with its prices', async () => {
+    let updates = 0;
+    const plugin = fakePlugin();
+    const billing = createPlayBilling({ plugin, onUpdate: () => updates++ });
+    expect(billing.isAvailable()).toBe(false);
+    await billing.getOwned();
+    expect(billing.isAvailable()).toBe(true);
+    expect(billing.priceOf(PASS)).toBe('4,99 €');
+    expect(updates).toBe(1);
+    plugin.listeners.purchasesUpdated(); // a pending payment completed while playing
+    expect(updates).toBe(2);
+  });
+
+  it('never opens a purchase for a product the store does not list', async () => {
+    const plugin = fakePlugin();
+    const billing = createPlayBilling({ plugin });
+    await billing.getOwned();
+    expect(await billing.purchase('kl_skin_pink')).toBe('unavailable');
+    expect(await billing.purchase(PASS)).toBe('purchased');
+    expect(plugin.purchases).toEqual([PASS]);
+  });
+
+  it('offline it keeps the cache and tries again on the next refresh', async () => {
+    const plugin = fakePlugin({ owned: [PASS], online: false });
+    const saveManager = memorySaveManager();
+    const shop = createShop({ saveManager, billing: createPlayBilling({ plugin }) });
+    expect((await shop.refreshEntitlements()).status).toBe('unavailable');
+    expect(shop.isAvailable()).toBe(false);
+    plugin.online = true;
+    expect((await shop.refreshEntitlements()).status).toBe('ok');
+    expect(shop.isAvailable()).toBe(true);
+    expect(shop.hasMaestroPass()).toBe(true);
   });
 });
 

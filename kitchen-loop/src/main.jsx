@@ -5,6 +5,7 @@ import { localStorageAdapter, preferencesAdapter } from './save/storageAdapter.j
 import { createAdManager } from './monetization/adManager.js';
 import { createAdMobProvider } from './monetization/admobProvider.js';
 import { createShop } from './monetization/shop.js';
+import { createPlayBilling } from './monetization/playBilling.js';
 import { adUnitsReady } from './data/ads.js';
 import { DEV_TOOLS, isNative } from './utils/platform.js';
 import { loadSprites } from './assets/manifest.js';
@@ -32,7 +33,9 @@ const audio = createAudioManager({
 // Every button clicks softly (spec 9.5).
 document.addEventListener('click', (e) => e.target.closest?.('button') && audio.play('tap'), true);
 const haptics = createHaptics({ isEnabled: () => Boolean(saveManager.get()?.settings.vibration) });
-const shop = createShop({ saveManager });
+// Android release builds pay through Google Play (spec 7.6); development/playtest builds keep the purchase mock.
+const billing = isNative() && !DEV_TOOLS ? createPlayBilling({ onUpdate: () => saveManager.get() && shop.refreshEntitlements() }) : undefined;
+const shop = createShop({ saveManager, billing });
 const services = { saveManager, adManager, audio, haptics, shop };
 
 // Save right away when the app goes to the background; purchases refresh on returning (spec 7.6, 10.6).

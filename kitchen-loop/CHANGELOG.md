@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.13.0 — Listo para Google Play (a falta de los datos de Daniel)
+
+- **Compras de verdad con Google Play** en la versión para la tienda: comprar, pagos pendientes que no entregan nada hasta completarse, compras canceladas, reembolsos que retiran lo comprado (y desequipan la sartén), «Restaurar compras» y consulta al abrir y al volver al juego. Plugin propio sobre Google Play Billing Library 9.1.0, sin servicios de terceros.
+- **Precios en la moneda de cada jugador**, tal como los da Google Play. Hasta que la tienda responde se ve el precio base.
+- **El APK de prueba no cambia:** compras simuladas y anuncios de prueba, para seguir probando sin cobros.
+- **Versión para Play Console (AAB) firmada** con la clave de subida, generada por la CI en cuanto estén los secretos de la clave. Sin ellos, todo sigue como antes.
+- **Política de privacidad:** borrador completo en `docs/PRIVACIDAD.md` (falta nombre, correo y país). El enlace de Ajustes aparece cuando se publique.
+- **Ajustes muestra la versión real** del juego (se había quedado en «0.6.0»).
+- **Almacén en móviles de 360 px:** la pestaña «Decoración» ya no se corta.
+
 ## 0.12.0 — Historia bien repartida y una cocina que se anima
 
 - **Historia repartida** (medido con partidas simuladas, jugador casual de 4 servicios al día): los capítulos ya no se amontonan al principio para luego dejar semanas sin nada.

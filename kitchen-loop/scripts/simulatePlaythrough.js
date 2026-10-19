@@ -9,7 +9,7 @@ import { cards } from '../src/data/cards.js';
 import { utensils } from '../src/data/utensils.js';
 import { decorItems } from '../src/data/decor.js';
 import { balance } from '../src/data/balance.js';
-import { createDefaultSave } from '../src/save/schema.js';
+import { createDefaultSave, validateSave } from '../src/save/schema.js';
 import { finalizeLoop, discoveredSecrets } from '../src/economy/rewards.js';
 import { openPack } from '../src/cards/packs.js';
 import { claimCalendar } from '../src/systems/calendar.js';
@@ -76,6 +76,23 @@ function playLoop(save, { specialty, known, tutorial = false, secondChances, cle
     }
   }
   return { result: { ...result, tutorial, loopId: `bot-${rng.int(1e12)}` }, stats };
+}
+
+// Phase 8 checks after every service: the save survives a save/load untouched (validateSave would change any
+// impossible value), and the service's result has no impossible numbers. Problems go to the end of the report.
+const problems = [];
+function diff(a, b, path = 'save') {
+  if (a === b) return [];
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return [`${path}: ${JSON.stringify(a)} → ${JSON.stringify(b)}`];
+  return [...new Set([...Object.keys(a), ...Object.keys(b)])].flatMap((k) => diff(a[k], b[k], `${path}.${k}`));
+}
+function check(save, result, loop) {
+  const stored = JSON.parse(JSON.stringify(save));
+  const found = diff(stored, validateSave(JSON.parse(JSON.stringify(save))));
+  for (const key of ['score', 'ordersServed', 'customersLost', 'bestCombo', 'feverCount', 'perfectCount']) {
+    if (!Number.isInteger(result[key]) || result[key] < 0) found.push(`result.${key}: ${result[key]}`);
+  }
+  for (const f of found) problems.push(`servicio ${loop}: ${f}`);
 }
 
 // ---------- the player's life ----------
@@ -197,6 +214,7 @@ for (let day = 1; day <= MAX_DAYS && !finished; day++) {
     const coinsBefore = save.coins;
     const summary = finalizeLoop(save, result, { rng, now: now + i * 600000, today });
     coinsEarned += save.coins - coinsBefore;
+    check(save, result, loopCount);
     for (const id of result.discovered) discoveryWay[id] = studied.has(id) ? 'hint' : 'accident';
     loops.push({
       day,
@@ -321,3 +339,12 @@ console.log(
 );
 console.log(`**Cartas que faltan (${missing.length}):** ${missing.map((c) => `${c.id} (${c.rarity}, ${c.source})`).join(', ') || 'ninguna'}.\n`);
 console.log(`**Días jugados:** ${days}. **Fragmentos sobrantes:** ${save.fragments}. **Monedas sobrantes:** ${save.coins}.`);
+console.log(`\n## Comprobaciones tras cada servicio\n`);
+console.log(
+  problems.length
+    ? problems
+        .slice(0, 40)
+        .map((p) => `- ${p}`)
+        .join('\n') + (problems.length > 40 ? `\n- … y ${problems.length - 40} más` : '')
+    : `Ninguna incidencia en ${loopCount} servicios: el guardado sigue válido y los resultados no tienen números imposibles.`,
+);

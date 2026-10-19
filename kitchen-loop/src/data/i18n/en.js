@@ -860,6 +860,7 @@ export const en = {
   'settings.nightThemeLocked': 'Included in the Master’s Pass',
   'settings.devRefund': 'Simulate a full refund (test)',
   'settings.adPrivacy': 'Ad privacy',
+  'settings.privacy': 'Privacy policy',
   'settings.credits': 'Credits',
   'settings.creditsText': 'KITCHEN LOOP · Idea and direction: Daniel · Reference art generated with Meta AI · Programming with Claude Code',
   'settings.delete': 'Delete save',

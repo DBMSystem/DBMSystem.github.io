@@ -2,3 +2,6 @@ node_modules
 dist
 *.log
 __pycache__
+# The Google Play upload key never goes in the repository: it lives in GitHub secrets (docs/FASE7_DATOS.md)
+*.jks
+upload*.keystore

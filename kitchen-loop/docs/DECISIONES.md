@@ -687,3 +687,32 @@ Medido con `scripts/simulatePlaythrough.js` (motor real, bot casual de 4 servici
   - Es el punto a vigilar al probar en el móvil: si cuesta demasiado, se baja en `balance.js`.
 - **Fiebre:** `feverThreshold` pasa de 5 a 4. El casual ve una fiebre cada dos servicios (antes una cada cinco); el hábil, unas 2,6 por servicio (antes 2).
 
+
+## 37. Fase 7 sin los datos de Daniel: pagos de Google Play, AAB firmado y borrador de privacidad (Daniel: «termina el juego»)
+
+Se hace todo lo que no depende de sus datos; lo que sí depende está en `FASE7_DATOS.md` y se le pide paso a paso.
+
+- **D-7 (plugin de pagos): se aplica el valor recomendado, plugin propio, sin RevenueCat.**
+  - Son 5 compras únicas, sin suscripciones: no hace falta otra empresa que trate datos ni otra cuenta.
+  - Java y no Kotlin: el proyecto Android ya es Java y Kotlin añadiría su plugin de Gradle solo para esto.
+  - Google Play Billing Library 9.1.0, la más reciente (Play exige 8 o superior).
+  - Contrato de `shop.js` intacto (sección 12.2). `ITEM_ALREADY_OWNED` cuenta como comprado, porque Play confirma que
+    es suyo; entregar es idempotente y el Pack de Inicio no se entrega dos veces.
+  - Las compras se reconocen (*acknowledge*) al recibirlas y, si falla, en la siguiente consulta: Play reembolsa las
+    que no se reconocen en 3 días.
+- **Sin servidor no hay verificación de recibos en servidor.** La fuente de verdad es la consulta a Google Play
+  (`queryPurchasesAsync`) al arrancar, al volver y al restaurar. Un móvil manipulado podría fingir una compra, pero
+  todo lo que se vende es estético (7.4, 7.5): se acepta ese riesgo antes que montar un servidor.
+- **El APK de prueba sigue con compras simuladas** (es desarrollo, regla 8). Solo la versión para Play (`npm run
+  build:release`, modo producción) usa Google Play de verdad. Así Daniel puede seguir probando la tienda sin cobros.
+- **Precios:** los da la tienda, ya en la moneda de quien juega. Hasta que responde se ve el precio base de
+  `products.js`.
+- **AAB:** solo en `main` y solo si existen los secretos `KL_UPLOAD_*`; se guarda como artefacto de la ejecución para
+  subirlo a mano a Play Console (no se publica como *release*). La clave nunca está en el repositorio
+  (`.gitignore` bloquea `*.jks` y `upload*.keystore`).
+- **Permisos nuevos:** `com.android.vending.BILLING` (lo añade la librería). `FOREGROUND_SERVICE` ya venía de
+  WorkManager a través de AdMob y no declara tipo de servicio, así que Play Console no pide justificarlo.
+- **Privacidad:** borrador fiel al código en `docs/PRIVACIDAD.md`. La analítica es local y el juego no hace ninguna
+  petición propia de red. El enlace de Ajustes aparece solo cuando haya página publicada (`src/data/legal.js`), para no
+  enlazar a una página que no existe.
+- **Ajustes mostraba «Versión 0.6.0»** desde la fase 6: ahora lee la versión de `package.json`.

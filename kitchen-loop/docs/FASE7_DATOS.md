@@ -6,6 +6,20 @@ Si falta un dato, el código lleva una constante vacía con el comentario `PENDI
 
 Nunca se piden por el chat contraseñas, claves de firma ni el archivo `.keystore`: van a los secretos de GitHub.
 
+## Estado (0.13.0): lo que ya está hecho sin esperar a los datos
+
+- **Google Play Billing** (paso 5, D-7 por defecto: sin RevenueCat): plugin propio en Java sobre Play Billing
+  Library 9.1.0 (`android/app/src/main/java/com/dbmsystem/kitchenloop/PlayBillingPlugin.java`) y su lado JS
+  (`src/monetization/playBilling.js`). Compra, pago pendiente, cancelación, *acknowledge*, consulta al arrancar, al
+  volver y con «Restaurar compras», reembolsos y precios localizados de la tienda. Compila; falta probarlo con la
+  prueba interna (paso 10), porque Google Play solo responde a una app subida a Play Console.
+- **AAB firmado** (paso 2): la CI lo genera en `main` en cuanto existan los cuatro secretos `KL_UPLOAD_*`. Sin ellos se
+  salta ese paso y todo sigue como ahora. Probado en local con una clave de usar y tirar.
+- **Política de privacidad** (paso 7): borrador en `docs/PRIVACIDAD.md`, con las respuestas de Seguridad de los datos.
+  Falta: nombre, correo y país. El enlace de Ajustes aparece solo cuando se publique (`src/data/legal.js`).
+- **APK de prueba**: sigue con compras simuladas y anuncios de prueba. La versión de Play (AAB) usa Google Play de
+  verdad y anuncios de prueba hasta tener los bloques reales (paso 6).
+
 ## Lo que la plantilla trae y el juego no usa
 
 | Plantilla | En KITCHEN LOOP | Por qué |
@@ -20,7 +34,7 @@ Nunca se piden por el chat contraseñas, claves de firma ni el archivo `.keystor
 - **Package name:** `com.dbmsystem.kitchenloop`, el que ya usan el proyecto y los APK de prueba.
   - Pregunta: ¿se queda este? Tras la primera subida a Play Console **no se puede cambiar nunca**.
 - **versionCode:** lo pone la CI con el número de ejecución (siempre sube, como exige Play).
-- **versionName:** ahora es 0.9.1.
+- **versionName:** sale de `package.json` (ahora 0.13.0).
   - Pregunta: ¿el lanzamiento sale como `1.0.0`?
 
 ## Paso 2 — Clave de firma de publicación (la hace Daniel en su ordenador)
@@ -62,8 +76,8 @@ Los identificadores ya están en el código (`src/data/products.js`) y deben cre
 ## Paso 5 — Plugin de pagos (decisión D-7)
 
 - Pregunta: ¿usas RevenueCat? Si la respuesta es sí, necesito la *Public Android API key* (`goog_…`) y el nombre del *entitlement*.
-- **Recomendación: sin RevenueCat.** Son 5 compras únicas; basta un plugin propio pequeño (Kotlin) sobre **Google Play Billing Library 8.x**.
-  - Da control total de la versión (Play exige 8.0.0 o superior).
+- **Hecho con el valor por defecto: sin RevenueCat.** Son 5 compras únicas; basta un plugin propio pequeño (Java, como el resto del proyecto Android) sobre **Google Play Billing Library 9.1.0**.
+  - Da control total de la versión (Play exige 8.0.0 o superior; la 9.1 es la más reciente y da más margen antes de la próxima subida obligatoria).
   - No añade otro SDK ni otra empresa que trate datos, así que el formulario de Seguridad de los datos queda más simple.
   - No necesita cuenta extra.
 - Se implemente como se implemente, `shop.js` mantiene su contrato (sección 12.2):

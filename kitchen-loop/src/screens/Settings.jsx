@@ -6,8 +6,8 @@ import { useAds } from '../monetization/useAds.js';
 import { hasMaestroPass } from '../inventory/inventory.js';
 import { balance } from '../data/balance.js';
 import { DEV_TOOLS } from '../utils/platform.js';
-
-const VERSION = '0.6.0';
+import { PRIVACY_POLICY_URL } from '../data/legal.js';
+import { version } from '../../package.json';
 
 function Slider({ label, value, onChange, disabled, note }) {
   return (
@@ -22,8 +22,8 @@ function Slider({ label, value, onChange, disabled, note }) {
   );
 }
 
-// Settings (spec 8.8). Ad privacy options appear where Google's consent requires them (spec 7.7);
-// store purchases and the privacy policy arrive with monetisation (phases 5–7).
+// Settings (spec 8.8). Ad privacy options appear where Google's consent requires them, and the privacy policy once
+// it is published (spec 7.7).
 export function Settings({ services, onLanguage, onClose, onRename, onTutorial, onStory, onDeleted }) {
   const { saveManager, audio, adManager, shop } = services;
   const [notice, setNotice] = useState(null);
@@ -114,11 +114,16 @@ export function Settings({ services, onLanguage, onClose, onRename, onTutorial, 
           {t('settings.adPrivacy')}
         </Button>
       )}
+      {PRIVACY_POLICY_URL && (
+        <a className="btn secondary" href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer">
+          {t('settings.privacy')}
+        </a>
+      )}
       <Button variant="secondary" className="btn danger" onClick={remove}>
         {deleteStep === 0 ? t('settings.delete') : deleteStep === 1 ? t('settings.deleteConfirm1') : t('settings.deleteConfirm2')}
       </Button>
       <p className="hint small">{t('settings.creditsText')}</p>
-      <p className="hint small">{t('settings.version', { v: VERSION })}</p>
+      <p className="hint small">{t('settings.version', { v: version })}</p>
       <Button onClick={onClose}>{t('settings.close')}</Button>
     </div>
   );
