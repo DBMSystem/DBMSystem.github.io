@@ -16,8 +16,8 @@ móvil de verdad (sonido, vibración, rendimiento real) o con Google Play.
   errores de consola. Prueba el botón Atrás en cada pantalla.
   - Encontrado y arreglado: en 360 px la pestaña «Decoración» del Almacén se cortaba.
   - Tras el arreglo: **cero incidencias y cero errores de consola** en los tres tamaños.
-- **Sesión larga** (navegador): 5 servicios seguidos **sin conexión**, midiendo FPS durante la partida y memoria tras
-  cada servicio. Resultado en la tabla de abajo.
+- **Sesión larga** (navegador, móvil de 390 × 844): 5 servicios seguidos, midiendo FPS durante la partida, memoria
+  tras cada servicio y cualquier petición que salga del propio juego. Resultado en la tabla de abajo.
 - **Tests** (Vitest): 183 en verde.
 
 ## Checklist
@@ -39,15 +39,26 @@ móvil de verdad (sonido, vibración, rendimiento real) o con Google Play.
 | Sin banners, anuncios obligatorios ni ventajas de pago | ✅ | Solo recompensados (`ads.js`); ninguna llamada a banners ni intersticiales en el código. |
 | Nada de pago antes de 3 loops ni Almacén antes del capítulo 3 | ✅ | Tests (`adsMinLoops`, capítulo 3 abre el Almacén). |
 | Animaciones, partículas, sonidos, vibración, ajustes, «Reducir animaciones» | 📱 Daniel | Se ven en las capturas; el sonido y la vibración, en el móvil. |
-| El juego básico funciona sin conexión | ✅ | Sesión larga sin red: ver tabla. |
-| Tildes, ñ, ¿ y ¡ en el canvas y en los menús | ✅ | Menús y canvas usan la fuente del sistema (Roboto en Android), con todos los caracteres. |
+| El juego básico funciona sin conexión | ✅ | El APK lleva todo dentro y el juego no hace ninguna petición de red propia (sesión larga: cero). Solo AdMob y Google Play usan la red, y sin ella quedan «no disponible» sin tocar la partida (tests). |
+| Tildes, ñ, ¿ y ¡ en el canvas y en los menús | ✅ | Menús y canvas usan la fuente del sistema (Roboto en Android). En las capturas: «Tortilla de Champiñones» en el canvas, «Almacén», «Decoración», «¿Cerrar Kitchen Loop?» en los menús. |
 | Sin errores de consola ni fugas de memoria | ✅ | Cero errores en pantallas y sesión larga; memoria estable (tabla). |
 | Ningún elemento fuera de pantalla | ✅ | Tres tamaños, todas las pantallas. |
 | 60 FPS durante el gameplay | ✅ / 📱 | Navegador: ver tabla. En un móvil de gama media, Daniel. |
 
 ## Sesión larga sin conexión
 
-Medición en curso: se completa en el siguiente commit.
+| Servicio | FPS en partida | Peor fotograma | Memoria JS tras el servicio |
+|---|---|---|---|
+| Antes de jugar | — | — | 17,7 MB |
+| 1 | 60 | 17 ms | 18,5 MB |
+| 2 | 60 | 17 ms | 18,6 MB |
+| 3 | 60 | 17 ms | 18,7 MB |
+| 4 | 60 | 17 ms | 18,7 MB |
+| 5 | 60 | 17 ms | 18,7 MB |
+
+- La memoria sube un poco en el primer servicio (cachés de dibujo) y luego se queda plana: **sin fugas**.
+- **Cero errores de consola** y **cero peticiones de red** fuera del juego.
+- Es un navegador de escritorio sin pantalla: los 60 FPS hay que confirmarlos en un móvil de gama media (📱 Daniel).
 
 ## Fase 7 (pagos de verdad)
 
