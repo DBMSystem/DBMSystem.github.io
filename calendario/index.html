@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#2f6f68">
+<title>Calendario familiar</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <button class="icon-btn" id="prev" aria-label="Mes anterior">‹</button>
+  <button class="month-title" id="month-title" title="Ir a hoy"></button>
+  <button class="icon-btn" id="next" aria-label="Mes siguiente">›</button>
+  <button class="icon-btn" id="open-settings" aria-label="Ajustes">⚙︎</button>
+</header>
+
+<main>
+  <div id="reminders"></div>
+
+  <div class="toolbar">
+    <div id="legend" class="legend"></div>
+    <button class="btn" id="toggle-paint" aria-pressed="false">✏️ Rellenar</button>
+  </div>
+
+  <section id="paint-bar" class="paint-bar" hidden>
+    <div class="seg" id="paint-target"></div>
+    <div class="chips" id="paint-values"></div>
+    <p class="hint" id="paint-hint"></p>
+  </section>
+
+  <div class="weekdays"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+  <div id="grid" class="grid" role="grid"></div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Próximos 30 días</h2>
+      <button class="btn primary" id="add-event">＋ Evento</button>
+    </div>
+    <ul id="upcoming" class="list"></ul>
+  </section>
+
+  <section class="panel">
+    <h2>Resumen del mes</h2>
+    <div id="summary"></div>
+  </section>
+</main>
+
+<!-- Day sheet -->
+<dialog id="day-dialog" class="sheet">
+  <form method="dialog" class="sheet-body" id="day-form">
+    <div class="sheet-head">
+      <h2 id="day-title"></h2>
+      <button class="icon-btn" value="close" aria-label="Cerrar">✕</button>
+    </div>
+    <h3>Horarios de trabajo</h3>
+    <div id="day-shifts"></div>
+    <h3>Las niñas</h3>
+    <label class="check"><input type="checkbox" id="day-iaios"> Se quedan en casa de los iaios</label>
+    <div id="day-iaios-extra" class="indent">
+      <label class="check"><input type="checkbox" id="day-iaios-sleep"> Duermen allí</label>
+      <input type="text" id="day-iaios-note" placeholder="Nota (p. ej. las recoge el iaio a las 17:00)">
+    </div>
+    <h3>Eventos</h3>
+    <ul id="day-events" class="list"></ul>
+    <button type="button" class="btn primary" id="day-add-event">＋ Añadir evento este día</button>
+  </form>
+</dialog>
+
+<!-- Event editor -->
+<dialog id="event-dialog" class="sheet">
+  <form method="dialog" class="sheet-body" id="event-form">
+    <div class="sheet-head">
+      <h2 id="event-dialog-title">Evento</h2>
+      <button type="button" class="icon-btn" data-close aria-label="Cerrar">✕</button>
+    </div>
+    <label>Título<input name="title" required maxlength="80" autocomplete="off"></label>
+    <div class="row">
+      <label>Fecha<input name="date" type="date" required></label>
+      <label>Hora<input name="time" type="time"></label>
+      <label>Hasta<input name="endTime" type="time"></label>
+    </div>
+    <div class="row">
+      <label>Tipo<select name="cat"></select></label>
+      <label>Se repite<select name="repeat">
+        <option value="none">No</option>
+        <option value="weekly">Cada semana</option>
+        <option value="monthly">Cada mes</option>
+        <option value="yearly">Cada año</option>
+      </select></label>
+    </div>
+    <label>Recordatorio<select name="remind">
+      <option value="-1">Sin aviso</option>
+      <option value="0">El mismo día</option>
+      <option value="1">1 día antes</option>
+      <option value="2">2 días antes</option>
+      <option value="3">3 días antes</option>
+      <option value="7">1 semana antes</option>
+      <option value="14">2 semanas antes</option>
+    </select></label>
+    <label>Notas<textarea name="notes" rows="2" maxlength="500"></textarea></label>
+    <div class="actions">
+      <button type="button" class="btn danger" id="event-delete">Borrar</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button type="submit" class="btn primary" value="save">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Settings -->
+<dialog id="settings-dialog" class="sheet">
+  <form method="dialog" class="sheet-body">
+    <div class="sheet-head">
+      <h2>Ajustes</h2>
+      <button class="icon-btn" value="close" aria-label="Cerrar">✕</button>
+    </div>
+
+    <h3>Personas</h3>
+    <div id="set-people"></div>
+
+    <h3>Tipos de turno</h3>
+    <div id="set-shifts"></div>
+    <button type="button" class="btn" id="add-shift">＋ Añadir tipo de turno</button>
+
+    <h3>Horario semanal habitual</h3>
+    <p class="hint">Se aplica a todos los días salvo los que cambies a mano en el calendario.</p>
+    <div id="set-weekly"></div>
+
+    <h3>Avisos</h3>
+    <p class="hint" id="notif-status"></p>
+    <button type="button" class="btn" id="enable-notif">Activar avisos en este dispositivo</button>
+    <label class="check"><input type="checkbox" id="set-iaios-reminder"> Avisarme el día antes de que las niñas vayan a casa de los iaios</label>
+
+    <h3>Pasar al calendario del móvil</h3>
+    <p class="hint">Descarga un archivo .ics y ábrelo: los eventos se añaden al calendario del teléfono con sus alarmas, que suenan aunque esta app esté cerrada.</p>
+    <label class="check"><input type="checkbox" id="ics-iaios" checked> Incluir días de los iaios</label>
+    <label class="check"><input type="checkbox" id="ics-shifts"> Incluir horarios de trabajo</label>
+    <label>Meses a exportar (días de iaios y turnos)<select id="ics-months">
+      <option value="1">Este mes</option><option value="3" selected>3 meses</option><option value="6">6 meses</option><option value="12">12 meses</option>
+    </select></label>
+    <button type="button" class="btn" id="export-ics">Descargar .ics</button>
+
+    <h3>Copia de seguridad y compartir</h3>
+    <p class="hint">Los datos se guardan en este dispositivo. Para tener lo mismo en el otro móvil, envía la copia y ábrela allí con «Cargar copia».</p>
+    <div class="actions wrap">
+      <button type="button" class="btn" id="export-json">Enviar / guardar copia</button>
+      <button type="button" class="btn" id="import-json">Cargar copia</button>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
+      <button type="button" class="btn danger" id="reset-all">Borrar todo</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
