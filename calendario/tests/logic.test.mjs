@@ -67,3 +67,36 @@ test('ics export', () => {
   assert.match(ics, /DTSTART:20261128T230000\r\nDTEND:20261129T070000/); // night shift ends next day
   assert.match(ics, /SUMMARY:Niñas con los iaios \(duermen allí\)/);
 });
+
+test('quick add parser', () => {
+  const t = '2026-11-24'; // Tuesday
+  const p = (s) => { const r = L.parseQuick(s, t); return [r.date, r.time, r.title, r.cat]; };
+  assert.deepEqual(p('15 dentista 11:00'), ['2026-12-15', '11:00', 'Dentista', 'doctor']);
+  assert.deepEqual(p('revisión médica por la mañana el 4'), ['2026-12-04', '', 'Revisión médica por la mañana', 'doctor']);
+  assert.deepEqual(p('mañana cumple de la iaia'), ['2026-11-25', '', 'Cumple de la iaia', 'birthday']);
+  assert.deepEqual(p('viernes a las 17 función del cole'), ['2026-11-27', '17:00', 'Función del cole', 'school']);
+  assert.deepEqual(p('22 dic evento cole'), ['2026-12-22', '', 'Evento cole', 'school']);
+  assert.deepEqual(p('5/1 reyes'), ['2027-01-05', '', 'Reyes', 'important']);
+  assert.deepEqual(p('llamar al seguro 9.30'), ['2026-11-24', '09:30', 'Llamar al seguro', 'important']);
+  assert.equal(L.parseQuick('regalo', t).dateFound, false);
+  assert.equal(L.parseQuick('el 24 cena familiar', t).date, '2026-11-24');
+});
+
+test('compact labels', () => {
+  assert.equal(L.shiftRange({ start: '13:30', end: '22:00' }), '13:30–22');
+  assert.equal(L.shiftRange({ start: '05:00', end: '13:15', name: 'x' }), '5–13:15');
+  assert.equal(L.shiftRange({ start: '', end: '', name: 'Libre' }), 'Libre');
+  assert.equal(L.shortDate('2026-12-10'), 'Jue 10 dic');
+});
+
+test('sticky reminders: 2 days before until the event is over', () => {
+  const d = { ...data(), settings: { stickyEvents: true, stickyIaios: true } };
+  const s = L.stickySchedule(d, '2026-11-24', 30);
+  assert.deepEqual(s.map((x) => [x.key, x.at, x.until]), [
+    ['s:i:2026-11-25', '2026-11-23T09:00', '2026-11-26T09:00'],
+    ['s:e:b@2026-11-26', '2026-11-24T09:00', '2026-11-27T00:00'],
+    ['s:e:d@2026-11-27', '2026-11-25T09:00', '2026-11-27T11:30'],
+  ]);
+  assert.equal(s[2].title, 'Vie 27 nov · 10:30 — Pediatra');
+  assert.deepEqual(L.stickySchedule(data(), '2026-11-24', 30), []);
+});

@@ -23,9 +23,13 @@
   <div id="reminders"></div>
 
   <div class="toolbar">
-    <div id="legend" class="legend"></div>
+    <div class="seg views" role="tablist">
+      <button type="button" data-view="month" role="tab">📅 Mes</button>
+      <button type="button" data-view="agenda" role="tab">📋 Agenda</button>
+    </div>
     <button class="btn" id="toggle-paint" aria-pressed="false">✏️ Rellenar</button>
   </div>
+  <div id="legend" class="legend"></div>
 
   <section id="paint-bar" class="paint-bar" hidden>
     <div class="seg" id="paint-target"></div>
@@ -33,8 +37,13 @@
     <p class="hint" id="paint-hint"></p>
   </section>
 
-  <div class="weekdays"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
-  <div id="grid" class="grid" role="grid"></div>
+  <section id="month-view">
+    <div class="weekdays"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+    <div id="grid" class="grid" role="grid"></div>
+  </section>
+  <section id="agenda-view" hidden>
+    <ol id="agenda" class="agenda"></ol>
+  </section>
 
   <section class="panel">
     <div class="panel-head">
@@ -49,6 +58,27 @@
     <div id="summary"></div>
   </section>
 </main>
+
+<button class="fab" id="fab" aria-label="Añadir rápido">＋</button>
+
+<!-- Quick add -->
+<dialog id="quick-dialog" class="sheet">
+  <form method="dialog" class="sheet-body" id="quick-form">
+    <div class="sheet-head">
+      <h2>Añadir rápido</h2>
+      <button type="button" class="icon-btn" data-close aria-label="Cerrar">✕</button>
+    </div>
+    <input id="quick-text" autocomplete="off" enterkeyhint="done" placeholder="Ej.: 15 dentista 11:00">
+    <p class="hint">Escribe el día, la hora y qué es, en cualquier orden: «mañana cumple iaia», «viernes 17:30 función del cole», «22 dic tutoría».</p>
+    <div id="quick-preview" class="quick-preview"></div>
+    <div class="actions wrap">
+      <button type="button" class="btn" id="quick-more">Más opciones…</button>
+      <button type="button" class="btn" id="quick-note">Como nota del día</button>
+      <span class="spacer"></span>
+      <button type="submit" class="btn primary" id="quick-save">Guardar</button>
+    </div>
+  </form>
+</dialog>
 
 <!-- Day sheet -->
 <dialog id="day-dialog" class="sheet">
@@ -65,9 +95,15 @@
       <label class="check"><input type="checkbox" id="day-iaios-sleep"> Duermen allí</label>
       <input type="text" id="day-iaios-note" placeholder="Nota (p. ej. las recoge el iaio a las 17:00)">
     </div>
+    <h3>Nota del día</h3>
+    <textarea id="day-note" rows="4" maxlength="600" placeholder="Quién lleva, quién recoge, recados…"></textarea>
     <h3>Eventos</h3>
     <ul id="day-events" class="list"></ul>
-    <button type="button" class="btn primary" id="day-add-event">＋ Añadir evento este día</button>
+    <div class="quick-inline">
+      <input id="day-quick" autocomplete="off" enterkeyhint="done" placeholder="Añadir: dentista 11:00">
+      <button type="button" class="btn primary" id="day-quick-add" aria-label="Añadir evento">＋</button>
+    </div>
+    <button type="button" class="btn" id="day-add-event">Evento con más opciones…</button>
   </form>
 </dialog>
 
@@ -135,6 +171,9 @@
     <p class="hint" id="notif-status"></p>
     <button type="button" class="btn" id="enable-notif">Activar avisos en este dispositivo</button>
     <label class="check"><input type="checkbox" id="set-iaios-reminder"> Avisarme el día antes de que las niñas vayan a casa de los iaios</label>
+    <p class="hint"><strong>Aviso fijo</strong> (en la app de Android): aparece 2 días antes a las 9:00 y no se puede quitar hasta que pasa el evento.</p>
+    <label class="check"><input type="checkbox" id="set-sticky-events"> Aviso fijo para los eventos</label>
+    <label class="check"><input type="checkbox" id="set-sticky-iaios"> Aviso fijo para las noches con los iaios</label>
 
     <h3>Pasar al calendario del móvil</h3>
     <p class="hint">Genera un archivo .ics con los eventos y sus alarmas para añadirlos a otro calendario (Google Calendar, Samsung Calendar, iPhone…).</p>

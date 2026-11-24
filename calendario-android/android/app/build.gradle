@@ -7,7 +7,7 @@ android {
         applicationId "com.dbmsystem.calendariofamiliar"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        // CI passes the run number and the package.json version (see .github/workflows/calendario-android.yml).
+        // Version from package.json; the code is derived from it (scripts/version-code.js), same in CI and locally.
         versionCode Integer.parseInt(System.getenv('CAL_VERSION_CODE') ?: '1')
         versionName System.getenv('CAL_VERSION_NAME') ?: '1.0.0'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

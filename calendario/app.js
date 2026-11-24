@@ -1,6 +1,6 @@
 import {
-  NO_SHIFT, addDays, buildICS, diffDays, dueReminders, eventsOn, fromKey, monthGrid,
-  monthSummary, pad, shiftFor, todayKey, upcoming, weekdayMon,
+  NO_SHIFT, addDays, buildICS, daysInMonth, diffDays, dueReminders, eventsOn, fromKey, monthGrid,
+  monthSummary, pad, parseQuick, shiftFor, shiftRange, shortDate, todayKey, upcoming, weekdayMon,
 } from './logic.js';
 import {
   appVersion, exitApp, isNative, notificationPermission, onBackButton, requestNotificationPermission, rescheduleNotifications, shareFile,
@@ -37,7 +37,8 @@ function defaultData() {
     shifts: {},
     iaios: {},
     events: [],
-    settings: { iaiosReminder: true },
+    notes: {},
+    settings: { iaiosReminder: true, stickyEvents: true, stickyIaios: true, view: 'month' },
     notified: {},
     seen: {},
   };
@@ -56,6 +57,7 @@ function normalize(obj) {
   const base = defaultData();
   const data = { ...base, ...obj, settings: { ...base.settings, ...(obj.settings || {}) } };
   for (const p of data.people) if (!Array.isArray(data.weekly[p.id])) data.weekly[p.id] = Array(7).fill(null);
+  if (!data.notes || typeof data.notes !== 'object') data.notes = {};
   return data;
 }
 
@@ -126,8 +128,10 @@ function render() {
   const first = `${state.year}-${pad(state.month + 1)}-01`;
   $('#month-title').textContent = cap(fmtMonth.format(fromKey(first)));
   renderLegend();
+  renderViewSwitch();
   renderPaintBar();
-  renderGrid();
+  if (data.settings.view === 'agenda') renderAgenda();
+  else renderGrid();
   renderReminders();
   renderUpcoming();
   renderSummary();
@@ -150,17 +154,50 @@ function renderGrid() {
     const shifts = data.people.map((p) => {
       const s = shiftFor(data, p.id, key);
       if (!s) return '<span class="pill empty"></span>';
-      const manual = data.shifts[key]?.[p.id] !== undefined;
-      return `<span class="pill${manual ? ' manual' : ''}" style="background:${esc(s.color)};color:${textOn(s.color)};border-left-color:${esc(p.color)}" title="${esc(p.name)}: ${esc(shiftLabel(s))}">${esc(s.short)}</span>`;
+      const range = shiftRange(s);
+      return `<span class="pill${range.length > 6 ? ' long' : ''}" style="background:${esc(s.color)};color:${textOn(s.color)};border-left-color:${esc(p.color)}" title="${esc(p.name)}: ${esc(shiftLabel(s))}">${esc(range)}</span>`;
     }).join('');
     const evs = eventsOn(data, key);
-    const evHtml = evs.slice(0, 2).map((e) => `<span class="ev">${CATS[e.cat]?.icon || '📌'} ${esc(e.title)}</span>`).join('')
-      + (evs.length > 2 ? `<span class="ev more">+${evs.length - 2}</span>` : '');
+    const evHtml = evs.slice(0, 3).map((e) => `<span class="ev">${CATS[e.cat]?.icon || '📌'} ${e.time ? `<b>${esc(e.time)}</b> ` : ''}${esc(e.title)}</span>`).join('')
+      + (evs.length > 3 ? `<span class="ev more">+${evs.length - 3}</span>` : '')
+      + (data.notes[key] ? `<span class="ev note">📝 ${esc(data.notes[key])}</span>` : '');
     return `<button class="${classes}" data-key="${key}" role="gridcell" aria-label="${esc(fmtLong.format(fromKey(key)))}">
       <span class="d-top"><span class="d-num">${Number(key.slice(8))}</span>${iaios ? `<span class="d-iaios">🏡${iaios.sleep ? '🌙' : ''}</span>` : ''}</span>
       <span class="d-shifts">${shifts}</span>
       <span class="d-evs">${evHtml}</span>
     </button>`;
+  }).join('');
+}
+
+function renderViewSwitch() {
+  const agenda = data.settings.view === 'agenda';
+  $('#month-view').hidden = agenda;
+  $('#agenda-view').hidden = !agenda;
+  $('#toggle-paint').hidden = agenda;
+  document.querySelectorAll('[data-view]').forEach((b) => b.classList.toggle('on', b.dataset.view === data.settings.view));
+}
+
+/** Every day of the month at full width, with everything written out. */
+function renderAgenda() {
+  const t = today();
+  const n = daysInMonth(state.year, state.month);
+  const days = [];
+  for (let d = 1; d <= n; d++) days.push(`${state.year}-${pad(state.month + 1)}-${pad(d)}`);
+  $('#agenda').innerHTML = days.map((key) => {
+    const ia = data.iaios[key];
+    const wd = weekdayMon(key);
+    const shifts = data.people.map((p) => {
+      const s = shiftFor(data, p.id, key);
+      const label = s ? `<span class="pill inline" style="background:${esc(s.color)};color:${textOn(s.color)}">${esc(s.short)}</span> ${esc(s.name)}${s.start && s.end ? ` <span class="muted">${esc(shiftRange(s))}</span>` : ''}` : '<span class="muted">—</span>';
+      return `<div class="ag-shift"><span class="dot" style="background:${esc(p.color)}"></span><b>${esc(p.name)}</b> ${label}</div>`;
+    }).join('');
+    const iaHtml = ia ? `<div class="ag-line ag-iaios">🏡 <b>Con los iaios</b>${ia.sleep ? ' · 🌙 duermen allí' : ''}${ia.note ? `<small>${esc(ia.note)}</small>` : ''}</div>` : '';
+    const note = data.notes[key] ? `<div class="ag-line">📝 ${esc(data.notes[key])}</div>` : '';
+    const evs = eventsOn(data, key).map((e) => `<div class="ag-line">${CATS[e.cat]?.icon || '📌'} ${e.time ? `<b>${esc(e.time)}${e.endTime ? `–${esc(e.endTime)}` : ''}</b> ` : ''}${esc(e.title)}${e.notes ? `<small>${esc(e.notes)}</small>` : ''}</div>`).join('');
+    return `<li><button type="button" class="ag-day${key === t ? ' today' : ''}${ia ? ' iaios' : ''}${wd >= 5 ? ' weekend' : ''}" data-key="${key}" id="ag-${key}">
+      <span class="ag-date"><span class="ag-wd">${shortDate(key).slice(0, 3)}</span><span class="ag-num">${Number(key.slice(8))}</span>${key === t ? '<span class="ag-today">Hoy</span>' : ''}</span>
+      <span class="ag-body">${shifts}${iaHtml}${note}${evs}</span>
+    </button></li>`;
   }).join('');
 }
 
@@ -307,6 +344,21 @@ $('#toggle-paint').addEventListener('click', () => {
   renderPaintBar();
 });
 
+document.querySelector('.views').addEventListener('click', (ev) => {
+  const b = ev.target.closest('[data-view]');
+  if (!b) return;
+  data.settings.view = b.dataset.view;
+  state.paint.on = false;
+  save();
+  render();
+  if (data.settings.view === 'agenda') document.getElementById(`ag-${today()}`)?.scrollIntoView({ block: 'center' });
+});
+
+$('#agenda').addEventListener('click', (ev) => {
+  const day = ev.target.closest('.ag-day');
+  if (day) openDay(day.dataset.key);
+});
+
 // ---------- navigation ----------
 
 function shiftMonth(delta) {
@@ -326,16 +378,18 @@ $('#month-title').addEventListener('click', () => {
 
 // Swipe left/right on the calendar to change month (not while painting).
 let swipe = null;
-$('#grid').addEventListener('touchstart', (e) => {
-  if (!state.paint.on) swipe = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-}, { passive: true });
-$('#grid').addEventListener('touchend', (e) => {
-  if (!swipe) return;
-  const dx = e.changedTouches[0].clientX - swipe.x;
-  const dy = e.changedTouches[0].clientY - swipe.y;
-  swipe = null;
-  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) shiftMonth(dx < 0 ? 1 : -1);
-});
+for (const el of [$('#grid'), $('#agenda')]) {
+  el.addEventListener('touchstart', (e) => {
+    if (!state.paint.on) swipe = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, { passive: true });
+  el.addEventListener('touchend', (e) => {
+    if (!swipe) return;
+    const dx = e.changedTouches[0].clientX - swipe.x;
+    const dy = e.changedTouches[0].clientY - swipe.y;
+    swipe = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) shiftMonth(dx < 0 ? 1 : -1);
+  });
+}
 
 $('#reminders').addEventListener('click', (ev) => {
   const b = ev.target.closest('[data-seen]');
@@ -368,14 +422,18 @@ function renderDay() {
     const weeklyId = data.weekly[p.id]?.[weekdayMon(key)];
     const weeklyType = data.shiftTypes.find((s) => s.id === weeklyId);
     const current = override === undefined ? 'default' : override;
-    const opts = [
-      `<option value="default">Habitual${weeklyType ? ` (${esc(weeklyType.name)})` : ' (sin turno)'}</option>`,
-      ...data.shiftTypes.map((s) => `<option value="${esc(s.id)}">${esc(shiftLabel(s))}</option>`),
-      `<option value="${NO_SHIFT}">Sin turno</option>`,
+    const chip = (val, label, color) => `<button type="button" class="chip${current === val ? ' on' : ''}" data-person="${esc(p.id)}" data-val="${esc(val)}"
+      ${color ? `style="--chip:${esc(color)};--chip-fg:${textOn(color)}"` : ''}>${label}</button>`;
+    const chips = [
+      ...data.shiftTypes.map((s) => chip(s.id, `${esc(s.name)}${s.start && s.end ? ` <small>${esc(shiftRange(s))}</small>` : ''}`, s.color)),
+      chip(NO_SHIFT, 'Sin turno', ''),
+      chip('default', `Habitual <small>${weeklyType ? esc(weeklyType.name) : 'nada'}</small>`, ''),
     ].join('');
-    return `<label class="person-row"><span class="dot" style="background:${esc(p.color)}"></span>${esc(p.name)}
-      <select data-person="${esc(p.id)}">${opts.replace(`value="${esc(current)}"`, `value="${esc(current)}" selected`)}</select></label>`;
+    return `<div class="person-shifts"><div class="person-name"><span class="dot" style="background:${esc(p.color)}"></span>${esc(p.name)}</div>
+      <div class="chips">${chips}</div></div>`;
   }).join('');
+  $('#day-note').value = data.notes[key] || '';
+  $('#day-quick').value = '';
   const ia = data.iaios[key];
   $('#day-iaios').checked = !!ia;
   $('#day-iaios-extra').hidden = !ia;
@@ -388,21 +446,41 @@ function renderDay() {
     : '<li class="empty-msg">Sin eventos.</li>';
 }
 
-$('#day-shifts').addEventListener('change', (ev) => {
-  const sel = ev.target.closest('select[data-person]');
-  if (!sel) return;
+$('#day-shifts').addEventListener('click', (ev) => {
+  const b = ev.target.closest('[data-person][data-val]');
+  if (!b) return;
   const key = state.dayKey;
-  const pid = sel.dataset.person;
-  if (sel.value === 'default') {
+  const pid = b.dataset.person;
+  if (b.dataset.val === 'default') {
     if (data.shifts[key]) {
       delete data.shifts[key][pid];
       if (!Object.keys(data.shifts[key]).length) delete data.shifts[key];
     }
   } else {
-    data.shifts[key] = { ...(data.shifts[key] || {}), [pid]: sel.value };
+    data.shifts[key] = { ...(data.shifts[key] || {}), [pid]: b.dataset.val };
   }
   save();
+  renderDay();
   render();
+});
+
+$('#day-note').addEventListener('input', (ev) => {
+  const v = ev.target.value;
+  if (v.trim()) data.notes[state.dayKey] = v;
+  else delete data.notes[state.dayKey];
+  save();
+  render();
+});
+
+function dayQuickAdd() {
+  const q = parseQuick($('#day-quick').value, today(), state.dayKey);
+  if (!q.title) return;
+  addEventQuick(q);
+  renderDay();
+}
+$('#day-quick-add').addEventListener('click', dayQuickAdd);
+$('#day-quick').addEventListener('keydown', (ev) => {
+  if (ev.key === 'Enter') { ev.preventDefault(); dayQuickAdd(); }
 });
 
 $('#day-iaios').addEventListener('change', (ev) => {
@@ -438,7 +516,7 @@ $('#day-add-event').addEventListener('click', () => openEvent(null, state.dayKey
 const eventForm = $('#event-form');
 eventForm.elements.cat.innerHTML = Object.entries(CATS).map(([id, c]) => `<option value="${id}">${c.icon} ${c.label}</option>`).join('');
 
-function openEvent(id, dateKey) {
+function openEvent(id, dateKey, prefill = {}) {
   const e = id ? data.events.find((x) => x.id === id) : null;
   state.editingEventId = e?.id || null;
   $('#event-dialog-title').textContent = e ? 'Editar evento' : 'Nuevo evento';
@@ -452,6 +530,10 @@ function openEvent(id, dateKey) {
   f.repeat.value = e?.repeat || 'none';
   f.remind.value = String(e?.remind ?? 1);
   f.notes.value = e?.notes || '';
+  if (prefill.title) f.title.value = prefill.title;
+  if (prefill.time) f.time.value = prefill.time;
+  if (prefill.cat) f.cat.value = prefill.cat;
+  if (prefill.cat === 'birthday') f.repeat.value = 'yearly';
   $('#event-dialog').showModal();
   if (!e) f.title.focus();
 }
@@ -507,6 +589,72 @@ document.querySelectorAll('dialog').forEach((d) => d.addEventListener('click', (
   if (ev.target === d) d.close();
 }));
 
+// ---------- quick add ----------
+
+let quickDefault = null;
+
+function addEventQuick(q) {
+  data.events.push({
+    id: uid(), title: q.title, date: q.date, time: q.time, endTime: '', cat: q.cat,
+    repeat: q.cat === 'birthday' ? 'yearly' : 'none', remind: 1, notes: '',
+  });
+  save();
+  render();
+  toast(`Añadido: ${shortDate(q.date)}${q.time ? ` · ${q.time}` : ''} · ${q.title}`);
+  checkNotifications();
+}
+
+const quickParsed = () => parseQuick($('#quick-text').value, today(), quickDefault || today());
+
+function renderQuickPreview() {
+  const q = quickParsed();
+  $('#quick-save').disabled = !q.title;
+  $('#quick-note').disabled = !q.title;
+  if (!q.title) {
+    $('#quick-preview').innerHTML = '<p class="hint">Aquí verás cómo se va a guardar.</p>';
+    return;
+  }
+  const sticky = isNative && data.settings.stickyEvents ? ' + aviso fijo desde 2 días antes' : '';
+  $('#quick-preview').innerHTML = `
+    <div>📅 <b>${esc(cap(fmtLong.format(fromKey(q.date))))}</b>${q.dateFound ? '' : ' <span class="muted">(escribe el día si no es este)</span>'}</div>
+    <div>🕒 ${q.time ? `<b>${esc(q.time)}</b>` : 'Todo el día'}</div>
+    <div>${CATS[q.cat].icon} <b>${esc(q.title)}</b> <span class="muted">(${CATS[q.cat].label}${q.cat === 'birthday' ? ', cada año' : ''})</span></div>
+    <div>🔔 Aviso el día antes${sticky}</div>`;
+}
+
+function openQuick(defaultDate) {
+  quickDefault = defaultDate || null;
+  $('#quick-text').value = '';
+  renderQuickPreview();
+  $('#quick-dialog').showModal();
+  $('#quick-text').focus();
+}
+
+$('#fab').addEventListener('click', () => openQuick());
+$('#quick-text').addEventListener('input', renderQuickPreview);
+$('#quick-form').addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  const q = quickParsed();
+  if (!q.title) return;
+  addEventQuick(q);
+  $('#quick-dialog').close();
+});
+$('#quick-more').addEventListener('click', () => {
+  const q = quickParsed();
+  $('#quick-dialog').close();
+  openEvent(null, q.date, q);
+});
+$('#quick-note').addEventListener('click', () => {
+  const q = quickParsed();
+  if (!q.title) return;
+  const line = `${q.time ? `${q.time} ` : ''}${q.title}`;
+  data.notes[q.date] = data.notes[q.date] ? `${data.notes[q.date]}\n${line}` : line;
+  save();
+  render();
+  $('#quick-dialog').close();
+  toast(`Nota añadida al ${shortDate(q.date)}`);
+});
+
 // ---------- settings ----------
 
 function renderSettings() {
@@ -535,6 +683,8 @@ function renderSettings() {
     </div>`).join('');
 
   $('#set-iaios-reminder').checked = !!data.settings.iaiosReminder;
+  $('#set-sticky-events').checked = !!data.settings.stickyEvents;
+  $('#set-sticky-iaios').checked = !!data.settings.stickyIaios;
   renderNotifStatus();
   appVersion().then((v) => { $('#app-version').textContent = v ? `Versión ${v}` : ''; });
 }
@@ -576,6 +726,8 @@ $('#settings-dialog').addEventListener('input', (ev) => {
     s[t.dataset.f] = t.dataset.f === 'short' ? t.value.toUpperCase() : t.value;
   } else if (t.dataset.weekly) data.weekly[t.dataset.weekly][Number(t.dataset.wd)] = t.value || null;
   else if (t.id === 'set-iaios-reminder') data.settings.iaiosReminder = t.checked;
+  else if (t.id === 'set-sticky-events') data.settings.stickyEvents = t.checked;
+  else if (t.id === 'set-sticky-iaios') data.settings.stickyIaios = t.checked;
   else return;
   save();
   render();

@@ -1,12 +1,13 @@
 {
   "name": "calendario-familiar-android",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "Android (Capacitor) wrapper of the family calendar web app in ../calendario",
   "scripts": {
     "copy-web": "node scripts/copy-web.js",
-    "build:android": "npm run copy-web && cap sync android"
+    "build:android": "npm run copy-web && cap sync android",
+    "apk": "npm run build:android && cd android && CAL_VERSION_NAME=$(node -p \"require('../package.json').version\") CAL_VERSION_CODE=$(node ../scripts/version-code.js) ./gradlew assembleDebug"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",

@@ -294,3 +294,155 @@ export function reminderSchedule(data, today, days) {
   }
   return out.sort((a, b) => a.at.localeCompare(b.at));
 }
+
+// ---------- compact labels ----------
+
+/** "15:00" → "15", "13:30" → "13:30", "05:00" → "5". */
+export function compactTime(t) {
+  if (!t) return '';
+  const [h, m] = t.split(':');
+  return m === '00' ? String(Number(h)) : `${Number(h)}:${m}`;
+}
+
+/** "15–23" for timed shifts, the name for the rest (Libre, Vacaciones…). */
+export function shiftRange(s) {
+  return s.start && s.end ? `${compactTime(s.start)}–${compactTime(s.end)}` : s.name;
+}
+
+const WD_SHORT = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
+const MONTH_SHORT = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+/** "Jue 10 dic" */
+export function shortDate(key) {
+  const label = `${WD_SHORT[weekdayMon(key)]} ${Number(key.slice(8))} ${MONTH_SHORT[Number(key.slice(5, 7)) - 1]}`;
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+// ---------- quick add ----------
+
+const MONTHS = {
+  enero: 1, ene: 1, febrero: 2, feb: 2, marzo: 3, mar: 3, abril: 4, abr: 4, mayo: 5, may: 5, junio: 6, jun: 6,
+  julio: 7, jul: 7, agosto: 8, ago: 8, septiembre: 9, setiembre: 9, sept: 9, sep: 9, octubre: 10, oct: 10,
+  noviembre: 11, nov: 11, diciembre: 12, dic: 12,
+};
+const WEEKDAYS_ES = {
+  lunes: 0, martes: 1, miércoles: 2, miercoles: 2, jueves: 3, viernes: 4, sábado: 5, sabado: 5, domingo: 6,
+};
+const B = '(?<![\\p{L}\\d])'; // word start, accent-aware
+const E = '(?![\\p{L}\\d])'; // word end
+
+/** Next date (from today, inclusive) that falls on day-of-month `d`. */
+function nextDayOfMonth(today, d) {
+  let [y, m] = today.split('-').map(Number);
+  for (let i = 0; i < 13; i++) {
+    const k = `${y}-${pad(m)}-${pad(d)}`;
+    if (d <= daysInMonth(y, m - 1) && k >= today) return k;
+    if (++m > 12) { m = 1; y++; }
+  }
+  return null;
+}
+
+const CAT_WORDS = [
+  ['birthday', /cumple|santo\b|aniversario/i],
+  ['doctor', /m[ée]dic|dentista|pediatra|hospital|vacuna|an[áa]lisis|revisi[óo]n|enfermer|fisio|oculista|ambulatorio|centro de salud/i],
+  ['school', /\bcole|colegio|guarde|escuela|tutor[íi]a|excursi[óo]n|festival|funci[óo]n|reuni[óo]n.*(cole|clase)|extraescolar/i],
+  ['family', /iaio|iaia|abuel|famil|comida|cena/i],
+];
+
+export function guessCategory(title) {
+  return CAT_WORDS.find(([, re]) => re.test(title))?.[0] || 'important';
+}
+
+/**
+ * Understands quick entries such as "15 dentista 11:00", "mañana cumple iaia",
+ * "viernes 17:30 función del cole" or "22 dic evento cole". "por la mañana" is kept as text, not as tomorrow.
+ * Returns { date, time, title, cat, dateFound }.
+ */
+export function parseQuick(text, today, defaultDate = today) {
+  let s = ` ${text.trim()} `;
+  let date = null;
+  let time = '';
+  const cut = (m) => { s = s.slice(0, m.index) + ' ' + s.slice(m.index + m[0].length); };
+  const find = (re) => s.match(new RegExp(re, 'iu'));
+
+  let m = find(`${B}(?:a\\s+las\\s+)?(\\d{1,2})[:.h](\\d{2})${E}`);
+  if (m && Number(m[1]) < 24 && Number(m[2]) < 60) { time = `${pad(Number(m[1]))}:${m[2]}`; cut(m); }
+  if (!time && (m = find(`${B}a\\s+las?\\s+(\\d{1,2})(?:\\s*h)?${E}`)) && Number(m[1]) < 24) { time = `${pad(Number(m[1]))}:00`; cut(m); }
+  if (!time && (m = find(`${B}(\\d{1,2})\\s*h${E}`)) && Number(m[1]) < 24) { time = `${pad(Number(m[1]))}:00`; cut(m); }
+
+  if ((m = find(`${B}pasado\\s+mañana${E}`))) { date = addDays(today, 2); cut(m); }
+  else if ((m = find(`(?<!la\\s)${B}mañana${E}`))) { date = addDays(today, 1); cut(m); }
+  else if ((m = find(`${B}hoy${E}`))) { date = today; cut(m); }
+
+  if (!date && (m = find(`${B}(\\d{1,2})[/-](\\d{1,2})(?:[/-](\\d{2,4}))?${E}`))) {
+    const d = Number(m[1]); const mo = Number(m[2]);
+    let y = m[3] ? Number(m[3].length === 2 ? `20${m[3]}` : m[3]) : Number(today.slice(0, 4));
+    if (mo >= 1 && mo <= 12 && d >= 1 && d <= daysInMonth(y, mo - 1)) {
+      let k = `${y}-${pad(mo)}-${pad(d)}`;
+      if (!m[3] && k < today) k = `${++y}-${pad(mo)}-${pad(d)}`;
+      date = k; cut(m);
+    }
+  }
+  if (!date && (m = find(`${B}(?:el\\s+)?(?:día\\s+)?(\\d{1,2})\\s+(?:de\\s+)?(${Object.keys(MONTHS).join('|')})${E}`))) {
+    const d = Number(m[1]); const mo = MONTHS[m[2].toLowerCase()];
+    let y = Number(today.slice(0, 4));
+    if (d >= 1 && d <= 31) {
+      if (`${y}-${pad(mo)}-${pad(d)}` < today) y++;
+      if (d <= daysInMonth(y, mo - 1)) { date = `${y}-${pad(mo)}-${pad(d)}`; cut(m); }
+    }
+  }
+  if (!date && (m = find(`${B}(?:el\\s+)?(?:próximo\\s+|proximo\\s+)?(${Object.keys(WEEKDAYS_ES).join('|')})${E}`))) {
+    const wd = WEEKDAYS_ES[m[1].toLowerCase()];
+    date = addDays(today, (wd - weekdayMon(today) + 7) % 7); cut(m);
+  }
+  // A bare day number only counts at the start ("10 dentista") or after "el"/"día" ("el 10", "día 22").
+  if (!date && (m = find(`^\\s*(?:el\\s+|día\\s+|dia\\s+)?(\\d{1,2})${E}`) || find(`${B}(?:el|día|dia)\\s+(\\d{1,2})${E}`))) {
+    const d = Number(m[1]);
+    if (d >= 1 && d <= 31) { date = nextDayOfMonth(today, d); cut(m); }
+  }
+
+  const title = s.replace(/\s+/g, ' ').trim()
+    .replace(/^(?:el|la|de|a|y|,|-)\s+/i, '').replace(/\s+(?:el|de|a|y|,|-)$/i, '').trim();
+  const finalTitle = title.charAt(0).toUpperCase() + title.slice(1);
+  return { date: date || defaultDate, time, title: finalTitle, cat: guessCategory(finalTitle), dateFound: !!date };
+}
+
+// ---------- sticky reminders (Android) ----------
+
+/**
+ * Notifications that appear 2 days before (09:00) and cannot be dismissed until the event is over.
+ * Timed events end at their end time (or 1 h after the start); all-day events at midnight;
+ * nights with the iaios the next morning at 09:00.
+ */
+export function stickySchedule(data, today, days) {
+  const st = data.settings || {};
+  const out = [];
+  const end = addDays(today, days);
+  if (st.stickyEvents) {
+    for (const e of data.events) {
+      for (const k of occurrences(e, today, end)) {
+        const until = e.time ? `${k}T${e.endTime && e.endTime > e.time ? e.endTime : addMinutes(e.time, 60)}` : `${addDays(k, 1)}T00:00`;
+        out.push({
+          key: `s:e:${e.id}@${k}`,
+          at: `${addDays(k, -2)}T09:00`,
+          until,
+          title: `${shortDate(k)}${e.time ? ` · ${e.time}` : ''} — ${e.title}`,
+          body: e.notes || 'Calendario familiar',
+        });
+      }
+    }
+  }
+  if (st.stickyIaios) {
+    for (const [k, i] of Object.entries(data.iaios)) {
+      if (!i.sleep || k < today || k > end) continue;
+      out.push({
+        key: `s:i:${k}`,
+        at: `${addDays(k, -2)}T09:00`,
+        until: `${addDays(k, 1)}T09:00`,
+        title: `${shortDate(k)} — Las niñas duermen con los iaios`,
+        body: i.note || 'Calendario familiar',
+      });
+    }
+  }
+  return out.sort((a, b) => a.at.localeCompare(b.at));
+}

@@ -50,12 +50,12 @@ jobs:
         run: npm run build:android
 
       - name: Version
-        run: echo "CAL_VERSION_NAME=$(node -p "require('./package.json').version")" >> "$GITHUB_ENV"
+        run: |
+          echo "CAL_VERSION_NAME=$(node -p "require('./package.json').version")" >> "$GITHUB_ENV"
+          echo "CAL_VERSION_CODE=$(node scripts/version-code.js)" >> "$GITHUB_ENV"
 
       - name: Build APK
         working-directory: calendario-android/android
-        env:
-          CAL_VERSION_CODE: ${{ github.run_number }}
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Name and check the APK

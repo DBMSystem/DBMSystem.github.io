@@ -1,6 +1,6 @@
 // Bridge to the Android app (Capacitor). In a normal browser every function here is a no-op or returns false,
 // so the web version keeps working on its own.
-import { hashId, reminderSchedule, todayKey } from './logic.js';
+import { hashId, reminderSchedule, stickySchedule, todayKey } from './logic.js';
 
 const Cap = window.Capacitor;
 export const isNative = !!Cap?.isNativePlatform?.();
@@ -40,6 +40,7 @@ export function rescheduleNotifications(data) {
 }
 
 async function schedule(data) {
+  await syncSticky(data);
   if ((await notificationPermission()) !== 'granted') return;
   const LN = P.LocalNotifications;
   const { notifications: pending } = await LN.getPending();
@@ -58,6 +59,17 @@ async function schedule(data) {
       schedule: { at: r.date, allowWhileIdle: true },
     })),
   });
+}
+
+/** Sticky reminders (native StickyReminders plugin): from 2 days before until the event is over. */
+async function syncSticky(data) {
+  if (!P.StickyReminders) return;
+  const now = Date.now();
+  const items = stickySchedule(data, todayKey(new Date()), 60)
+    .map((r) => ({ id: hashId(r.key), at: new Date(r.at).getTime(), until: new Date(r.until).getTime(), title: r.title, body: r.body }))
+    .filter((r) => r.until > now)
+    .slice(0, 40);
+  await P.StickyReminders.sync({ items });
 }
 
 /** Android back button: close the open sheet first, then leave the app. */
