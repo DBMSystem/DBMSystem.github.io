@@ -446,3 +446,49 @@ export function stickySchedule(data, today, days) {
   }
   return out.sort((a, b) => a.at.localeCompare(b.at));
 }
+
+// ---------- shopping list ----------
+
+const normItem = (s) => s.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+/** "leche, pan y 2 docenas de huevos" → ["Leche", "Pan", "2 docenas de huevos"]. */
+export function parseShoppingInput(text) {
+  return text
+    .split(/[,;\n]+|\s+y\s+(?=\S)/i)
+    .map((s) => s.trim().replace(/\.$/, ''))
+    .filter(Boolean)
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1));
+}
+
+/** Adds items not already pending (case- and accent-insensitive). Returns the new shopping state. */
+export function addShoppingItems(shopping, texts, makeId) {
+  const items = [...shopping.items];
+  const history = { ...shopping.history };
+  for (const text of texts) {
+    const n = normItem(text);
+    history[n] = { text, count: (history[n]?.count || 0) + 1 };
+    const existing = items.find((i) => normItem(i.text) === n);
+    if (existing) {
+      existing.done = false;
+      continue;
+    }
+    items.push({ id: makeId(), text, done: false });
+  }
+  return { items, history };
+}
+
+/** Most frequently bought things that are not on the list right now. */
+export function shoppingSuggestions(shopping, n = 12) {
+  const pending = new Set(shopping.items.filter((i) => !i.done).map((i) => normItem(i.text)));
+  return Object.entries(shopping.history)
+    .filter(([k]) => !pending.has(k))
+    .sort((a, b) => b[1].count - a[1].count || a[1].text.localeCompare(b[1].text))
+    .slice(0, n)
+    .map(([, v]) => v.text);
+}
+
+/** Plain text to send by WhatsApp: pending items only. */
+export function shoppingShareText(shopping) {
+  const pending = shopping.items.filter((i) => !i.done);
+  return pending.length ? `🛒 Lista de la compra\n${pending.map((i) => `• ${i.text}`).join('\n')}` : '';
+}

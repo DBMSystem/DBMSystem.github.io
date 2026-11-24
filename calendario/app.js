@@ -1,9 +1,10 @@
 import {
   NO_SHIFT, addDays, buildICS, daysInMonth, diffDays, dueReminders, eventsOn, fromKey, monthGrid,
   monthSummary, pad, parseQuick, shiftFor, shiftRange, shortDate, todayKey, upcoming, weekdayMon,
+  addShoppingItems, parseShoppingInput, shoppingShareText, shoppingSuggestions,
 } from './logic.js';
 import {
-  appVersion, exitApp, isNative, notificationPermission, onBackButton, requestNotificationPermission, rescheduleNotifications, shareFile,
+  appVersion, exitApp, isNative, shareText, notificationPermission, onBackButton, requestNotificationPermission, rescheduleNotifications, shareFile,
 } from './native.js';
 
 const STORAGE_KEY = 'calendario-familiar:v1';
@@ -38,6 +39,7 @@ function defaultData() {
     iaios: {},
     events: [],
     notes: {},
+    shopping: { items: [], history: {} },
     settings: { iaiosReminder: true, stickyEvents: true, stickyIaios: true, view: 'month' },
     notified: {},
     seen: {},
@@ -58,6 +60,7 @@ function normalize(obj) {
   const data = { ...base, ...obj, settings: { ...base.settings, ...(obj.settings || {}) } };
   for (const p of data.people) if (!Array.isArray(data.weekly[p.id])) data.weekly[p.id] = Array(7).fill(null);
   if (!data.notes || typeof data.notes !== 'object') data.notes = {};
+  if (!data.shopping?.items || !data.shopping?.history) data.shopping = { items: [], history: {} };
   return data;
 }
 
@@ -126,11 +129,15 @@ function toast(msg) {
 
 function render() {
   const first = `${state.year}-${pad(state.month + 1)}-01`;
-  $('#month-title').textContent = cap(fmtMonth.format(fromKey(first)));
+  const shop = data.settings.view === 'shop';
+  $('#month-title').textContent = shop ? 'Lista de la compra' : cap(fmtMonth.format(fromKey(first)));
+  $('#prev').style.visibility = shop ? 'hidden' : '';
+  $('#next').style.visibility = shop ? 'hidden' : '';
   renderLegend();
   renderViewSwitch();
   renderPaintBar();
   if (data.settings.view === 'agenda') renderAgenda();
+  else if (data.settings.view === 'shop') renderShopping();
   else renderGrid();
   renderReminders();
   renderUpcoming();
@@ -170,10 +177,14 @@ function renderGrid() {
 }
 
 function renderViewSwitch() {
-  const agenda = data.settings.view === 'agenda';
-  $('#month-view').hidden = agenda;
-  $('#agenda-view').hidden = !agenda;
-  $('#toggle-paint').hidden = agenda;
+  const view = data.settings.view;
+  $('#month-view').hidden = view !== 'month';
+  $('#agenda-view').hidden = view !== 'agenda';
+  $('#shop-view').hidden = view !== 'shop';
+  $('#toggle-paint').hidden = view !== 'month';
+  $('#legend').hidden = view === 'shop';
+  $('#fab').hidden = view === 'shop';
+  document.querySelectorAll('.panel').forEach((el) => { el.hidden = view === 'shop'; });
   document.querySelectorAll('[data-view]').forEach((b) => b.classList.toggle('on', b.dataset.view === data.settings.view));
 }
 
@@ -589,6 +600,79 @@ document.querySelectorAll('dialog').forEach((d) => d.addEventListener('click', (
   if (ev.target === d) d.close();
 }));
 
+// ---------- shopping list ----------
+
+function renderShopping() {
+  const { items } = data.shopping;
+  const pending = items.filter((i) => !i.done);
+  const done = items.filter((i) => i.done);
+  const row = (i) => `<li class="shop-item${i.done ? ' done' : ''}">
+      <label><input type="checkbox" data-shop-toggle="${esc(i.id)}" ${i.done ? 'checked' : ''}><span>${esc(i.text)}</span></label>
+      <button type="button" class="icon-btn small" data-shop-del="${esc(i.id)}" aria-label="Quitar ${esc(i.text)}">✕</button>
+    </li>`;
+  $('#shop-list').innerHTML = (pending.length ? pending.map(row).join('') : '<li class="empty-msg">No falta nada. Escribe arriba lo que haya que comprar.</li>')
+    + (done.length ? `<li class="shop-sep">En el carro (${done.length})</li>${done.map(row).join('')}` : '');
+  const sugg = shoppingSuggestions(data.shopping);
+  $('#shop-suggest').innerHTML = sugg.length
+    ? `<span class="hint">Lo de siempre:</span>${sugg.map((t) => `<button type="button" class="chip" data-shop-add="${esc(t)}">＋ ${esc(t)}</button>`).join('')}`
+    : '';
+  $('#shop-share').disabled = !pending.length;
+  $('#shop-clear').hidden = !done.length;
+}
+
+function addShopping(texts) {
+  if (!texts.length) return;
+  data.shopping = addShoppingItems(data.shopping, texts, uid);
+  save();
+  renderShopping();
+}
+
+$('#shop-form').addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  addShopping(parseShoppingInput($('#shop-input').value));
+  $('#shop-input').value = '';
+  $('#shop-input').focus();
+});
+$('#shop-suggest').addEventListener('click', (ev) => {
+  const b = ev.target.closest('[data-shop-add]');
+  if (b) addShopping([b.dataset.shopAdd]);
+});
+$('#shop-list').addEventListener('change', (ev) => {
+  const id = ev.target.dataset.shopToggle;
+  const item = data.shopping.items.find((i) => i.id === id);
+  if (!item) return;
+  item.done = ev.target.checked;
+  save();
+  renderShopping();
+});
+$('#shop-list').addEventListener('click', (ev) => {
+  const b = ev.target.closest('[data-shop-del]');
+  if (!b) return;
+  data.shopping.items = data.shopping.items.filter((i) => i.id !== b.dataset.shopDel);
+  save();
+  renderShopping();
+});
+$('#shop-clear').addEventListener('click', () => {
+  data.shopping.items = data.shopping.items.filter((i) => !i.done);
+  save();
+  renderShopping();
+  toast('Quitado lo comprado');
+});
+$('#shop-share').addEventListener('click', async () => {
+  const text = shoppingShareText(data.shopping);
+  if (!text) return;
+  if (await shareText(text, 'Lista de la compra')) return;
+  if (navigator.share) {
+    try { await navigator.share({ text }); return; } catch (e) { if (e.name === 'AbortError') return; }
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('Lista copiada: pégala en WhatsApp');
+  } catch {
+    toast('No se ha podido compartir la lista');
+  }
+});
+
 // ---------- quick add ----------
 
 let quickDefault = null;
@@ -821,7 +905,8 @@ $('#import-file').addEventListener('change', async (ev) => {
     const obj = JSON.parse(await file.text());
     if (!Array.isArray(obj.events) || !Array.isArray(obj.people) || typeof obj.iaios !== 'object') throw new Error('bad');
     if (!confirm('Se sustituirán los datos de este dispositivo por los de la copia. ¿Seguir?')) return;
-    data = normalize({ ...obj, notified: data.notified, seen: data.seen });
+    // A calendar backup without a shopping list keeps the list already on this phone.
+    data = normalize({ ...obj, shopping: obj.shopping || data.shopping, notified: data.notified, seen: data.seen });
     save();
     renderSettings();
     render();

@@ -26,6 +26,7 @@
     <div class="seg views" role="tablist">
       <button type="button" data-view="month" role="tab">📅 Mes</button>
       <button type="button" data-view="agenda" role="tab">📋 Agenda</button>
+      <button type="button" data-view="shop" role="tab">🛒 Compra</button>
     </div>
     <button class="btn" id="toggle-paint" aria-pressed="false">✏️ Rellenar</button>
   </div>
@@ -43,6 +44,19 @@
   </section>
   <section id="agenda-view" hidden>
     <ol id="agenda" class="agenda"></ol>
+  </section>
+  <section id="shop-view" hidden>
+    <form id="shop-form" class="shop-add">
+      <input id="shop-input" autocomplete="off" enterkeyhint="done" placeholder="Añadir: leche, pan y huevos">
+      <button class="btn primary" type="submit" aria-label="Añadir a la lista">＋</button>
+    </form>
+    <div id="shop-suggest" class="shop-suggest"></div>
+    <ul id="shop-list" class="shop-list"></ul>
+    <div class="actions wrap">
+      <button class="btn primary" id="shop-share" type="button">📤 Enviar la lista</button>
+      <span class="spacer"></span>
+      <button class="btn danger" id="shop-clear" type="button">Quitar lo comprado</button>
+    </div>
   </section>
 
   <section class="panel">

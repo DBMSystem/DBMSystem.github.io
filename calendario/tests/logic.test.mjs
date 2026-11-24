@@ -100,3 +100,18 @@ test('sticky reminders: 2 days before until the event is over', () => {
   assert.equal(s[2].title, 'Vie 27 nov · 10:30 — Pediatra');
   assert.deepEqual(L.stickySchedule(data(), '2026-11-24', 30), []);
 });
+
+test('shopping list', () => {
+  assert.deepEqual(L.parseShoppingInput('leche, pan y 2 docenas de huevos\nyogures.'), ['Leche', 'Pan', '2 docenas de huevos', 'Yogures']);
+  let n = 0;
+  const id = () => `i${++n}`;
+  let s = L.addShoppingItems({ items: [], history: {} }, ['Leche', 'Plátanos'], id);
+  s = L.addShoppingItems(s, ['leche', 'Pan'], id); // no duplicates
+  assert.deepEqual(s.items.map((i) => i.text), ['Leche', 'Plátanos', 'Pan']);
+  s.items[1].done = true;
+  assert.deepEqual(L.shoppingSuggestions(s), ['Plátanos']); // bought, not pending
+  s = L.addShoppingItems(s, ['platanos'], id); // bought before: back to pending
+  assert.equal(s.items.length, 3);
+  assert.equal(s.items[1].done, false);
+  assert.equal(L.shoppingShareText(s), '🛒 Lista de la compra\n• Leche\n• Plátanos\n• Pan');
+});

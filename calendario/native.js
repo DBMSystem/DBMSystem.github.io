@@ -72,6 +72,17 @@ async function syncSticky(data) {
   await P.StickyReminders.sync({ items });
 }
 
+/** Shares plain text (e.g. the shopping list) through the Android share sheet. */
+export async function shareText(text, title) {
+  if (!isNative) return false;
+  try {
+    await P.Share.share({ title, text, dialogTitle: title });
+  } catch (e) {
+    if (!/cancel/i.test(e?.message || '')) throw e;
+  }
+  return true;
+}
+
 /** Android back button: close the open sheet first, then leave the app. */
 export function onBackButton(handler) {
   if (isNative) P.App.addListener('backButton', handler);
