@@ -3,7 +3,7 @@ import {
   monthSummary, pad, shiftFor, todayKey, upcoming, weekdayMon,
 } from './logic.js';
 import {
-  exitApp, isNative, notificationPermission, onBackButton, requestNotificationPermission, rescheduleNotifications, shareFile,
+  appVersion, exitApp, isNative, notificationPermission, onBackButton, requestNotificationPermission, rescheduleNotifications, shareFile,
 } from './native.js';
 
 const STORAGE_KEY = 'calendario-familiar:v1';
@@ -536,6 +536,7 @@ function renderSettings() {
 
   $('#set-iaios-reminder').checked = !!data.settings.iaiosReminder;
   renderNotifStatus();
+  appVersion().then((v) => { $('#app-version').textContent = v ? `Versión ${v}` : ''; });
 }
 
 async function renderNotifStatus() {

@@ -68,3 +68,10 @@ export function onBackButton(handler) {
 export function exitApp() {
   if (isNative) P.App.exitApp();
 }
+
+/** "1.0.0 (3)" in the Android app, null on the web. */
+export async function appVersion() {
+  if (!isNative) return null;
+  const { version, build } = await P.App.getInfo();
+  return `${version} (${build})`;
+}
