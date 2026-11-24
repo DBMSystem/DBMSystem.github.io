@@ -1,6 +1,6 @@
 // Offline support: serve the app shell from cache, refresh it in the background.
-const CACHE = 'calendario-familiar-v1';
-const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'logic.js', 'manifest.webmanifest', 'icon.svg'];
+const CACHE = 'calendario-familiar-v2';
+const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'logic.js', 'native.js', 'manifest.webmanifest', 'icon.svg'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

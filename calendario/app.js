@@ -2,6 +2,9 @@ import {
   NO_SHIFT, addDays, buildICS, diffDays, dueReminders, eventsOn, fromKey, monthGrid,
   monthSummary, pad, shiftFor, todayKey, upcoming, weekdayMon,
 } from './logic.js';
+import {
+  exitApp, isNative, notificationPermission, onBackButton, requestNotificationPermission, rescheduleNotifications, shareFile,
+} from './native.js';
 
 const STORAGE_KEY = 'calendario-familiar:v1';
 
@@ -59,6 +62,7 @@ function normalize(obj) {
 let data = load();
 const save = () => {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch { toast('No se ha podido guardar en este dispositivo'); }
+  rescheduleNotifications(data);
 };
 
 const now = new Date();
@@ -534,14 +538,24 @@ function renderSettings() {
   renderNotifStatus();
 }
 
-function renderNotifStatus() {
+async function renderNotifStatus() {
+  if (isNative) {
+    const perm = await notificationPermission();
+    $('#notif-status').textContent = perm === 'granted'
+      ? '✅ Avisos activados: el móvil te avisará aunque la app esté cerrada (eventos a las 9:00 del día del aviso, o 1 hora antes si tienen hora; iaios a las 20:00 del día antes).'
+      : perm === 'denied'
+        ? '⛔ Las notificaciones están desactivadas para esta app. Actívalas en Ajustes del móvil › Aplicaciones › Calendario familiar › Notificaciones.'
+        : 'Activa los avisos para que el móvil te recuerde los eventos aunque la app esté cerrada.';
+    $('#enable-notif').hidden = perm === 'granted' || perm === 'denied';
+    return;
+  }
   const supported = 'Notification' in window;
   const perm = supported ? Notification.permission : 'unsupported';
   const msg = {
-    granted: '✅ Avisos activados en este dispositivo. Saltan al abrir la app (o si está abierta en segundo plano). Para alarmas aunque la app esté cerrada, usa también «Descargar .ics».',
+    granted: '✅ Avisos activados en este dispositivo. Saltan al abrir la app (o si está abierta en segundo plano). Para alarmas aunque la app esté cerrada, instala la APK o usa «Exportar .ics».',
     denied: '⛔ Los avisos están bloqueados en el navegador. Actívalos en los ajustes del navegador para esta web.',
     default: 'Los avisos aparecen arriba del calendario. Si los activas, también te llegará una notificación al abrir la app.',
-    unsupported: 'Este navegador no permite notificaciones. Los avisos aparecen arriba del calendario; para alarmas usa «Descargar .ics».',
+    unsupported: 'Este navegador no permite notificaciones. Los avisos aparecen arriba del calendario; para alarmas usa «Exportar .ics».',
   }[perm];
   $('#notif-status').textContent = msg;
   $('#enable-notif').hidden = perm !== 'default';
@@ -596,7 +610,7 @@ $('#add-shift').addEventListener('click', () => {
 });
 
 $('#enable-notif').addEventListener('click', async () => {
-  const perm = await Notification.requestPermission();
+  const perm = isNative ? await requestNotificationPermission() : await Notification.requestPermission();
   renderNotifStatus();
   if (perm === 'granted') {
     toast('Avisos activados');
@@ -606,7 +620,8 @@ $('#enable-notif').addEventListener('click', async () => {
 
 // ---------- export / import ----------
 
-function download(filename, content, type) {
+async function download(filename, content, type, title) {
+  if (isNative) return shareFile(filename, content, title);
   const url = URL.createObjectURL(new Blob([content], { type }));
   const a = Object.assign(document.createElement('a'), { href: url, download: filename });
   document.body.append(a);
@@ -615,21 +630,22 @@ function download(filename, content, type) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-$('#export-ics').addEventListener('click', () => {
+$('#export-ics').addEventListener('click', async () => {
   const months = Number($('#ics-months').value);
   const fromK = `${state.year}-${pad(state.month + 1)}-01`;
   const end = new Date(Date.UTC(state.year, state.month + months, 0));
   const toK = `${end.getUTCFullYear()}-${pad(end.getUTCMonth() + 1)}-${pad(end.getUTCDate())}`;
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
   const ics = buildICS(data, { fromK, toK, includeShifts: $('#ics-shifts').checked, includeIaios: $('#ics-iaios').checked, stamp });
-  download(`calendario-familiar-${fromK.slice(0, 7)}.ics`, ics, 'text/calendar');
-  toast('Archivo .ics descargado: ábrelo para añadirlo al calendario');
+  await download(`calendario-familiar-${fromK.slice(0, 7)}.ics`, ics, 'text/calendar', 'Añadir al calendario');
+  if (!isNative) toast('Archivo .ics descargado: ábrelo para añadirlo al calendario');
 });
 
 $('#export-json').addEventListener('click', async () => {
   const { notified, seen, ...rest } = data;
   const json = JSON.stringify(rest, null, 1);
   const name = `calendario-familiar-${today()}.json`;
+  if (isNative) return shareFile(name, json, 'Copia del calendario familiar');
   const file = new File([json], name, { type: 'application/json' });
   if (navigator.canShare?.({ files: [file] })) {
     try {
@@ -688,7 +704,7 @@ function checkNotifications() {
   for (const store of [data.notified, data.seen]) {
     for (const [id, day] of Object.entries(store)) if (day < addDays(t, -2)) delete store[id];
   }
-  if (!('Notification' in window) || Notification.permission !== 'granted') return save();
+  if (isNative || !('Notification' in window) || Notification.permission !== 'granted') return save();
   for (const r of dueReminders(data, t)) {
     if (data.notified[r.id]) continue;
     data.notified[r.id] = t;
@@ -724,7 +740,25 @@ window.addEventListener('storage', (ev) => {
   }
 });
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+if (!isNative && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+onBackButton(() => {
+  const open = [...document.querySelectorAll('dialog[open]')].pop();
+  if (open) open.close();
+  else if (state.paint.on) {
+    state.paint.on = false;
+    renderPaintBar();
+  } else exitApp();
+});
 
 render();
 checkNotifications();
+
+// In the Android app, ask for notification permission on first launch: reminders are the point of the app.
+if (isNative) {
+  notificationPermission().then(async (perm) => {
+    if (perm === 'prompt' || perm === 'prompt-with-rationale') {
+      if ((await requestNotificationPermission()) === 'granted') rescheduleNotifications(data);
+    }
+  });
+}

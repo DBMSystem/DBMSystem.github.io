@@ -1,0 +1,14 @@
+{
+  "appId": "com.dbmsystem.calendariofamiliar",
+  "appName": "Calendario familiar",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#2f6f68"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_calendar",
+      "iconColor": "#2f6f68"
+    }
+  }
+}

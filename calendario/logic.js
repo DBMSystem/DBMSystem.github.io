@@ -240,6 +240,57 @@ export function buildICS(data, { fromK, toK, includeShifts, includeIaios, stamp 
 
 export function addMinutes(time, minutes) {
   const [h, m] = time.split(':').map(Number);
-  const total = Math.min(h * 60 + m + minutes, 23 * 60 + 59);
+  const total = Math.max(0, Math.min(h * 60 + m + minutes, 23 * 60 + 59));
   return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`;
+}
+
+/** Stable 31-bit integer id for a string (native notification ids must be ints). */
+export function hashId(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return Math.abs(h) || 1;
+}
+
+const REMINDER_HOUR = '09:00';
+const IAIOS_EVE_HOUR = '20:00';
+
+/**
+ * Alarms to schedule as phone notifications from `today` over `days` days.
+ * All-day events ring at 09:00 on the reminder day; timed events on the same day ring 1 h before;
+ * iaios days ring at 20:00 the evening before. `at` is local "YYYY-MM-DDTHH:MM".
+ */
+export function reminderSchedule(data, today, days) {
+  const out = [];
+  const end = addDays(today, days);
+  for (const e of data.events) {
+    if (e.remind === undefined || e.remind === null || e.remind === '' || e.remind < 0) continue;
+    for (const k of occurrences(e, today, addDays(end, e.remind))) {
+      const day = addDays(k, -e.remind);
+      if (day > end) continue;
+      let time = REMINDER_HOUR;
+      if (e.remind === 0 && e.time) time = e.time >= '01:00' ? addMinutes(e.time, -60) : e.time;
+      const left = e.remind;
+      const when = left === 0 ? 'Hoy' : left === 1 ? 'Mañana' : `En ${left} días`;
+      out.push({
+        key: `e:${e.id}@${k}`,
+        at: `${day}T${time}`,
+        title: `${when}: ${e.title}`,
+        body: [e.time, e.notes].filter(Boolean).join(' · '),
+      });
+    }
+  }
+  if (data.settings?.iaiosReminder) {
+    for (const k of Object.keys(data.iaios)) {
+      const eve = addDays(k, -1);
+      if (eve < today || eve > end) continue;
+      const i = data.iaios[k];
+      out.push({
+        key: `i:${k}`,
+        at: `${eve}T${IAIOS_EVE_HOUR}`,
+        title: 'Mañana las niñas van con los iaios',
+        body: [i.sleep ? 'Duermen allí' : '', i.note].filter(Boolean).join(' · '),
+      });
+    }
+  }
+  return out.sort((a, b) => a.at.localeCompare(b.at));
 }
